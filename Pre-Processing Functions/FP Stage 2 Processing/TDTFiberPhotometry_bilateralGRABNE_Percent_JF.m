@@ -144,7 +144,7 @@ function TDTFiberPhotometry_bilateralGRABNE_Percent_JF(filepath,rawDataFilespath
             % Check if the Animal ID is the one that you want to load specific parameters
             if AnimalID == "JF096" %cange this animal 
                 % Path where the parameters for GFP correction are stored
-                GFPparamsPath = 'C:\Users\crowley_labadmin\OneDrive - The Pennsylvania State University\MATLAB code\3.0MatlabFunctions\SleepExperiment\SleepExperiment\CBV_Correction_Data_GFP\CBVMle_Hemodynamic_Correction_Parameters.mat';
+                GFPparamsPath = 'E:\MATLAB code\3.0MatlabFunctions\SleepExperiment\SleepExperiment\CBV_Correction_Data_GFP\CBVMle_Hemodynamic_Correction_Parameters.mat';
                 if exist(GFPparamsPath, 'file')
                     load(GFPparamsPath);
                 else
