@@ -1,16 +1,13 @@
-function [AnalysisResults] = PlotCOherence_GRABNE(rootFolder,saveFigs,delim,AnalysisResults,firstHrs)
+function [AnalysisResults] = PlotCoherence_GRABNE(rootFolder,saveFigs,delim,AnalysisResults,firstHrs,animalIDs)
 %% coherence
-
-animalIDs = {'GRABNE001','GRABNE002'} ; %fieldnames(AnalysisResults);
-
     if firstHrs == "false"
-         behavFields = {'Rest','NREM','REM','Awake'};
+         behavFields = {'Rest','NREM','REM','Awake','Asleep','All'};
     elseif firstHrs == "true"
         behavFields = {'Rest','NREM','Awake'};
     end
 
-dataTypes = {'zDiameter','Ach_Rhodamine','NE_Rhodamine','Ach_GFP','NE_GFP','RH_thetaBandPower','RH_alphaBandPower','RH_gammaBandPower'};
-SdataTypes = {'zDiameter','Ach_Rhodamine','NE_Rhodamine','Ach_GFP','NE_GFP','RH_thetaBandPower','RH_alphaBandPower','RH_gammaBandPower'};
+dataTypes = {'NE_GFP','ACh_GFP'};
+SdataTypes = {'ACh_CBV','NE_CBV','ACh_GFP','NE_GFP'};
 
 % pre-allocate data structure
 for aa = 1:length(behavFields)
@@ -28,7 +25,7 @@ for aa = 1:length(behavFields)
         end
     end
 end
-% concatenate coherence during different arousal states for each animal
+% concatenate coherence during different arousal states for eACh animal
 for aa = 1:length(animalIDs)
     animalID = animalIDs{1,aa};
     for bb = 1:length(behavFields)
@@ -83,49 +80,52 @@ end
             meanfName = ['mean' SdataType 'f'];
          subplot(3,SubplotNeed,splotNo);
 
-            L1 = semilogx(data.Coherr.Rest.(dataType).(meanfName),data.Coherr.Rest.(dataType).(meanCName),'color','green','LineWidth',2);
+            L1 = semilogx(data.Coherr.Rest.(dataType).(meanfName),data.Coherr.Rest.(dataType).(meanCName),'color',[0 0 0],'LineWidth',2);
                     hold on
-                    semilogx(data.Coherr.Rest.(dataType).(meanfName),data.Coherr.Rest.(dataType).(meanCName) + data.Coherr.Rest.(dataType).(semCName),'color','green','LineWidth',0.5);
-                    semilogx(data.Coherr.Rest.(dataType).(meanfName),data.Coherr.Rest.(dataType).(meanCName) - data.Coherr.Rest.(dataType).(semCName),'color','green','LineWidth',0.5);
-                    rectangle('Position',[0.005,0.1,0.1 - 0.005,1],'FaceColor','w','EdgeColor','w')
-            L2 = semilogx(data.Coherr.NREM.(dataType).(meanfName),data.Coherr.NREM.(dataType).(meanCName),'color','black','LineWidth',2);
+                    semilogx(data.Coherr.Rest.(dataType).(meanfName),data.Coherr.Rest.(dataType).(meanCName) + data.Coherr.Rest.(dataType).(semCName),'color',[0 0 0],'LineWidth',0.5);
+                    semilogx(data.Coherr.Rest.(dataType).(meanfName),data.Coherr.Rest.(dataType).(meanCName) - data.Coherr.Rest.(dataType).(semCName),'color',[0 0 0],'LineWidth',0.5);
+                    % rectangle('Position',[0.005,0.1,0.1 - 0.005,1],'FaceColor','w','EdgeColor','w')
+            L2 = semilogx(data.Coherr.NREM.(dataType).(meanfName),data.Coherr.NREM.(dataType).(meanCName),'color',[0 0.4470 0.7410],'LineWidth',2);
                     hold on
-                    semilogx(data.Coherr.NREM.(dataType).(meanfName),data.Coherr.NREM.(dataType).(meanCName) + data.Coherr.NREM.(dataType).(semCName),'color','black','LineWidth',0.5);
-                    semilogx(data.Coherr.NREM.(dataType).(meanfName),data.Coherr.NREM.(dataType).(meanCName) - data.Coherr.NREM.(dataType).(semCName),'color','black','LineWidth',0.5);
-                    rectangle('Position',[0.005,0.1,1/30 - 0.005,1],'FaceColor','w','EdgeColor','w')
+                    semilogx(data.Coherr.NREM.(dataType).(meanfName),data.Coherr.NREM.(dataType).(meanCName) + data.Coherr.NREM.(dataType).(semCName),'color',[0 0.4470 0.7410],'LineWidth',0.5);
+                    semilogx(data.Coherr.NREM.(dataType).(meanfName),data.Coherr.NREM.(dataType).(meanCName) - data.Coherr.NREM.(dataType).(semCName),'color',[0 0.4470 0.7410],'LineWidth',0.5);
+                    % rectangle('Position',[0.005,0.1,1/30 - 0.005,1],'FaceColor','w','EdgeColor','w')
            if firstHrs == "false"
-            L3 = semilogx(data.Coherr.REM.(dataType).(meanfName),data.Coherr.REM.(dataType).(meanCName),'color','red','LineWidth',2);
+            L3 = semilogx(data.Coherr.REM.(dataType).(meanfName),data.Coherr.REM.(dataType).(meanCName),'color',[1 0 0],'LineWidth',2);
                 hold on        
-                semilogx(data.Coherr.REM.(dataType).(meanfName),data.Coherr.REM.(dataType).(meanCName) + data.Coherr.REM.(dataType).(semCName),'color','red','LineWidth',0.5);
-                semilogx(data.Coherr.REM.(dataType).(meanfName),data.Coherr.REM.(dataType).(meanCName) - data.Coherr.REM.(dataType).(semCName),'color','red','LineWidth',0.5);
-                rectangle('Position',[0.005,0.1,1/60 - 0.005,1],'FaceColor','w','EdgeColor','w')
+                semilogx(data.Coherr.REM.(dataType).(meanfName),data.Coherr.REM.(dataType).(meanCName) + data.Coherr.REM.(dataType).(semCName),'color',[1 0 0],'LineWidth',0.5);
+                semilogx(data.Coherr.REM.(dataType).(meanfName),data.Coherr.REM.(dataType).(meanCName) - data.Coherr.REM.(dataType).(semCName),'color',[1 0 0],'LineWidth',0.5);
+                % rectangle('Position',[0.005,0.1,1/60 - 0.005,1],'FaceColor','w','EdgeColor','w')
            elseif firstHrs == "true"
            end
-%             semilogx(data.Coherr.Awake.(dataType).(meanfName),data.Coherr.Awake.(dataType).(meanCName),'color',[0.4940 0.1840 0.5560],'LineWidth',2);
-%             semilogx(data.Coherr.Awake.(dataType).(meanfName),data.Coherr.Awake.(dataType).(meanCName) + data.Coherr.Awake.(dataType).(semCName),'color',[0.4940 0.1840 0.5560],'LineWidth',0.5);
-%             semilogx(data.Coherr.Awake.(dataType).(meanfName),data.Coherr.Awake.(dataType).(meanCName) - data.Coherr.Awake.(dataType).(semCName),'color',[0.4940 0.1840 0.5560],'LineWidth',0.5);
-%     %         semilogx(data.Coherr.Asleep.(dataType).(meanfName),data.Coherr.Asleep.(dataType).(meanCName),'color',colors('custom asleep'),'LineWidth',2);
-    %         semilogx(data.Coherr.Asleep.(dataType).(meanfName),data.Coherr.Asleep.(dataType).(meanCName) + data.Coherr.Asleep.(dataType).(semCName),'color',colors('custom asleep'),'LineWidth',0.5);
-    %         semilogx(data.Coherr.Asleep.(dataType).(meanfName),data.Coherr.Asleep.(dataType).(meanCName) - data.Coherr.Asleep.(dataType).(semCName),'color',colors('custom asleep'),'LineWidth',0.5);
-    %         semilogx(data.Coherr.All.(dataType).(meanfName),data.Coherr.All.(dataType).(meanCName),'color',colors('custom all'),'LineWidth',2);
-    %         semilogx(data.Coherr.All.(dataType).(meanfName),data.Coherr.All.(dataType).(meanCName) + data.Coherr.All.(dataType).(semCName),'color',colors('custom all'),'LineWidth',0.5);
-    %         semilogx(data.Coherr.All.(dataType).(meanfName),data.Coherr.All.(dataType).(meanCName) - data.Coherr.All.(dataType).(semCName),'color',colors('custom all'),'LineWidth',0.5);
-            xline(0.02,'color','b');
-            xline(0.35,'color','r');
+            L4 =semilogx(data.Coherr.Awake.(dataType).(meanfName),data.Coherr.Awake.(dataType).(meanCName),'color',[0.9290 0.6940 0.1250],'LineWidth',2);
+            semilogx(data.Coherr.Awake.(dataType).(meanfName),data.Coherr.Awake.(dataType).(meanCName) + data.Coherr.Awake.(dataType).(semCName),'color',[0.4940 0.1840 0.5560],'LineWidth',0.5);
+            semilogx(data.Coherr.Awake.(dataType).(meanfName),data.Coherr.Awake.(dataType).(meanCName) - data.Coherr.Awake.(dataType).(semCName),'color',[0.4940 0.1840 0.5560],'LineWidth',0.5);
+            
+            L5 = semilogx(data.Coherr.Asleep.(dataType).(meanfName),data.Coherr.Asleep.(dataType).(meanCName),'color',[1 0 1],'LineWidth',2);
+            semilogx(data.Coherr.Asleep.(dataType).(meanfName),data.Coherr.Asleep.(dataType).(meanCName) + data.Coherr.Asleep.(dataType).(semCName),'color',[1 0 1],'LineWidth',0.5);
+            semilogx(data.Coherr.Asleep.(dataType).(meanfName),data.Coherr.Asleep.(dataType).(meanCName) - data.Coherr.Asleep.(dataType).(semCName),'color',[1 0 1],'LineWidth',0.5);
+            
+            L6= semilogx(data.Coherr.All.(dataType).(meanfName),data.Coherr.All.(dataType).(meanCName),'color',[0.4660 0.6740 0.1880],'LineWidth',2);
+            semilogx(data.Coherr.All.(dataType).(meanfName),data.Coherr.All.(dataType).(meanCName) + data.Coherr.All.(dataType).(semCName),'color',[0.4660 0.6740 0.1880],'LineWidth',0.5);
+            semilogx(data.Coherr.All.(dataType).(meanfName),data.Coherr.All.(dataType).(meanCName) - data.Coherr.All.(dataType).(semCName),'color',[0.4660 0.6740 0.1880],'LineWidth',0.5);
+            xline(1/30,'color','b');
+            xline(0.1,'color','r');
+            xline(1/3,'color','k');
             title({ (dataType) },...
                 {[(SdataType) ' coherence']})
             ylabel('Coherence')
             xlabel('Freq (Hz)')
             if strcmp(dataType,SdataType) == 1
                 if firstHrs == "false"
-                    legend([L1,L2,L3],'Rest','NREM','REM','Location','best')
+                    legend([L1,L2,L3,L4,L5,L6],'Rest','NREM','REM','Alert','Asleep','All','Location','best')
                 elseif firstHrs == "true"
-                    legend([L1,L2],'Rest','NREM','Location','best')
+                    legend('Rest','NREM','Location','best')
                 end
             end
             axis square
-            xlim([0.001,1])
-            ylim([0,0.5])
+            xlim([0.001,0.9])
+            xticks([0.01 0.03 0.1 0.4])
             set(gca,'box','off')
             splotNo = splotNo +1;
         end

@@ -1,4 +1,4 @@
-function [AnalysisResults] = Fig1_S3_Whisk_GRABNE(rootFolder,saveFigs,delim,AnalysisResults,firstHrs)
+function [AnalysisResults] = Fig1_S3_Whisk_GRABNE(rootFolder,saveFigs,delim,AnalysisResults,firstHrs,animalIDs)
 %________________________________________________________________________________________________________________________
 % Written by Kevin L. Turner
 % The Pennsylvania State University, Dept. of Biomedical Engineering
@@ -8,7 +8,6 @@ function [AnalysisResults] = Fig1_S3_Whisk_GRABNE(rootFolder,saveFigs,delim,Anal
 %________________________________________________________________________________________________________________________
 
 %% set-up and process data
-animalIDs = {'NEACh002'};
 whiskDataTypes = {'ShortWhisks','IntermediateWhisks','LongWhisks'};
 % cd through each animal's directory and extract the appropriate analysis results
 for aa = 1:length(animalIDs)
@@ -86,7 +85,8 @@ for ee = 1:length(whiskDataTypes)
     data.(whiskDataType).meanTimeVector = mean(data.(whiskDataType).timeVector(:,aa),2);
 end
 %% Fig. 1-S3
-summaryFigure = figure('Name','Fig1-S3 Whisk');
+%{
+summaryFigure = figure('Name','Whisk');
 sgtitle('Whisk evoked responses')
 %% [1-S3a] brief whisks cortical MUA
 ax1 = subplot(6,3,1);
@@ -132,7 +132,7 @@ ylabel('Freq (Hz)')
 xlabel('Peri-whisk time (s)')
 c4 = colorbar;
 ylabel(c4,'\DeltaP/P (%)','rotation',-90,'VerticalAlignment','bottom')
-caxis([-100,100])
+clim([-100,100])
 set(gca,'Ticklength',[0,0])
 axis square
 axis xy
@@ -146,7 +146,7 @@ ylabel('Freq (Hz)')
 xlabel('Peri-whisk time (s)')
 c5 = colorbar;
 ylabel(c5,'\DeltaP/P (%)','rotation',-90,'VerticalAlignment','bottom')
-caxis([-100,100])
+clim([-100,100])
 set(gca,'Ticklength',[0,0])
 axis square
 axis xy
@@ -160,7 +160,7 @@ ylabel('Freq (Hz)')
 xlabel('Peri-whisk time (s)')
 c6 = colorbar;
 ylabel(c6,'\DeltaP/P (%)','rotation',-90,'VerticalAlignment','bottom')
-caxis([-100,100])
+clim([-100,100])
 set(gca,'Ticklength',[0,0])
 axis square
 axis xy
@@ -210,7 +210,7 @@ ax6.TickLength = [0.03,0.03];
 % xlabel('Peri-whisk time (s)')
 % c10 = colorbar;
 % ylabel(c10,'\DeltaP/P (%)','rotation',-90,'VerticalAlignment','bottom')
-% caxis([-100,100])
+% clim([-100,100])
 % set(gca,'Ticklength',[0,0])
 % axis square
 % axis xy
@@ -224,7 +224,7 @@ ax6.TickLength = [0.03,0.03];
 % xlabel('Peri-whisk time (s)')
 % c11 = colorbar;
 % ylabel(c11,'\DeltaP/P (%)','rotation',-90,'VerticalAlignment','bottom')
-% caxis([-100,100])
+% clim([-100,100])
 % set(gca,'Ticklength',[0 0])
 % axis square
 % axis xy
@@ -238,7 +238,7 @@ ax6.TickLength = [0.03,0.03];
 % xlabel('Peri-whisk time (s)')
 % c12 = colorbar;
 % ylabel(c12,'\DeltaP/P (%)','rotation',-90,'VerticalAlignment','bottom')
-% caxis([-100,100])
+% clim([-100,100])
 % set(gca,'Ticklength',[0,0])
 % axis square
 % axis xy
@@ -252,7 +252,7 @@ plot(data.ShortWhisks.meanTimeVector,data.ShortWhisks.Z_AchmeanRhodamine + data.
 plot(data.ShortWhisks.meanTimeVector,data.ShortWhisks.Z_AchmeanRhodamine - data.ShortWhisks.Z_AchstdRhodamine,'-','color',colors('indian red'),'LineWidth',0.10)
 title('Brief whisk Blood Volume (Z)')
 ylabel('Zscored \DeltaF/F Ach')
-ax13.YLim = [-3 3];
+ax13.YLim = [-1 1];
 
 yyaxis right
 plot(data.ShortWhisks.meanTimeVector,data.ShortWhisks.Z_NEmeanRhodamine,'-','color',colors('army green'),'LineWidth',2);
@@ -266,7 +266,7 @@ xlabel('Peri-whisk time (s)')
 axis square
 set(gca,'box','off')
 ax13.TickLength = [0.03,0.03];
-ax13.YLim = [-3 3];
+ax13.YLim = [-1 1];
 %% [1-S3n] moderate whisks Rhodamine
 ax14 = subplot(6,3,14);
 plot(data.IntermediateWhisks.meanTimeVector,data.IntermediateWhisks.Z_AchmeanRhodamine,'-','color',colors('indian red'),'LineWidth',2);
@@ -275,7 +275,7 @@ plot(data.IntermediateWhisks.meanTimeVector,data.IntermediateWhisks.Z_AchmeanRho
 plot(data.IntermediateWhisks.meanTimeVector,data.IntermediateWhisks.Z_AchmeanRhodamine - data.IntermediateWhisks.Z_AchstdRhodamine,'-','color',colors('indian red'),'LineWidth',0.10)
 title('Moderate whisk Blood Volume (Z)')
 ylabel('Zscored \DeltaF/F Ach')
-ax14.YLim = [-3 3];
+ax14.YLim = [-1 1];
 
 yyaxis right
 plot(data.IntermediateWhisks.meanTimeVector,data.IntermediateWhisks.Z_NEmeanRhodamine,'-','color',colors('army green'),'LineWidth',2);
@@ -289,7 +289,7 @@ xlabel('Peri-whisk time (s)')
 axis square
 set(gca,'box','off')
 ax14.TickLength = [0.03,0.03];
-ax14.YLim = [-3 3];
+ax14.YLim = [-1 1];
 %% [1-S3o] extended whisks Rhodamine
 ax15 = subplot(6,3,15);
 plot(data.LongWhisks.meanTimeVector,data.LongWhisks.Z_AchmeanRhodamine,'-','color',colors('indian red'),'LineWidth',2);
@@ -297,7 +297,7 @@ hold on
 plot(data.LongWhisks.meanTimeVector,data.LongWhisks.Z_AchmeanRhodamine + data.LongWhisks.Z_AchstdRhodamine,'-','color',colors('indian red'),'LineWidth',0.10)
 plot(data.LongWhisks.meanTimeVector,data.LongWhisks.Z_AchmeanRhodamine - data.LongWhisks.Z_AchstdRhodamine,'-','color',colors('indian red'),'LineWidth',0.10)
 ylabel('Zscored \DeltaF/F Ach')
-ax15.YLim = [-3 3];
+ax15.YLim = [-1 1];
 
 yyaxis right
 plot(data.LongWhisks.meanTimeVector,data.LongWhisks.Z_NEmeanRhodamine,'-','color',colors('army green'),'LineWidth',2);
@@ -312,7 +312,7 @@ xlabel('Peri-whisk time (s)')
 axis square
 set(gca,'box','off')
 ax15.TickLength = [0.03,0.03];
-ax15.YLim = [-3 3];
+ax15.YLim = [-1 1];
 %% [1-S3p] brief whisks GFP
 ax16 = subplot(6,3,16);
 plot(data.ShortWhisks.meanTimeVector,data.ShortWhisks.Z_AchmeanGFP,'-','color',colors('indian red'),'LineWidth',2);
@@ -320,7 +320,7 @@ hold on
 plot(data.ShortWhisks.meanTimeVector,data.ShortWhisks.Z_AchmeanGFP + data.ShortWhisks.Z_AchstdGFP,'-','color',colors('indian red'),'LineWidth',0.10)
 plot(data.ShortWhisks.meanTimeVector,data.ShortWhisks.Z_AchmeanGFP - data.ShortWhisks.Z_AchstdGFP,'-','color',colors('indian red'),'LineWidth',0.10)
 ylabel('Zscored \DeltaF/F Ach')
-ax16.YLim = [-3 3];
+ax16.YLim = [-1 1];
 
 yyaxis right
 plot(data.ShortWhisks.meanTimeVector,data.ShortWhisks.Z_NEmeanGFP,'-','color',colors('army green'),'LineWidth',2);
@@ -335,7 +335,7 @@ xlabel('Peri-whisk time (s)')
 axis square
 set(gca,'box','off')
 ax16.TickLength = [0.03,0.03];
-ax16.YLim = [-3 3];
+ax16.YLim = [-1 1];
 %% [1-S3q] moderate whisks GFP
 ax17 = subplot(6,3,17);
 plot(data.IntermediateWhisks.meanTimeVector,data.IntermediateWhisks.Z_AchmeanGFP,'-','color',colors('indian red'),'LineWidth',2);
@@ -343,7 +343,7 @@ hold on
 plot(data.IntermediateWhisks.meanTimeVector,data.IntermediateWhisks.Z_AchmeanGFP + data.IntermediateWhisks.Z_AchstdGFP,'-','color',colors('indian red'),'LineWidth',0.10)
 plot(data.IntermediateWhisks.meanTimeVector,data.IntermediateWhisks.Z_AchmeanGFP - data.IntermediateWhisks.Z_AchstdGFP,'-','color',colors('indian red'),'LineWidth',0.10)
 ylabel('Zscored \DeltaF/F Ach')
-ax17.YLim = [-3 3];
+ax17.YLim = [-1 1];
 
 yyaxis right
 plot(data.IntermediateWhisks.meanTimeVector,data.IntermediateWhisks.Z_NEmeanGFP,'-','color',colors('army green'),'LineWidth',2);
@@ -358,7 +358,7 @@ xlabel('Peri-whisk time (s)')
 axis square
 set(gca,'box','off')
 ax17.TickLength = [0.03,0.03];
-ax17.YLim = [-3 3];
+ax17.YLim = [-1 1];
 %% [1-S3r] extended whisks GFP
 ax18 = subplot(6,3,18);
 
@@ -367,7 +367,7 @@ hold on
 plot(data.LongWhisks.meanTimeVector,data.LongWhisks.Z_AchmeanGFP + data.LongWhisks.Z_AchstdGFP,'-','color',colors('indian red'),'LineWidth',0.10)
 plot(data.LongWhisks.meanTimeVector,data.LongWhisks.Z_AchmeanGFP - data.LongWhisks.Z_AchstdGFP,'-','color',colors('indian red'),'LineWidth',0.10)
 ylabel('Zscored \DeltaF/F Ach')
-ax18.YLim = [-3 3];
+ax18.YLim = [-1 1];
 
 yyaxis right
 plot(data.LongWhisks.meanTimeVector,data.LongWhisks.Z_NEmeanGFP,'-','color',colors('army green'),'LineWidth',2);
@@ -382,7 +382,7 @@ xlabel('Peri-whisk time (s)')
 axis square
 set(gca,'box','off')
 ax18.TickLength = [0.03,0.03];
-ax18.YLim = [-3 3];
+ax18.YLim = [-1 1];
 %% axes positions
 linkaxes([ax1,ax2,ax3],'xy')
 linkaxes([ax4,ax5,ax6],'xy')
@@ -420,14 +420,16 @@ if strcmp(saveFigs,'y') == true
     if ~exist(dirpath, 'dir')
         mkdir(dirpath);
     end
-    savefig(summaryFigure,[dirpath 'Fig1-S3-Whisk']);
+    savefig(summaryFigure,[dirpath 'Whisk']);
     set(summaryFigure,'PaperPositionMode','auto');
-    print('-painters','-dpdf','-fillpage',[dirpath 'Fig1-S3-Whisk'])
+    print('-painters','-dpdf','-fillpage',[dirpath 'Whisk'])
     close 
 end
+%}
+%{
 %% plot the comparison of GCaMP and Rhodamine with GRABNE and Rhodamine
-summaryFigureN = figure('Name','Fig1-S3 Stim');
-sgtitle('Stimulus evoked responses in fiber photometry signals')
+summaryFigureN = figure('Name','Whisk');
+sgtitle('Whisking evoked responses in fiber photometry signals')
 
 % Ach contra stim
 ax1 = subplot(3,3,1);
@@ -437,7 +439,7 @@ plot(data.ShortWhisks.meanTimeVector,data.ShortWhisks.Z_AchmeanRhodamine + data.
 plot(data.ShortWhisks.meanTimeVector,data.ShortWhisks.Z_AchmeanRhodamine - data.ShortWhisks.Z_AchstdRhodamine,'-','color',colors('indian red'),'LineWidth',0.10)
 title('Brief whisk Ach fiber')
 ylabel('\DeltaF/F Blood Volume (Z)')
-ax1.YLim = [-3 3];
+ax1.YLim = [-1 1];
 
 yyaxis right
 plot(data.ShortWhisks.meanTimeVector,data.ShortWhisks.Z_AchmeanGFP,'-','color',colors('army green'),'LineWidth',2)
@@ -452,7 +454,7 @@ ax1.YAxis(2).Color = colors('army green');
 xlabel('Peri-whisk time (s)')
 axis square
 set(gca,'box','off')
-ax1.YLim = [-3 3];
+ax1.YLim = [-1 1];
 xlim([-5 10])
 
 % Ach ispi stim
@@ -463,7 +465,7 @@ plot(data.IntermediateWhisks.meanTimeVector,data.IntermediateWhisks.Z_AchmeanRho
 plot(data.IntermediateWhisks.meanTimeVector,data.IntermediateWhisks.Z_AchmeanRhodamine - data.IntermediateWhisks.Z_AchstdRhodamine,'-','color',colors('indian red'),'LineWidth',0.10)
 title('Moderate whisk Ach fiber')
 ylabel('\DeltaF/F Blood Volume (Z)')
-ax2.YLim = [-3 3];
+ax2.YLim = [-1 1];
 
 yyaxis right
 plot(data.IntermediateWhisks.meanTimeVector,data.IntermediateWhisks.Z_AchmeanGFP,'-','color',colors('army green'),'LineWidth',2)
@@ -477,7 +479,7 @@ xlabel('Peri-whisk time (s)')
 axis square
 set(gca,'box','off')
 ax2.TickLength = [0.03,0.03];
-ax2.YLim = [-3 3];
+ax2.YLim = [-1 1];
 xlim([-5 10])
 
 % Ach auditory stim
@@ -488,7 +490,7 @@ plot(data.LongWhisks.meanTimeVector,data.LongWhisks.Z_AchmeanRhodamine + data.Lo
 plot(data.LongWhisks.meanTimeVector,data.LongWhisks.Z_AchmeanRhodamine - data.LongWhisks.Z_AchstdRhodamine,'-','color',colors('indian red'),'LineWidth',0.10)
 title('Long whisk Ach fiber')
 ylabel('\DeltaF/F Blood Volume (Z)')
-ax3.YLim = [-3 3];
+ax3.YLim = [-1 1];
 
 yyaxis right
 plot(data.LongWhisks.meanTimeVector,data.LongWhisks.Z_AchmeanGFP,'-','color',colors('army green'),'LineWidth',2)
@@ -502,7 +504,7 @@ xlabel('Peri-whisk time (s)')
 axis square
 set(gca,'box','off')
 ax3.TickLength = [0.03,0.03];
-ax3.YLim = [-3 3];
+ax3.YLim = [-1 1];
 xlim([-5 10])
 
 % NE contra stim
@@ -513,7 +515,7 @@ plot(data.ShortWhisks.meanTimeVector,data.ShortWhisks.Z_NEmeanRhodamine + data.S
 plot(data.ShortWhisks.meanTimeVector,data.ShortWhisks.Z_NEmeanRhodamine - data.ShortWhisks.Z_NEstdRhodamine,'-','color',colors('indian red'),'LineWidth',0.10)
 title('Brief whisk NE fiber')
 ylabel('\DeltaF/F Blood Volume (Z)')
-ax4.YLim = [-3 3];
+ax4.YLim = [-1 1];
 
 yyaxis right
 plot(data.ShortWhisks.meanTimeVector,data.ShortWhisks.Z_NEmeanGFP,'-','color',colors('army green'),'LineWidth',2)
@@ -527,7 +529,7 @@ xlabel('Peri-whisk time (s)')
 axis square
 set(gca,'box','off')
 ax4.TickLength = [0.03,0.03];
-ax4.YLim = [-3 3];
+ax4.YLim = [-1 1];
 xlim([-5 10])
 
 % NE ispi stim
@@ -538,7 +540,7 @@ plot(data.IntermediateWhisks.meanTimeVector,data.IntermediateWhisks.Z_NEmeanRhod
 plot(data.IntermediateWhisks.meanTimeVector,data.IntermediateWhisks.Z_NEmeanRhodamine - data.IntermediateWhisks.Z_NEstdRhodamine,'-','color',colors('indian red'),'LineWidth',0.10)
 title('Moderate whisk NE fibers')
 ylabel('\DeltaF/F Blood Volume (Z)')
-ax5.YLim = [-3 3];
+ax5.YLim = [-1 1];
 
 yyaxis right
 plot(data.IntermediateWhisks.meanTimeVector,data.IntermediateWhisks.Z_NEmeanGFP,'-','color',colors('army green'),'LineWidth',2)
@@ -552,7 +554,7 @@ xlabel('Peri-whisk time (s)')
 axis square
 set(gca,'box','off')
 ax5.TickLength = [0.03,0.03];
-ax5.YLim = [-3 3];
+ax5.YLim = [-1 1];
 xlim([-5 10])
 
 % NE auditory stim
@@ -563,7 +565,7 @@ plot(data.LongWhisks.meanTimeVector,data.LongWhisks.Z_NEmeanRhodamine + data.Lon
 plot(data.LongWhisks.meanTimeVector,data.LongWhisks.Z_NEmeanRhodamine - data.LongWhisks.Z_NEstdRhodamine,'-','color',colors('indian red'),'LineWidth',0.10)
 title('Long whisk NE fibers')
 ylabel('\DeltaF/F Blood Volume (Z)')
-ax6.YLim = [-3 3];
+ax6.YLim = [-1 1];
 
 yyaxis right
 plot(data.LongWhisks.meanTimeVector,data.LongWhisks.Z_NEmeanGFP,'-','color',colors('army green'),'LineWidth',2)
@@ -577,7 +579,7 @@ xlabel('Peri-whisk time (s)')
 axis square
 set(gca,'box','off')
 ax6.TickLength = [0.03,0.03];
-ax6.YLim = [-3 3];
+ax6.YLim = [-1 1];
 xlim([-5 10])
 
 % save figure(s)
@@ -590,9 +592,142 @@ if strcmp(saveFigs,'y') == true
     if ~exist(dirpath,'dir')
         mkdir(dirpath);
     end
-    savefig(summaryFigureN,[dirpath 'Fig1-S3-Whisk-FiberSignals']);
+    savefig(summaryFigureN,[dirpath 'Whisk-FiberSignals']);
     set(summaryFigureN,'PaperPositionMode','auto');
-    print('-painters','-dpdf','-fillpage',[dirpath 'Fig1-S3-Whisk-FiberSignals'])
+    print('-painters','-dpdf','-fillpage',[dirpath 'Whisk-FiberSignals'])
+    close 
+end
+%}
+
+%% Only the fiber signals consolidated
+summaryFigureN = figure('Name','Whisk_fiber_consolidated');
+sgtitle('Whisking evoked responses in fiber photometry signals')
+
+% Short Movement
+ax1 = subplot(2,2,1);
+plot(data.ShortWhisks.meanTimeVector,data.ShortWhisks.Z_AchmeanRhodamine,'-','color',[0.8500 0.3250 0.0980],'LineWidth',2)
+hold on
+plot(data.ShortWhisks.meanTimeVector,data.ShortWhisks.Z_AchmeanRhodamine + data.ShortWhisks.Z_AchstdRhodamine,'-','color',[0.8500 0.3250 0.0980],'LineWidth',0.10)
+plot(data.ShortWhisks.meanTimeVector,data.ShortWhisks.Z_AchmeanRhodamine - data.ShortWhisks.Z_AchstdRhodamine,'-','color',[0.8500 0.3250 0.0980],'LineWidth',0.10)
+title('Brief Whisks')
+
+plot(data.ShortWhisks.meanTimeVector,data.ShortWhisks.Z_NEmeanRhodamine,'-','color',[0.6350 0.0780 0.1840],'LineWidth',2)
+hold on
+plot(data.ShortWhisks.meanTimeVector,data.ShortWhisks.Z_NEmeanRhodamine + data.ShortWhisks.Z_NEstdRhodamine,'-','color',[0.6350 0.0780 0.1840],'LineWidth',0.10)
+plot(data.ShortWhisks.meanTimeVector,data.ShortWhisks.Z_NEmeanRhodamine - data.ShortWhisks.Z_NEstdRhodamine,'-','color',[0.6350 0.0780 0.1840],'LineWidth',0.10)
+ylabel('\DeltaF/F Blood Volume (Z)')
+ax1.YLim = [-2 6];
+
+yyaxis right
+plot(data.ShortWhisks.meanTimeVector,data.ShortWhisks.Z_AchmeanGFP,'-','color',[0 0.4470 0.7410],'LineWidth',2)
+hold on
+plot(data.ShortWhisks.meanTimeVector,data.ShortWhisks.Z_AchmeanGFP + data.ShortWhisks.Z_AchstdGFP,'-','color',[0 0.4470 0.7410],'LineWidth',0.10)
+plot(data.ShortWhisks.meanTimeVector,data.ShortWhisks.Z_AchmeanGFP - data.ShortWhisks.Z_AchstdGFP,'-','color',[0 0.4470 0.7410],'LineWidth',0.10)
+%
+plot(data.ShortWhisks.meanTimeVector,data.ShortWhisks.Z_NEmeanGFP,'-','color',[0.4660 0.6740 0.1880],'LineWidth',2)
+hold on
+plot(data.ShortWhisks.meanTimeVector,data.ShortWhisks.Z_NEmeanGFP + data.ShortWhisks.Z_NEstdGFP,'-','color',[0.4660 0.6740 0.1880],'LineWidth',0.10)
+plot(data.ShortWhisks.meanTimeVector,data.ShortWhisks.Z_NEmeanGFP - data.ShortWhisks.Z_NEstdGFP,'-','color',[0.4660 0.6740 0.1880],'LineWidth',0.10)
+
+ylabel('\DeltaF/F GRAB(Z)')
+
+ax1.YAxis(1).Color = [0.8500 0.3250 0.0980];
+ax1.YAxis(2).Color = [0 0.4470 0.7410];
+xlabel('Peri-Whisks time (s)')
+axis square
+set(gca,'box','off')
+ax1.YLim = [-2 6];
+xlim([-5 15])
+
+
+% Intermediate Movement
+ax2 = subplot(2,2,2);
+plot(data.IntermediateWhisks.meanTimeVector,data.IntermediateWhisks.Z_AchmeanRhodamine,'-','color',[0.8500 0.3250 0.0980],'LineWidth',2)
+hold on
+% plot(data.IntermediateWhisks.meanTimeVector,data.IntermediateWhisks.Z_AchmeanRhodamine + data.IntermediateWhisks.Z_AchstdRhodamine,'-','color',[0.8500 0.3250 0.0980],'LineWidth',0.10)
+% plot(data.IntermediateWhisks.meanTimeVector,data.IntermediateWhisks.Z_AchmeanRhodamine - data.IntermediateWhisks.Z_AchstdRhodamine,'-','color',[0.8500 0.3250 0.0980],'LineWidth',0.10)
+
+plot(data.IntermediateWhisks.meanTimeVector,data.IntermediateWhisks.Z_NEmeanRhodamine,'-','color',[0.6350 0.0780 0.1840],'LineWidth',2)
+hold on
+% plot(data.IntermediateWhisks.meanTimeVector,data.IntermediateWhisks.Z_NEmeanRhodamine + data.IntermediateWhisks.Z_NEstdRhodamine,'-','color',[0.6350 0.0780 0.1840],'LineWidth',0.10)
+% plot(data.IntermediateWhisks.meanTimeVector,data.IntermediateWhisks.Z_NEmeanRhodamine - data.IntermediateWhisks.Z_NEstdRhodamine,'-','color',[0.6350 0.0780 0.1840],'LineWidth',0.10)
+
+title('Moderate Whisks')
+ylabel('\DeltaF/F (Z)')
+% ax2.YLim = [-2 6];
+
+% yyaxis right
+plot(data.IntermediateWhisks.meanTimeVector,data.IntermediateWhisks.Z_AchmeanGFP,'-','color',[0 0.4470 0.7410],'LineWidth',2)
+hold on
+% plot(data.IntermediateWhisks.meanTimeVector,data.IntermediateWhisks.Z_AchmeanGFP + data.IntermediateWhisks.Z_AchstdGFP,'-','color',[0 0.4470 0.7410],'LineWidth',0.10)
+% plot(data.IntermediateWhisks.meanTimeVector,data.IntermediateWhisks.Z_AchmeanGFP - data.IntermediateWhisks.Z_AchstdGFP,'-','color',[0 0.4470 0.7410],'LineWidth',0.10)
+
+plot(data.IntermediateWhisks.meanTimeVector,data.IntermediateWhisks.Z_NEmeanGFP,'-','color',[0.4660 0.6740 0.1880],'LineWidth',2)
+hold on
+% plot(data.IntermediateWhisks.meanTimeVector,data.IntermediateWhisks.Z_NEmeanGFP + data.IntermediateWhisks.Z_NEstdGFP,'-','color',[0.4660 0.6740 0.1880],'LineWidth',0.10)
+% plot(data.IntermediateWhisks.meanTimeVector,data.IntermediateWhisks.Z_NEmeanGFP - data.IntermediateWhisks.Z_NEstdGFP,'-','color',[0.4660 0.6740 0.1880],'LineWidth',0.10)
+% ylabel('\DeltaF/F GRAB(Z)')
+% ax2.YAxis(1).Color = 'k';%[0.8500 0.3250 0.0980];
+% ax2.YAxis(2).Color = 'k';%[;%0 0.4470 0.7410];
+xlabel('Peri-Whisks time (s)')
+axis square
+set(gca,'box','off')
+% ax2.TickLength = [0.03,0.03];
+% ax2.YLim = [-2 6];
+ylim([-2 6])
+xlim([-5 15])
+legend('CBV-LH','CBV-RH', 'ACh', 'NE')
+
+% Long Movement
+ax3 = subplot(2,2,3);
+plot(data.LongWhisks.meanTimeVector,data.LongWhisks.Z_AchmeanRhodamine,'-','color',[0.8500 0.3250 0.0980],'LineWidth',2)
+hold on
+plot(data.LongWhisks.meanTimeVector,data.LongWhisks.Z_AchmeanRhodamine + data.LongWhisks.Z_AchstdRhodamine,'-','color',[0.8500 0.3250 0.0980],'LineWidth',0.10)
+plot(data.LongWhisks.meanTimeVector,data.LongWhisks.Z_AchmeanRhodamine - data.LongWhisks.Z_AchstdRhodamine,'-','color',[0.8500 0.3250 0.0980],'LineWidth',0.10)
+
+plot(data.LongWhisks.meanTimeVector,data.LongWhisks.Z_NEmeanRhodamine,'-','color',[0.6350 0.0780 0.1840],'LineWidth',2)
+hold on
+plot(data.LongWhisks.meanTimeVector,data.LongWhisks.Z_NEmeanRhodamine + data.LongWhisks.Z_NEstdRhodamine,'-','color',[0.6350 0.0780 0.1840],'LineWidth',0.10)
+plot(data.LongWhisks.meanTimeVector,data.LongWhisks.Z_NEmeanRhodamine - data.LongWhisks.Z_NEstdRhodamine,'-','color',[0.6350 0.0780 0.1840],'LineWidth',0.10)
+
+title('Long Whisks')
+ylabel('\DeltaF/F Blood Volume (Z)')
+ax3.YLim = [-2 6];
+
+yyaxis right
+plot(data.LongWhisks.meanTimeVector,data.LongWhisks.Z_AchmeanGFP,'-','color',[0 0.4470 0.7410],'LineWidth',2)
+hold on
+plot(data.LongWhisks.meanTimeVector,data.LongWhisks.Z_AchmeanGFP + data.LongWhisks.Z_AchstdGFP,'-','color',[0 0.4470 0.7410],'LineWidth',0.10)
+plot(data.LongWhisks.meanTimeVector,data.LongWhisks.Z_AchmeanGFP - data.LongWhisks.Z_AchstdGFP,'-','color',[0 0.4470 0.7410],'LineWidth',0.10)
+
+plot(data.LongWhisks.meanTimeVector,data.LongWhisks.Z_NEmeanGFP,'-','color',[0.4660 0.6740 0.1880],'LineWidth',2)
+hold on
+plot(data.LongWhisks.meanTimeVector,data.LongWhisks.Z_NEmeanGFP + data.LongWhisks.Z_NEstdGFP,'-','color',[0.4660 0.6740 0.1880],'LineWidth',0.10)
+plot(data.LongWhisks.meanTimeVector,data.LongWhisks.Z_NEmeanGFP - data.LongWhisks.Z_NEstdGFP,'-','color',[0.4660 0.6740 0.1880],'LineWidth',0.10)
+
+ylabel('\DeltaF/F GRAB(Z)')
+ax3.YAxis(1).Color = [0.8500 0.3250 0.0980];
+ax3.YAxis(2).Color = [0 0.4470 0.7410];
+xlabel('Peri-Whisks time (s)')
+axis square
+set(gca,'box','off')
+ax3.TickLength = [0.03,0.03];
+ax3.YLim = [-2 6];
+xlim([-5 15])
+
+% save figure(s)
+if strcmp(saveFigs,'y') == true
+    if firstHrs == "false"
+        dirpath = [rootFolder delim 'Summary Figures and Structures' delim 'MATLAB Analysis Figures' delim 'lastHrs' delim];
+    elseif firstHrs == "true"
+        dirpath = [rootFolder delim 'Summary Figures and Structures' delim 'MATLAB Analysis Figures' delim 'firstHrs' delim];
+    end
+    if ~exist(dirpath,'dir')
+        mkdir(dirpath);
+    end
+    savefig(summaryFigureN,[dirpath 'Whisk-FiberSignals-consolidated']);
+    set(summaryFigureN,'PaperPositionMode','auto');
+    print('-painters','-dpdf','-fillpage',[dirpath 'Whisk-FiberSignals-consolidated'])
     close 
 end
 end

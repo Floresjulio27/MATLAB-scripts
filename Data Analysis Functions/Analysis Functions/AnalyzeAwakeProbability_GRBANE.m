@@ -9,10 +9,9 @@ function [AnalysisResults] = AnalyzeAwakeProbability_GRBANE(animalID,saveFigs,ro
 %________________________________________________________________________________________________________________________
 
 %% function parameters
-animalIDs = {'NEACh001'};
 modelType = 'Manual';
 %% only run analysis for valid animal IDs
-if any(strcmp(animalIDs,animalID))
+% if any(strcmp(animalIDs,animalID))
     if firstHrs == "false"
          dataLocation = [rootFolder '\' animalID '\CombinedImaging\'];
     elseif firstHrs == "true"
@@ -36,12 +35,12 @@ if any(strcmp(animalIDs,animalID))
     RestPuffCriteria.Comparison = {'gt'};
     RestPuffCriteria.Value = {5};
     % pull data from RestData.mat structure
-    [restLogical] = FilterEvents_IOS(RestData.Rhodamine.Z_NE,RestCriteria);
-    [puffLogical] = FilterEvents_IOS(RestData.Rhodamine.Z_NE,RestPuffCriteria);
+    [restLogical] = FilterEvents_IOS(RestData.CBV.P_NE,RestCriteria);
+    [puffLogical] = FilterEvents_IOS(RestData.CBV.P_NE,RestPuffCriteria);
     combRestLogical = logical(restLogical.*puffLogical);
-    restFileIDs = RestData.Rhodamine.Z_NE.fileIDs(combRestLogical,:);
-    restEventTimes = RestData.Rhodamine.Z_NE.eventTimes(combRestLogical,:);
-    restDurations = RestData.Rhodamine.Z_NE.durations(combRestLogical,:);
+    restFileIDs = RestData.CBV.P_NE.fileIDs(combRestLogical,:);
+    restEventTimes = RestData.CBV.P_NE.eventTimes(combRestLogical,:);
+    restDurations = RestData.CBV.P_NE.durations(combRestLogical,:);
     % 5 second events
     bins = {'five','ten','fifteen','twenty'};%,'twentyfive','thirty','thirtyfive','forty','fortyfive','fifty','fiftyfive','sixty','sixtyplus'};
     for a = 1:length(bins)
@@ -118,7 +117,7 @@ if any(strcmp(animalIDs,animalID))
 %             a61 = a61 + 1;
         end
     end
-    % go through each event and determine the probabilty of awake
+    % go through eACh event and determine the probabilty of awake
     for b = 1:length(bins)
         bin = bins{1,b};
         for c = 1:length(data.(bin).fileIDs)
@@ -162,11 +161,11 @@ if any(strcmp(animalIDs,animalID))
     end
     data.uniqueDates = unique(allFileDates);
     data.uniqueDays = unique(allFileDays);
-    % determine how many 5 second bins there are for each individual day
+    % determine how many 5 second bins there are for eACh individual day
     for b = 1:size(data.uniqueDays,1)
         data.dayBinLengths{b,1} = find(~cellfun('isempty',strfind(allFileIDs,data.uniqueDates{b,1})));
     end
-    % extract the file IDs and scoring labels that correspond to each day's indeces
+    % extract the file IDs and scoring labels that correspond to eACh day's indeces
     for c = 1:size(data.dayBinLengths,1)
         dayInds = data.dayBinLengths{c,1};
         data.dayScoreLabels{c,1} = allScoringLabels(dayInds);
@@ -175,23 +174,45 @@ if any(strcmp(animalIDs,animalID))
     trialDuration = 52;   % minutes
     binTime = 5;   % seconds
     fileBinLength = (trialDuration*60)/binTime;
-    % further break down each day's scores into the scores for each individual file
+    % further break down eACh day's scores into the scores for eACh individual file
+    % for d = 1:size(data.uniqueDays,1)
+    %     uniqueDay = data.uniqueDays{d,1};
+    %     uniqueDayFileIDs = unique(data.dayScoreFileIDs{d,1});
+    %     for e = 1:size(uniqueDayFileIDs,1)
+    %         if e == 1
+    %             data.(uniqueDay).indFileData{e,1} = data.dayScoreLabels{d,1}(1:fileBinLength);
+    %         else
+    %             data.(uniqueDay).indFileData{e,1} = data.dayScoreLabels{d,1}((e - 1)*fileBinLength + 1:e*fileBinLength);
+    %         end
+    %     end
+    % end
     for d = 1:size(data.uniqueDays,1)
-        uniqueDay = data.uniqueDays{d,1};
-        uniqueDayFileIDs = unique(data.dayScoreFileIDs{d,1});
-        for e = 1:size(uniqueDayFileIDs,1)
-            if e == 1
-                data.(uniqueDay).indFileData{e,1} = data.dayScoreLabels{d,1}(1:fileBinLength);
-            else
-                data.(uniqueDay).indFileData{e,1} = data.dayScoreLabels{d,1}((e - 1)*fileBinLength + 1:e*fileBinLength);
-            end
+    uniqueDay = data.uniqueDays{d,1};
+    uniqueDayFileIDs = unique(data.dayScoreFileIDs{d,1});
+    for e = 1:size(uniqueDayFileIDs,1)
+        % Compute indices
+        if e == 1
+            startIndex = 1;
+            endIndex = min(fileBinLength, length(data.dayScoreLabels{d,1}));
+        else
+            startIndex = (e - 1) * fileBinLength + 1;
+            endIndex = min(e * fileBinLength, length(data.dayScoreLabels{d,1}));
         end
+
+        % Check if indices are within bounds
+        if startIndex > length(data.dayScoreLabels{d,1})
+            error('Start index exceeds length of data.dayScoreLabels.');
+        end
+
+        % Assign data safely
+        data.(uniqueDay).indFileData{e,1} = data.dayScoreLabels{d,1}(startIndex:endIndex);
     end
+end
     % calculate the time difference between every file to append padding 'Time Pad' to the end of the leading file's score labels
     for f = 1:size(data.uniqueDays,1)
         uniqueDay = data.uniqueDays{f,1};
         uniqueDayFileIDs = unique(data.dayScoreFileIDs{f,1});
-        % start with file 2 to focus on the differences between each file
+        % start with file 2 to focus on the differences between eACh file
         for g = 2:size(uniqueDayFileIDs,1)
             leadFileID = uniqueDayFileIDs{g - 1,1};
             lagFileID = uniqueDayFileIDs{g,1};
@@ -206,14 +227,14 @@ if any(strcmp(animalIDs,animalID))
             timePadBins.(uniqueDay){g - 1,1}(:) = {'Time Pad'};
         end
     end
-    % apply the time padding to the end of each file
+    % apply the time padding to the end of eACh file
     for h = 1:size(data.uniqueDays,1)
         uniqueDay = data.uniqueDays{h,1};
         for j = 1:size(data.(uniqueDay).indFileData,1) - 1
             data.(uniqueDay).indFileData{j,1} = vertcat(data.(uniqueDay).indFileData{j,1},timePadBins.(uniqueDay){j,1});
         end
     end
-    % concatendate the data for each day now that the padding is added at the end of each file
+    % concatendate the data for eACh day now that the padding is added at the end of eACh file
     for k = 1:size(data.uniqueDays,1)
         uniqueDay = data.uniqueDays{k,1};
         data.(uniqueDay).catData = [];
@@ -221,7 +242,7 @@ if any(strcmp(animalIDs,animalID))
             data.(uniqueDay).catData = vertcat(data.(uniqueDay).catData,data.(uniqueDay).indFileData{m,1});
         end
     end
-    % prepare indeces for each behavior
+    % prepare indeces for eACh behavior
     for n = 1:size(data.uniqueDays,1)
         uniqueDay = data.uniqueDays{n,1};
         data.(uniqueDay).NotSleep_inds = NaN(1,size(data.(uniqueDay).catData,1));
@@ -271,7 +292,7 @@ if any(strcmp(animalIDs,animalID))
         timeConv = 60*(60/binTime); % 60*(60/binTime);
         for p = 1:size(data.uniqueDays,1)
             uniqueDay = data.uniqueDays{p,1};
-            % create new subplot for each day
+            % create new subplot for eACh day
             ax(p) = subplot(size(data.uniqueDays,1),1,p);
             b1 = bar((1:length(data.(uniqueDay).NotSleep_inds))/timeConv,data.(uniqueDay).NotSleep_inds,'k','BarWidth',1);
             hold on
@@ -317,6 +338,6 @@ if any(strcmp(animalIDs,animalID))
     end
 
 
-end
+% end
 
 end

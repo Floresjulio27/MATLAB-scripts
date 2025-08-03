@@ -1,4 +1,4 @@
-function [] = TemplateMatchFiberData_FP_GRABNE(FiberDataFileIDs,rawDataFileIDs)
+function [] = TemplateMatchFiberData_FP_GRABNE(FiberDataFileIDs,rawDataFileIDs,trimTime)
 %________________________________________________________________________________________________________________________
 % Written by Kevin L. Turner
 % The Pennsylvania State University, Dept. of Biomedical Engineering
@@ -10,7 +10,6 @@ function [] = TemplateMatchFiberData_FP_GRABNE(FiberDataFileIDs,rawDataFileIDs)
 %            offset by finding the peak in the cross correlation, and shifting the LabVIEW signals based on the number of
 %            lags. The beginning/end of all signals are then snipped appropriately after shifting.
 %________________________________________________________________________________________________________________________
-trimTime = 270;% remove 4.5 minutes from both sides
 
 for aa = 1:size(rawDataFileIDs,1)
     %% find offset between the two force sensor signals using the cross correlation
@@ -28,6 +27,13 @@ for aa = 1:size(rawDataFileIDs,1)
     trialDuration = RawData.notes.trialDuration_long;
     tdtTrialDuration = trialDuration - 1;
     dsFs = 100; % Hz
+    %% check if there was any weird dynamics in the data that was removed. Adjust the stimulation system
+    if isfield(FiberData.params,'WData')==1
+        startSample = (analogSamplingRate*(FiberData.params.WData.StartDataRemove + trimTime)) + 1;
+        endSample = (analogSamplingRate*(FiberData.params.WData.StartDataRemove + trimTime));
+        RawData.data.stimulations_long(startSample:endSample) = 0;
+    end
+    %% 
 
     labviewSyncSignal = detrend(resample(RawData.data.forceSensor_long,dsFs,analogSamplingRate),'constant');
     labviewSyncSignal = labviewSyncSignal(dsFs*trialDuration/4:dsFs*trialDuration/2);
@@ -80,12 +86,21 @@ for aa = 1:size(rawDataFileIDs,1)
     %% apply TDT correction to the data and trim excess time
     tdtSampleDiff = tdtSamplingRate*(trialDuration) - length(FiberData.pressureSensor);
     tdtCut = floor(trimTime*tdtSamplingRate - tdtSampleDiff);
+    % remove some previous data
+    if isfield(RawData.data,'NE') == 1
+    RawData.data = rmfield(RawData.data,'NE');
+    end
+    if isfield(RawData.data,'Ach') == 1
+    RawData.data = rmfield(RawData.data,'Ach');
+    end
+    if isfield(RawData.data,'ACh') == 1
+    RawData.data = rmfield(RawData.data,'ACh');
+    end
 
     
-    tdtFields = {'NE','Ach'};
-%     RawData.data = rmfield(RawData.data,tdtFields);
+    tdtFields = {'NE','ACh'};
     
-    tdtsubfields = {'dFF0_z'};
+    tdtsubfields = {'dFF0_p','dFF0_z'};
     for cc = 1:length(tdtFields)
 %         subfields = fieldnames(FiberData.(tdtFields{1,cc}))';
 %         subfields = subfields(4:end);
@@ -112,46 +127,69 @@ for aa = 1:size(rawDataFileIDs,1)
     labviewWhiskerSampleDiff = whiskCamSamplingRate*trialDuration - length(labviewWhiskerShift);
     labviewWhiskerCut = trimTime*whiskerCamSamplingRate - labviewWhiskerSampleDiff;
     RawData.data.whiskerAngle = labviewWhiskerShift(floor(trimTime*whiskCamSamplingRate):end - (labviewWhiskerCut + 1));
+
+%     %%random stuff added for not exciding the index. I do not care about
+%     %%the errors
+% 
+% % Get the valid range of indices
+% numElements = length(labviewWhiskerShift); % Get max index
+% 
+% % Compute trimmed index values
+% startIdx = max(1, floor(trimTime * whiskCamSamplingRate)); % Ensure it's at least 1
+% endIdx = min(numElements, numElements - (labviewWhiskerCut + 1)); % Ensure it doesn't exceed max index
+% 
+% % Assign to whiskerAngle while avoiding index errors
+% RawData.data.whiskerAngle = labviewWhiskerShift(startIdx:endIdx);
+
     
     %% pupil Data
-    labviewPupilPad = zeros(1,round(offsetTime*pupilCamSamplingRate));
+    if isfield(RawData.data,'Pupil')==1
 
-    labviewPupilAreaShift = horzcat(labviewPupilPad,RawData.data.Pupil.pupilArea);
-    labviewPupilmmAreaShift = horzcat(labviewPupilPad,RawData.data.Pupil.mmArea);
-    labviewPupilmmDiameterShift = horzcat(labviewPupilPad,RawData.data.Pupil.mmDiameter);
+    labviewPupilPad = zeros(1,round(offsetTime*pupilCamSamplingRate));
     labviewPupilDiameterShift = horzcat(labviewPupilPad,RawData.data.Pupil.diameter);
 
-    labviewPupilMajorShift = horzcat(labviewPupilPad,RawData.data.Pupil.pupilMajor);
-    labviewPupilpatchMajorShift = horzcat(labviewPupilPad,RawData.data.Pupil.patchMajorAxis);
-    labviewPupilMinorShift = horzcat(labviewPupilPad,RawData.data.Pupil.pupilMinor);
-    labviewPupilpatchMinorShift = horzcat(labviewPupilPad,RawData.data.Pupil.patchMinorAxis);
-    labviewPupilpatchCentroidX = horzcat(labviewPupilPad,RawData.data.Pupil.patchCentroidX);
-    labviewPupilpatchCentroidY = horzcat(labviewPupilPad,RawData.data.Pupil.patchCentroidY);
+    % labviewPupilAreaShift = horzcat(labviewPupilPad,RawData.data.Pupil.pupilArea);
+    % labviewPupilmmAreaShift = horzcat(labviewPupilPad,RawData.data.Pupil.mmArea);
+    % labviewPupilmmDiameterShift = horzcat(labviewPupilPad,RawData.data.Pupil.mmDiameter);
 
-    labviewPupilCPad = zeros(2,round(offsetTime*pupilCamSamplingRate));
-    labviewPupilCentroidShift = horzcat(labviewPupilCPad,RawData.data.Pupil.pupilCentroid');
+    % labviewPupilMajorShift = horzcat(labviewPupilPad,RawData.data.Pupil.pupilMajor);
+    % labviewPupilpatchMajorShift = horzcat(labviewPupilPad,RawData.data.Pupil.patchMajorAxis);
+    % labviewPupilMinorShift = horzcat(labviewPupilPad,RawData.data.Pupil.pupilMinor);
+    % labviewPupilpatchMinorShift = horzcat(labviewPupilPad,RawData.data.Pupil.patchMinorAxis);
+    % labviewPupilpatchCentroidX = horzcat(labviewPupilPad,RawData.data.Pupil.patchCentroidX);
+    % labviewPupilpatchCentroidY = horzcat(labviewPupilPad,RawData.data.Pupil.patchCentroidY);
 
-    labviewPupilSampleDiff = pupilCamSamplingRate*trialDuration - length(labviewPupilAreaShift);
+    % labviewPupilCPad = zeros(2,round(offsetTime*pupilCamSamplingRate));
+    % labviewPupilCentroidShift = horzcat(labviewPupilCPad,RawData.data.Pupil.pupilCentroid');
+
+    labviewPupilSampleDiff = pupilCamSamplingRate*trialDuration - length(labviewPupilDiameterShift);
     labviewPupilCut = trimTime*pupilCamSamplingRate - labviewPupilSampleDiff;
-
-    RawData.data.pupilArea = labviewPupilAreaShift(floor(trimTime*pupilCamSamplingRate):end - (labviewPupilCut + 1));
-    RawData.data.pupilmmArea = labviewPupilmmAreaShift(floor(trimTime*pupilCamSamplingRate):end - (labviewPupilCut + 1));
     RawData.data.pupilDiameter = labviewPupilDiameterShift(floor(trimTime*pupilCamSamplingRate):end - (labviewPupilCut + 1));
-    RawData.data.pupilmmDiameter = labviewPupilmmDiameterShift(floor(trimTime*pupilCamSamplingRate):end - (labviewPupilCut + 1));
+
+        if isfield(RawData.data.Pupil,'movement')==1
+                labviewPupilMovementShift = horzcat(labviewPupilPad,RawData.data.Pupil.movement');
+                labviewPupilMovementSampleDiff = pupilCamSamplingRate*trialDuration - length(labviewPupilMovementShift);
+                labviewPupilMovementCut = trimTime*pupilCamSamplingRate - labviewPupilMovementSampleDiff;
+                RawData.data.pupilMovement = labviewPupilMovementShift(floor(trimTime*pupilCamSamplingRate):end - (labviewPupilMovementCut + 1));
+        end
+    % RawData.data.pupilArea = labviewPupilAreaShift(floor(trimTime*pupilCamSamplingRate):end - (labviewPupilCut + 1));
+    % RawData.data.pupilmmArea = labviewPupilmmAreaShift(floor(trimTime*pupilCamSamplingRate):end - (labviewPupilCut + 1));
+    % RawData.data.pupilmmDiameter = labviewPupilmmDiameterShift(floor(trimTime*pupilCamSamplingRate):end - (labviewPupilCut + 1));
     
-    RawData.data.pupilMajor = labviewPupilMajorShift(floor(trimTime*pupilCamSamplingRate):end - (labviewPupilCut + 1));
-    RawData.data.pupilpatchMajor = labviewPupilpatchMajorShift(floor(trimTime*pupilCamSamplingRate):end - (labviewPupilCut + 1));
-    RawData.data.pupilMinor = labviewPupilMinorShift(floor(trimTime*pupilCamSamplingRate):end - (labviewPupilCut + 1));
-    RawData.data.pupilpatchMinor = labviewPupilpatchMinorShift(floor(trimTime*pupilCamSamplingRate):end - (labviewPupilCut + 1));
-    RawData.data.pupilpatchCentroidX = labviewPupilpatchCentroidX(floor(trimTime*pupilCamSamplingRate):end - (labviewPupilCut + 1));
-    RawData.data.pupilpatchCentroidY = labviewPupilpatchCentroidY(floor(trimTime*pupilCamSamplingRate):end - (labviewPupilCut + 1));
+    % RawData.data.pupilMajor = labviewPupilMajorShift(floor(trimTime*pupilCamSamplingRate):end - (labviewPupilCut + 1));
+    % RawData.data.pupilpatchMajor = labviewPupilpatchMajorShift(floor(trimTime*pupilCamSamplingRate):end - (labviewPupilCut + 1));
+    % RawData.data.pupilMinor = labviewPupilMinorShift(floor(trimTime*pupilCamSamplingRate):end - (labviewPupilCut + 1));
+    % RawData.data.pupilpatchMinor = labviewPupilpatchMinorShift(floor(trimTime*pupilCamSamplingRate):end - (labviewPupilCut + 1));
+    % RawData.data.pupilpatchCentroidX = labviewPupilpatchCentroidX(floor(trimTime*pupilCamSamplingRate):end - (labviewPupilCut + 1));
+    % RawData.data.pupilpatchCentroidY = labviewPupilpatchCentroidY(floor(trimTime*pupilCamSamplingRate):end - (labviewPupilCut + 1));
 
-    RawData.data.pupilCentroid = labviewPupilCentroidShift(:,floor(trimTime*pupilCamSamplingRate):end - (labviewPupilCut + 1));
-
+    % RawData.data.pupilCentroid = labviewPupilCentroidShift(:,floor(trimTime*pupilCamSamplingRate):end - (labviewPupilCut + 1));
+    end
     RawData.notes.offsetCorrect = true;
     RawData.notes.trimTime = trimTime;
     RawData.notes.trialDuration_sec = trialDuration - 2*trimTime;
     %% check shift
+    %{
     fiberSyncSignal_2 = resample(detrend(RawData.data.pressureSensor,'constant'),dsFs,tdtSamplingRate);
     labviewSyncSignal_2 = resample(detrend(RawData.data.forceSensor,'constant'),dsFs,analogSamplingRate);
     checkShift = figure;
@@ -161,6 +199,7 @@ for aa = 1:size(rawDataFileIDs,1)
     legend([p1,p2],'TDT','LabVIEW')
     title([rawDataFileID ' cross ' fiberDataFileID])
     axis tight
+    %}
     %% save files
     RawData.notes.TDT = FiberData.params;
     save(rawDataFileID,'RawData','-v7.3')
@@ -172,12 +211,12 @@ for aa = 1:size(rawDataFileIDs,1)
     end
     savefig(corrOffset,[dirpath animalID '_' fileID '_XCorrShift']);
     close(corrOffset)
-    dirpath = [pathstr '/Figures/Shift Check/'];
-    if ~exist(dirpath,'dir')
-        mkdir(dirpath);
-    end
-    savefig(checkShift,[dirpath animalID '_' fileID '_ShiftCheck']);
-    close(checkShift)
+    % dirpath = [pathstr '/Figures/Shift Check/'];
+    % if ~exist(dirpath,'dir')
+    %     mkdir(dirpath);
+    % end
+    % savefig(checkShift,[dirpath animalID '_' fileID '_ShiftCheck']);
+    % close(checkShift)
 end
 
 end

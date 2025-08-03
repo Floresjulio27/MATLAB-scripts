@@ -53,6 +53,7 @@ for a = 1:length(fileNames)
         cortical_RH = trialData.data.vals(dataRow,:)/str2double(trialData.amplifierGain);
         dataRow = strcmp(trialData.data.names,'hipp');
         hippocampus = trialData.data.vals(dataRow,:)/str2double(trialData.amplifierGain);
+        
         % Force sensor and EMG
         dataRow = strcmp(trialData.data.names,'forceSensor');
         forceSensor = trialData.data.vals(dataRow,:);
@@ -66,6 +67,11 @@ for a = 1:length(fileNames)
         dataRow = strcmp(trialData.data.names,'AudSol');
         AudSol = gt(trialData.data.vals(dataRow,:),0.5)*3;  % ID amplitude is 3
         stimulations = LPadSol + RPadSol + AudSol;
+        if sum(strcmp(trialData.data.names,'OptoStim'))
+            dataRow = strcmp(trialData.data.names,'OptoStim');
+            OptoStim = gt(trialData.data.vals(dataRow,:),0.5)*4;  % ID amplitude is 4
+            stimulations = LPadSol + RPadSol + AudSol + OptoStim;
+        end
         %% BLOCK PURPOSE: [3] Save the notes and data.
         disp('Analyzing Block [3] Evaluating data to save to RawData file.'); disp(' ')
         % notes - all variables are descriptive
@@ -128,7 +134,7 @@ for a = 1:length(fileNames)
         RawData.data.stimulations_long = stimulations;
         %% BLOCK PURPOSE: [4] Start Whisker tracker.
         disp('Analyzing Block [4] Starting whisker tracking.'); disp(' ')
-        if isfield(RawData.data,'whiskerAngle_long') == false
+        if isfield(RawData.data,'whiskerAngle_long') == false || isfield(RawData.data,'whiskerAngle_long') == true
             [whiskerAngle] = WhiskerTrackerParallel_FP(fileID,RawData.notes);
             indsA = isnan(whiskerAngle); 
             indsB = indsA == 1; 
@@ -139,5 +145,6 @@ for a = 1:length(fileNames)
         end
         disp(['File Created. Saving RawData File ' num2str(a) '...']); disp(' ')
         save([AnimalID '_' fileID '_RawData'],'RawData','-v7.3')
+        clear RawData
 end
 disp('Fiber Photometry One Processing - Complete.'); disp(' ')

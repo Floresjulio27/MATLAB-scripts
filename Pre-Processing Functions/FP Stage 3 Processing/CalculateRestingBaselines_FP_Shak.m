@@ -10,7 +10,7 @@ function [RestingBaselines] = CalculateRestingBaselines_FP_Shak(animal,targetMin
 
 disp(['Calculating the resting baselines for the first ' num2str(targetMinutes) ' minutes of each unique day...']); disp(' ')
 % The RestData.mat struct has all resting events, regardless of duration. We want to set the threshold for rest as anything
-% that is greater than 10 seconds.
+% that is greater than 10 seconds. why does it say 5?
 RestCriteria.Fieldname = {'durations'};
 RestCriteria.Comparison = {'gt'};
 RestCriteria.Value = {5}; % 5

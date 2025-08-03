@@ -13,7 +13,7 @@ clear; clc; close all
 disp('Loading necessary file names...'); disp(' ')
 baselineType = 'manualSelection';
 startingDirectory = cd;
-%% Create training data set for each animal
+% Create training data set for each animal
 % cd to the animal's bilateral imaging folder to load the baseline structure
 baselineDirectory = [startingDirectory];% '\Bilateral Imaging\'];
 cd(baselineDirectory)
@@ -26,7 +26,7 @@ cd(startingDirectory)
 % cd to the animal's training set folder
 trainingDirectory = [startingDirectory]; % '\Training Data\'];
 cd(trainingDirectory)
-% character list of all ProcData files
+%% character list of all ProcData files
 procDataFileStruct = dir('*_ProcData.mat');
 procDataFiles = {procDataFileStruct.name}';
 procDataFileIDs = char(procDataFiles);
@@ -47,12 +47,13 @@ CreateTrainingDataSet_FP_GRABNE(procDataFileIDs,NBins)
 UpdateTrainingDataSets_FP(procDataFileIDs)
 cd(startingDirectory)
 %% create microarousal labels for NREM Sleep Only
-CreateMicroArousalDataSet_FP_GRABNE(procDataFileIDs)
+% CreateMicroArousalDataSet_FP_GRABNE(procDataFileIDs)
 %% Change Arousal to Microarousal if the arousal is less than 20s
-% UpdateMicroArousals(procDataFileIDs)
-AddMicroArousalsParameters_FP_GRABNE_SingleFiber(procDataFileIDs,RestingBaselines,baselineType,trialDuration)
-MicroArousalTime = 5;
-CreateMicroArousalsData_FP_GRABNE(startingDirectory,trainingDirectory,baselineDirectory,MicroArousalTime)
+% AddMicroArousalsParameters_FP_GRABNE_SingleFiber(procDataFileIDs,RestingBaselines,baselineType,trialDuration)
+%% 
+% MicroArousalTimeMax = 1;
+% MicroArousalTimeMin = 1;
+% MicroArousal_DataSeparation(startingDirectory,trainingDirectory,baselineDirectory,MicroArousalTimeMax,MicroArousalTimeMin);
 %%
 % Train Models - cycle through each data set and update any necessary parameters
 %  [animalID] = TrainSleepModels_FP_GRABNE;%TrainSleepModels_FP_Shak_opt;

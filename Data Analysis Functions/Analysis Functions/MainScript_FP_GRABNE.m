@@ -11,6 +11,8 @@ function [] = MainScript_FP_GRABNE()
 %________________________________________________________________________________________________________________________
 % addpath(genpath('C:\Users\mfh5734\OneDrive - The Pennsylvania State University\Documents\Research_Codes\FiberPhotometry\Data-Analysis-master'))
 clear; clc; close all;
+%% Animal IDs
+FP_animalIDs =    {'NEACh007','NEACh008'}; % {'NEACh001'};% 
 %% make sure the code repository and data are present in the current directory
 % currentFolder = 'H:\Sleep_GCaMP7s_ChATCre\';
 firstHrs = "false";
@@ -27,12 +29,12 @@ end
 % add root folder to Matlab's working directory
 addpath(genpath(rootFolder))
 %% run the data analysis. The progress bars will show the analysis progress
-rerunAnalysis = 'n';
+rerunAnalysis = 'y';
 saveFigs = 'y';
 if exist('AnalysisResults.mat','file') ~= 2 || strcmp(rerunAnalysis,'y') == true
 %     multiWaitbar('Analyzing sleep probability',0,'Color','B'); pause(0.25);
     % run analysis and output a structure containing all the analyzed data
-    [AnalysisResults] = AnalyzeData(rootFolder);
+    [AnalysisResults] = AnalyzeData(rootFolder,FP_animalIDs);
     multiWaitbar('CloseAll');
 else
     disp('Loading analysis results and generating figures...'); disp(' ')
@@ -66,16 +68,16 @@ end
 
 % [AnalysisResults] = Fig1_S1(rootFolder,saveFigs,delim,AnalysisResults);
 %% main figure panels
-% [AnalysisResults] = Fig1_S4_FP_Stats_GRABNE(rootFolder,saveFigs,delim,AnalysisResults,firstHrs);
-% [AnalysisResults] = Fig1_S3_Whisk_GRABNE(rootFolder,saveFigs,delim,AnalysisResults,firstHrs);
+% [AnalysisResults] = Fig1_S4_FP_Stats_GRABNE(rootFolder,saveFigs,delim,AnalysisResults,firstHrs,FP_animalIDs);
+% [AnalysisResults] = Fig1_S3_Whisk_GRABNE(rootFolder,saveFigs,delim,AnalysisResults,firstHrs,FP_animalIDs);
 % [AnalysisResults] = Fig1_S2_Stim_GRABNE(rootFolder,saveFigs,delim,AnalysisResults,firstHrs);
-
-% [AnalysisResults] = PlotCOherence_GRABNE(rootFolder,saveFigs,delim,AnalysisResults,firstHrs);
-% [AnalysisResults] = PlotpowerSpectrum_GRABNE(rootFolder,saveFigs,delim,AnalysisResults);
-% [AnalysisResults] = PlotCrossCorrelation_GRABNE(rootFolder,saveFigs,delim,AnalysisResults,firstHrs);
+% [AnalysisResults] = Fig1_S5_Movement_GRABNE(rootFolder,saveFigs,delim,AnalysisResults,firstHrs,FP_animalIDs);
+[AnalysisResults] = PlotCOherence_GRABNE(rootFolder,saveFigs,delim,AnalysisResults,firstHrs,FP_animalIDs);
+[AnalysisResults] = PlotpowerSpectrum_GRABNE(rootFolder,saveFigs,delim,AnalysisResults,FP_animalIDs);
+% [AnalysisResults] = PlotCrossCorrelation_GRABNE(rootFolder,saveFigs,delim,AnalysisResults,firstHrs,FP_animalIDs);
 % [AnalysisResults] = Fig4_FP_Transition_GRABNE(rootFolder,saveFigs,delim,AnalysisResults,firstHrs);
-% [AnalysisResults] = Fig4_FP_Transition_GRABNE_SingleMouse(rootFolder,saveFigs,delim,AnalysisResults,firstHrs);
-[AnalysisResults] = Fig4_FP_Transition_GRABNE_SingleMouse_consolidated(rootFolder,saveFigs,delim,AnalysisResults,firstHrs);
+% [AnalysisResults] = Fig4_FP_Transition_GRABNE_SingleMouse(rootFolder,saveFigs,delim,AnalysisResults,firstHrs,FP_animalIDs);
+% [AnalysisResults] = Fig4_FP_Transition_GRABNE_SingleMouse_consolidated(rootFolder,saveFigs,delim,AnalysisResults,firstHrs,FP_animalIDs);
 
 % [AnalysisResults] = Fig1_S5_FP_Stats_GRABNE(rootFolder,saveFigs,delim,AnalysisResults);
 % [AnalysisResults] = Fig1_S6_FP_Stats_GRABNE(rootFolder,saveFigs,delim,AnalysisResults);
@@ -84,9 +86,7 @@ end
 disp('MainScript Analysis - Complete'); disp(' ')
 end
 
-function [AnalysisResults] = AnalyzeData(rootFolder)
-% FP animal IDs
-FP_animalIDs = {'NEACh001'};
+function [AnalysisResults] = AnalyzeData(rootFolder,FP_animalIDs)
 
 saveFigs = 'y';
 if exist('AnalysisResults.mat','file') == 2
@@ -96,6 +96,7 @@ else
 end
 % these data are not from first hours
 firstHrs = "false";
+
 %% Block [1] Analyze the arousal-state probability of trial duration and resting events (IOS)
 runFromStart = 'n';
 for aa = 1:length(FP_animalIDs)
@@ -113,7 +114,7 @@ for bb = 1:length(FP_animalIDs)
     multiWaitbar('Analyzing behavioral distributions','Value',bb/length(FP_animalIDs));
 end
 %% Block [3] Analyze the transitions between different arousal-states (IOS)
-runFromStart = 'y';
+runFromStart = 'n';
 for dd = 1:length(FP_animalIDs)
     if isfield(AnalysisResults,(FP_animalIDs{1,dd})) == false || isfield(AnalysisResults.(FP_animalIDs{1,dd}),'Transitions') == false || strcmp(runFromStart,'y') == true
           [AnalysisResults] = AnalyzeTransitionalAverages_FP_Movements_GRABNE(FP_animalIDs{1,dd},saveFigs,rootFolder,AnalysisResults,firstHrs);
@@ -121,21 +122,21 @@ for dd = 1:length(FP_animalIDs)
     multiWaitbar('Analyzing behavioral transitions triggered changes','Value',dd/length(FP_animalIDs));
 end
 %% Block [4] Analyze the hemodynamic signal [HbT] during different arousal states (IOS)
-% runFromStart = 'n';
-% for ff = 1:length(FP_animalIDs)
-%     if isfield(AnalysisResults,(FP_animalIDs{1,ff})) == false || isfield(AnalysisResults.(FP_animalIDs{1,ff}),'MeanRhodamine') == false || strcmp(runFromStart,'y') == true
-%         [AnalysisResults] = AnalyzeMeanRhodamine_FP_GRABNE(FP_animalIDs{1,ff},rootFolder,AnalysisResults,firstHrs);
-%     end
-%     multiWaitbar('Analyzing behavioral Rhodamine','Value',ff/length(FP_animalIDs));
-% end
+runFromStart = 'n';
+for ff = 1:length(FP_animalIDs)
+    if isfield(AnalysisResults,(FP_animalIDs{1,ff})) == false || isfield(AnalysisResults.(FP_animalIDs{1,ff}),'MeanRhodamine') == false || strcmp(runFromStart,'y') == true
+        [AnalysisResults] = AnalyzeMeanRhodamine_FP_GRABNE(FP_animalIDs{1,ff},rootFolder,AnalysisResults,firstHrs);
+    end
+    multiWaitbar('Analyzing behavioral Rhodamine','Value',ff/length(FP_animalIDs));
+end
 %% Block [5] Analyze the hemodynamic signal [GCaMP7s] during different arousal states (IOS)
-% runFromStart = 'n';
-% for ff = 1:length(FP_animalIDs)
-%     if isfield(AnalysisResults,(FP_animalIDs{1,ff})) == false || isfield(AnalysisResults.(FP_animalIDs{1,ff}),'MeanGFP') == false || strcmp(runFromStart,'y') == true
-%         [AnalysisResults] = AnalyzeMeanGFP_FP_GRABNE(FP_animalIDs{1,ff},rootFolder,AnalysisResults,firstHrs);
-%     end
-%     multiWaitbar('Analyzing behavioral GFP','Value',ff/length(FP_animalIDs));
-% end
+runFromStart = 'n';
+for ff = 1:length(FP_animalIDs)
+    if isfield(AnalysisResults,(FP_animalIDs{1,ff})) == false || isfield(AnalysisResults.(FP_animalIDs{1,ff}),'MeanGFP') == false || strcmp(runFromStart,'y') == true
+        [AnalysisResults] = AnalyzeMeanGFP_FP_GRABNE(FP_animalIDs{1,ff},rootFolder,AnalysisResults,firstHrs);
+    end
+    multiWaitbar('Analyzing behavioral GFP','Value',ff/length(FP_animalIDs));
+end
 %% Block [6] Analyze the stimulus-evoked and whisking-evoked neural/hemodynamic responses (IOS)
 % runFromStart = 'y';
 % for pp = 1:length(FP_animalIDs)
@@ -145,13 +146,14 @@ end
 %     multiWaitbar('Analyzing evoked responses','Value',pp/length(FP_animalIDs));
 % end
 %% Block [7] Analyze the spectral coherence between bilateral hemodynamic [HbT] and neural signals (IOS)
-% runFromStart = 'n';
-% for jj = 1:length(FP_animalIDs)
-%     if isfield(AnalysisResults,(FP_animalIDs{1,jj})) == false || isfield(AnalysisResults.(FP_animalIDs{1,jj}),'Coherence') == false || strcmp(runFromStart,'y') == true
-%         [AnalysisResults] = AnalyzeCoherence_Pupil_GRABNE(FP_animalIDs{1,jj},rootFolder,AnalysisResults,firstHrs);
-%     end
-%     multiWaitbar('Analyzing coherence','Value',jj/length(FP_animalIDs));
-% end
+runFromStart = 'y';
+for jj = 1:length(FP_animalIDs)
+    if isfield(AnalysisResults,(FP_animalIDs{1,jj})) == false || isfield(AnalysisResults.(FP_animalIDs{1,jj}),'Coherence') == false || strcmp(runFromStart,'y') == true
+        % [AnalysisResults] = AnalyzeCoherence_Pupil_GRABNE(FP_animalIDs{1,jj},rootFolder,AnalysisResults,firstHrs);
+        [AnalysisResults] = AnalyzeCoherence_DataDivision(FP_animalIDs{1,jj},rootFolder,AnalysisResults,firstHrs);
+    end
+    multiWaitbar('Analyzing coherence','Value',jj/length(FP_animalIDs));
+end
 %% Block [8] Analyze the spectral coherence between neural-hemodynamic [HbT] signals (IOS)
 % runFromStart = 'n';
 % for jj = 1:length(FP_animalIDs)
@@ -161,14 +163,15 @@ end
 %     multiWaitbar('Analyzing neural-hemo coherence','Value',jj/length(FP_animalIDs));
 % end
 %% Block [9] Analyze the spectral power of hemodynamic [HbT] and neural signals (IOS)
-% runFromStart = 'n';
-% for kk = 1:length(FP_animalIDs)
-%     if isfield(AnalysisResults,(FP_animalIDs{1,kk})) == false || isfield(AnalysisResults.(FP_animalIDs{1,kk}),'PowerSpectrum') == false || strcmp(runFromStart,'y') == true
-% %         [AnalysisResults] = AnalyzePowerSpectrum(FP_animalIDs{1,kk},rootFolder,AnalysisResults);
-%           [AnalysisResults] = AnalyzePowerSpectrum_Pupil_GRABNE(FP_animalIDs{1,kk},rootFolder,AnalysisResults);
-%     end
-%     multiWaitbar('Analyzing power spectra','Value',kk/length(FP_animalIDs));
-% end
+runFromStart = 'y';
+for kk = 1:length(FP_animalIDs)
+    if isfield(AnalysisResults,(FP_animalIDs{1,kk})) == false || isfield(AnalysisResults.(FP_animalIDs{1,kk}),'PowerSpectrum') == false || strcmp(runFromStart,'y') == true
+%         [AnalysisResults] = AnalyzePowerSpectrum(FP_animalIDs{1,kk},rootFolder,AnalysisResults);
+          % [AnalysisResults] = AnalyzePowerSpectrum_Pupil_GRABNE(FP_animalIDs{1,kk},rootFolder,AnalysisResults);
+          [AnalysisResults] = AnalyzePowerSpectrum_DataDivision(FP_animalIDs{1,kk},rootFolder,AnalysisResults);
+    end
+    multiWaitbar('Analyzing power spectra','Value',kk/length(FP_animalIDs));
+end
 %% Block [10] Analyze Pearson's correlation coefficient between bilateral hemodynamic [HbT] and neural signals (IOS)
 % runFromStart = 'y';
 % for mm = 1:length(FP_animalIDs)
@@ -177,15 +180,17 @@ end
 %     end
 %     multiWaitbar('Analyzing Pearson''s correlation coefficients','Value',mm/length(FP_animalIDs));
 % end
-%% Block [11] Analyze the cross-correlation between neural activity and hemodynamics [HbT] 
-% runFromStart = 'n';
-% for nn = 1:length(FP_animalIDs)
-%     if isfield(AnalysisResults,(FP_animalIDs{1,nn})) == false || isfield(AnalysisResults.(FP_animalIDs{1,nn}),'CrossCorrelation') == false || strcmp(runFromStart,'y') == true
-%         [AnalysisResults] = AnalyzeCrossCorrelation_GRABNE(FP_animalIDs{1,nn},rootFolder,AnalysisResults,firstHrs);
-%     end
-%     multiWaitbar('Analyzing cross correlation','Value',nn/length(FP_animalIDs));
-% end
 
+%% Block [11] Analyze the cross-correlation between neural activity and hemodynamics [HbT] 
+runFromStart = 'n';
+for nn = 1:length(FP_animalIDs)
+    if isfield(AnalysisResults,(FP_animalIDs{1,nn})) == false || isfield(AnalysisResults.(FP_animalIDs{1,nn}),'CrossCorrelation') == false || strcmp(runFromStart,'y') == true
+%         [AnalysisResults] = AnalyzeCrossCorrelation_GRABNE(FP_animalIDs{1,nn},rootFolder,AnalysisResults,firstHrs);
+        % [AnalysisResults] = AnalyzeCrossCorrelation_GRABNE_CBV(FP_animalIDs{1,nn},rootFolder,AnalysisResults,firstHrs);
+        [AnalysisResults] = AnalyzeCrossCorrelation_DataDivision(FP_animalIDs{1,nn},rootFolder,AnalysisResults,firstHrs);
+    end
+    multiWaitbar('Analyzing cross correlation','Value',nn/length(FP_animalIDs));
+end
 %% Block [14] Analyze the relationship between gamma-band power and hemodynamics [HbT] (IOS)
 % runFromStart = 'y';
 % for qq = 1:length(FP_animalIDs)

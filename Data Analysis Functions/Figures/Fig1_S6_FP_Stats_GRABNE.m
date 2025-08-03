@@ -1,4 +1,4 @@
-function [AnalysisResults] = Fig1_S6_FP_Stats_GRABNE(rootFolder,saveFigs,delim,AnalysisResults)
+function [AnalysisResults] = Fig1_S6_FP_Stats_GRABNE(rootFolder,saveFigs,delim,AnalysisResults,FP_animalIDs)
 %________________________________________________________________________________________________________________________
 % Written by Kevin L. Turner
 % The Pennsylvania State University, Dept. of Biomedical Engineering
@@ -23,8 +23,8 @@ colorREM = [(254/256),(139/256),(0/256)];
 % colorAll = [(183/256),(115/256),(51/256)];
 % colorIso = [(0/256),(256/256),(256/256)];
 %% set-up and process data
-FP_animalIDs = {'GRABNE002'};%,'GRABNE002'};
-behavFields = {'Rest','Whisk','Stim','NREM','REM'};
+% FP_animalIDs = {'GRABNE002'};%,'GRABNE002'};
+behavFields = {'Rest','Whisk','NREM','REM'}; %'Stim',
 %% Rhodamine comparison between behaviors
 % pre-allocate the date for each day
 for aa = 1:length(FP_animalIDs)

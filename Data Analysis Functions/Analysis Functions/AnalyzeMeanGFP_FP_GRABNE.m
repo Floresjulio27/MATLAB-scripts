@@ -93,8 +93,8 @@ for gg = 1:length(Ach_finalRestData)
 end
 % take mean [GFP] during resting epochs
 for nn = 1:length(Ach_ProcRestData)
-    Ach_restGFPMean(nn,1) = max(Ach_ProcRestData{nn,1}(1:end));
-    NE_restGFPMean(nn,1) = max(NE_ProcRestData{nn,1}(1:end));
+    Ach_restGFPMean(nn,1) = mean(Ach_ProcRestData{nn,1}(1:end));
+    NE_restGFPMean(nn,1) = mean(NE_ProcRestData{nn,1}(1:end));
 end
 % save results
 AnalysisResults.(animalID).MeanGFP.Rest.GFP.MeanAch = Ach_restGFPMean;
@@ -124,14 +124,14 @@ for gg = 1:size(Ach_finalWhiskData,1)
 end
 % take mean [GFP] during whisking epochs from onset through 5 seconds
 for nn = 1:size(Ach_ProcWhiskData,1)
-    Ach_whiskGFPMean{nn,1} = max(Ach_ProcWhiskData(nn,params.Offset*samplingRate:params.minTime.Whisk*samplingRate),2);
-    NE_whiskGFPMean{nn,1} = max(NE_ProcWhiskData(nn,params.Offset*samplingRate:params.minTime.Whisk*samplingRate),2);
+    Ach_whiskGFPMean(nn,1) = mean(Ach_ProcWhiskData(nn,params.Offset*samplingRate:params.minTime.Whisk*samplingRate),2);
+    NE_whiskGFPMean(nn,1) = mean(NE_ProcWhiskData(nn,params.Offset*samplingRate:params.minTime.Whisk*samplingRate),2);
     Ach_whiskGFP{nn,1} = Ach_ProcWhiskData(nn,params.Offset*samplingRate:params.minTime.Whisk*samplingRate);
     NE_whiskGFP{nn,1} = NE_ProcWhiskData(nn,params.Offset*samplingRate:params.minTime.Whisk*samplingRate);
 end
 % save results
-AnalysisResults.(animalID).MeanGFP.Whisk.GFP.MeanAch = cell2mat(Ach_whiskGFPMean);
-AnalysisResults.(animalID).MeanGFP.Whisk.GFP.MeanNE = cell2mat(NE_whiskGFPMean);
+AnalysisResults.(animalID).MeanGFP.Whisk.GFP.MeanAch = (Ach_whiskGFPMean);
+AnalysisResults.(animalID).MeanGFP.Whisk.GFP.MeanNE = (NE_whiskGFPMean);
 AnalysisResults.(animalID).MeanGFP.Whisk.GFP.IndAch = Ach_whiskGFP;
 AnalysisResults.(animalID).MeanGFP.Whisk.GFP.IndNE = NE_whiskGFP;
 AnalysisResults.(animalID).MeanGFP.Whisk.GFP.FileIDs = finalWhiskFileIDs;
@@ -163,12 +163,12 @@ AnalysisResults.(animalID).MeanGFP.Whisk.GFP.FileIDs = finalWhiskFileIDs;
         end
         % take mean [GFP] 1-2 seconds after stimulation (left hem)
         for nn = 1:size(Ach_ProcStimData,1)
-            Ach_stimGFPMean{nn,1} = max(Ach_ProcStimData(nn,(params.Offset + 0)*samplingRate:params.minTime.Stim*samplingRate),2);
+            Ach_stimGFPMean{nn,1} = mean(Ach_ProcStimData(nn,(params.Offset + 0)*samplingRate:params.minTime.Stim*samplingRate),2);
             Ach_stimGFP{nn,1} = Ach_ProcStimData(nn,(params.Offset + 0)*samplingRate:params.minTime.Stim*samplingRate);
         end
         % take mean [GFP] 1-2 seconds after stimulation (right hem)
         for nn = 1:size(NE_ProcStimData,1)
-            NE_stimGFPMean{nn,1} = max(NE_ProcStimData(nn,(params.Offset + 0)*samplingRate:params.minTime.Stim*samplingRate),2);
+            NE_stimGFPMean{nn,1} = mean(NE_ProcStimData(nn,(params.Offset + 0)*samplingRate:params.minTime.Stim*samplingRate),2);
             NE_stimGFP{nn,1} = NE_ProcStimData(nn,(params.Offset + 0)*samplingRate:params.minTime.Stim*samplingRate);
         end
         % save results
@@ -190,8 +190,8 @@ AnalysisResults.(animalID).MeanGFP.Whisk.GFP.FileIDs = finalWhiskFileIDs;
     end
 % filter and take mean [GFP] during NREM epochs
 for nn = 1:length(AchremData)
-    AchremGFPMean(nn,1) = max(filtfilt(sos,g,AchremData{nn,1}(1:end)));
-    NEremGFPMean(nn,1) = max(filtfilt(sos,g,NEremData{nn,1}(1:end)));
+    AchremGFPMean(nn,1) = mean(filtfilt(sos,g,AchremData{nn,1}(1:end)));
+    NEremGFPMean(nn,1) = mean(filtfilt(sos,g,NEremData{nn,1}(1:end)));
 end
 % save results
 AnalysisResults.(animalID).MeanGFP.NREM.GFP.MeanAch = AchremGFPMean;
@@ -206,8 +206,8 @@ if firstHrs == "false"
     [NE_remData,~,~] = RemoveStimSleepData_IOS(animalID,SleepData.(modelType).REM.data.GFP.Z_NE,SleepData.(modelType).REM.FileIDs,SleepData.(modelType).REM.BinTimes);
     % filter and take mean [GFP] during REM epochs
     for nn = 1:length(Ach_remData)
-        Ach_remGFPMean(nn,1) = max(filtfilt(sos,g,Ach_remData{nn,1}(1:end)));
-        NE_remGFPMean(nn,1) = max(filtfilt(sos,g,NE_remData{nn,1}(1:end)));
+        Ach_remGFPMean(nn,1) = mean(filtfilt(sos,g,Ach_remData{nn,1}(1:end)));
+        NE_remGFPMean(nn,1) = mean(filtfilt(sos,g,NE_remData{nn,1}(1:end)));
     end
     % save results
     AnalysisResults.(animalID).MeanGFP.REM.GFP.MeanAch = Ach_remGFPMean;

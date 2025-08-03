@@ -1,4 +1,4 @@
-function StageThreeProcessing_FP_GRABNE()
+00000000000000function StageThreeProcessing_FP_GRABNE()
 %________________________________________________________________________________________________________________________
 % Written by Kevin L. Turner
 % The Pennsylvania State University, Dept. of Biomedical Engineering
@@ -36,8 +36,8 @@ procDataFileIDs = char(procDataFiles);
 curDir = cd;
 dirBreaks = strfind(curDir,'\');
 curFolder = curDir(dirBreaks(end) + 1:end);
-stimulationType = input('Input stimulation type (single or pulse): ','s'); disp(' ')
-dataTypes = {'Rhodamine','GFP','cortical_LH','EMG','Pupil'}; %'cortical_RH','hippocampus',
+stimulationType = 'pulse';%input('Input stimulation type (single or pulse): ','s'); disp(' ')
+dataTypes = {'CBV','GFP','Isos','cortical_LH','EMG','Pupil'}; %'cortical_RH','hippocampus',
 neuralDataTypes = {'cortical_LH'}; %,'cortical_RH','hippocampus'
 basefile = ([animalID '_RestingBaselines.mat']);
 %% BLOCK PURPOSE: [1] Categorize data

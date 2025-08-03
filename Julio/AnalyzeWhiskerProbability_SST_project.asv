@@ -1,0 +1,88 @@
+function [Results_WhiskerProbability] = AnalyzeWhiskerProbability_SST_project(animalID,group,setName,rootFolder,delim,Results_WhiskerProbability,days)
+%% function parameters
+dataLocation = [rootFolder delim 'WhiskerProbability' delim group delim setName delim days delim animalID delim 'CombinedImaging']; % here is the key how to organize it
+cd(dataLocation)
+
+% find and load ProcData.mat struct
+fileList = dir('*_ProcData.mat');
+if isempty(fileList)
+    return
+end
+
+ProcDataFileStruct = dir('*_ProcData.mat');
+ProcDataFile = {ProcDataFileStruct.name}';
+ProcDataFileID = char(ProcDataFile);
+load(ProcDataFileID)
+    
+% Preallocate
+fs = ProcData.notes.dsFs;
+allWhiskSwitches = [];
+allStimSamples   = [];
+allFileOffsets   = [];
+
+
+% get all puff times
+if isfield(ProcData.data, 'stimulations')
+    times = [ ProcData.data.stimulations.LPadSol ];
+else
+    times = [ ProcData.data.solenoids.LPadSol ];
+end
+stimSamps = round(times * fs);
+
+% whisker‐angle bins → logical
+bins     = ProcData.data.binWhiskerAngle;
+whiskLog = bins > 0;
+
+% append with offset
+offset = numel(allWhiskSwitches);
+allFileOffsets(end+1)   = offset;
+allWhiskSwitches = [ allWhiskSwitches; whiskLog(:) ];
+allStimSamples   = [ allStimSamples; stimSamps(:) + offset ];
+
+%organize whisker stimulation
+
+winTime    = 15; % in seconds for pre and post stimulation
+winSamps   = round(winTime * fs);
+timeVec    = (-winSamps:winSamps)/fs;
+
+% build the offsets matrix
+nTrials    = numel(allStimSamples);
+idxOffsets = (-winSamps:winSamps)';                   % column vector
+offsetsMat = repmat(idxOffsets, 1, nTrials);
+stimMat    = repmat(allStimSamples(:)', numel(idxOffsets), 1);
+sampleIdx  = stimMat + offsetsMat;
+
+L = numel(allWhiskSwitches);
+sampleIdx(sampleIdx<1 ) = 1;
+sampleIdx(sampleIdx> L) = L;
+
+whiskMat   = allWhiskSwitches(sampleIdx); %This the war data of probability of whisking 15seconds before stim and 15s after 
+   
+
+% % Compute probability in ±15 s window
+% Ntrials  = numel(allStimSamples);
+% preCount  = 0;
+% postCount = 0;
+% winSamp   = 15 * fs;
+% L = numel(allWhiskSwitches);
+% 
+% for t = 1:Ntrials
+%     s = allStimSamples(t);
+%     preIdx  = max(1, s - winSamp) : (s-1);
+%     postIdx = s : min(L, s + winSamp);
+% 
+%     if any(allWhiskSwitches(preIdx)),  preCount  = preCount  + 1; end
+%     if any(allWhiskSwitches(postIdx)), postCount = postCount + 1; end
+% end
+% 
+% preWhiskProb  = preCount  / Ntrials;
+% postWhiskProb = postCount / Ntrials;
+
+% Store results 
+Results_WhiskerProbability.(group).(days).(animalID).RawWhiskerProbability  = whiskMat;
+
+
+%save data
+cd([rootFolder delim 'Results_SST_project'])
+save('Results_WhiskerProbability.mat','Results_WhiskerProbability')
+cd([rootFolder delim 'Data'])

@@ -1,4 +1,4 @@
-function [AnalysisResults] = Fig1_S5_FP_Stats_GRABNE(rootFolder,saveFigs,delim,AnalysisResults)
+function [AnalysisResults] = Fig1_S5_FP_Stats_GRABNE(rootFolder,saveFigs,delim,AnalysisResults,FP_animalIDs)
 %________________________________________________________________________________________________________________________
 % Written by Kevin L. Turner
 % The Pennsylvania State University, Dept. of Biomedical Engineering
@@ -23,8 +23,7 @@ colorREM = [(254/256),(139/256),(0/256)];
 % colorAll = [(183/256),(115/256),(51/256)];
 % colorIso = [(0/256),(256/256),(256/256)];
 %% set-up and process data
-FP_animalIDs = {'GRABNE002'};%,'GRABNE002'};
-behavFields = {'Rest','Whisk','Stim','NREM','REM'};
+behavFields = {'Rest','NREM','REM'}; 
 %% Rhodamine comparison between behaviors
 % pre-allocate the date for each day
 for aa = 1:length(FP_animalIDs)
@@ -34,10 +33,10 @@ for aa = 1:length(FP_animalIDs)
 
         
         for cc = 1:length(AnalysisResults.(animalID).MeanRhodamine.(behavField).Rhodamine.IndAch)
-            data.Rhodamine.(animalID).(behavField).meanAch(cc,1) = median(AnalysisResults.(animalID).MeanRhodamine.(behavField).Rhodamine.IndAch{cc,1});
+            data.Rhodamine.(animalID).(behavField).meanAch(cc,:) = (AnalysisResults.(animalID).MeanRhodamine.(behavField).Rhodamine.IndAch{cc,1});
         end
         for cc = 1:length(AnalysisResults.(animalID).MeanRhodamine.(behavField).Rhodamine.IndNE)
-            data.Rhodamine.(animalID).(behavField).meanNE(cc,1) = median(AnalysisResults.(animalID).MeanRhodamine.(behavField).Rhodamine.IndNE{cc,1});
+            data.Rhodamine.(animalID).(behavField).meanNE(cc,:) = (AnalysisResults.(animalID).MeanRhodamine.(behavField).Rhodamine.IndNE{cc,1});
         end
     end
 end
@@ -75,10 +74,10 @@ for aa = 1:length(FP_animalIDs)
     for bb = 1:length(behavFields)
         behavField = behavFields{1,bb};
         for cc = 1:length(AnalysisResults.(animalID).MeanGFP.(behavField).GFP.IndAch)
-            data.GFP.(animalID).(behavField).meanAch(cc,1) = median(AnalysisResults.(animalID).MeanGFP.(behavField).GFP.IndAch{cc,1});
+            data.GFP.(animalID).(behavField).meanAch(cc,1) = mean(AnalysisResults.(animalID).MeanGFP.(behavField).GFP.IndAch{cc,1});
         end
         for cc = 1:length(AnalysisResults.(animalID).MeanGFP.(behavField).GFP.IndNE)
-            data.GFP.(animalID).(behavField).meanNE(cc,1) = median(AnalysisResults.(animalID).MeanGFP.(behavField).GFP.IndNE{cc,1});
+            data.GFP.(animalID).(behavField).meanNE(cc,1) = mean(AnalysisResults.(animalID).MeanGFP.(behavField).GFP.IndNE{cc,1});
         end
     end
 end
@@ -136,178 +135,181 @@ sgtitle('Median hemodynamic changes')
 %% Mean Rhodamine Ach
 ax1 = subplot(2,2,1);
 xInds = ones(1,length(FP_animalIDs));
-s1=scatter(xInds*2,data.Rhodamine.Whisk.catmeanAch,75,'MarkerEdgeColor','k','MarkerFaceColor',colorWhisk,'jitter','on','jitterAmount',0.25);
+% s1=scatter(xInds*2,data.Rhodamine.Whisk.catmeanAch,75,'MarkerEdgeColor','k','MarkerFaceColor',colorWhisk);
+% hold on
+% e1 = errorbar(2,data.Rhodamine.Whisk.meanmeanAch,data.Rhodamine.Whisk.stdmeanAch,'d','MarkerEdgeColor','k','MarkerFaceColor','k');
+% e1.Color = 'black';
+% e1.MarkerSize = 10;
+% e1.CapSize = 10;
+
+% s2=scatter(xInds*3,data.Rhodamine.Stim.catmeanAch,75,'MarkerEdgeColor','k','MarkerFaceColor',colorStim);
+% e2 = errorbar(3,data.Rhodamine.Stim.meanmeanAch,data.Rhodamine.Stim.stdmeanAch,'d','MarkerEdgeColor','k','MarkerFaceColor','k');
+% e2.Color = 'black';
+% e2.MarkerSize = 10;
+% e2.CapSize = 10;
 hold on
-e1 = errorbar(2,data.Rhodamine.Whisk.meanmeanAch,data.Rhodamine.Whisk.stdmeanAch,'d','MarkerEdgeColor','k','MarkerFaceColor','k');
-e1.Color = 'black';
-e1.MarkerSize = 10;
-e1.CapSize = 10;
+s3=scatter(xInds*3,data.Rhodamine.Rest.catmeanAch,75,'MarkerEdgeColor','k','MarkerFaceColor',colorRest);
+% e3 = errorbar(1,data.Rhodamine.Rest.meanmeanAch,data.Rhodamine.Rest.stdmeanAch,'d','MarkerEdgeColor','k','MarkerFaceColor','k');
+% e3.Color = 'black';
+% e3.MarkerSize = 10;
+% e3.CapSize = 10;
 
-s2=scatter(xInds*3,data.Rhodamine.Stim.catmeanAch,75,'MarkerEdgeColor','k','MarkerFaceColor',colorStim,'jitter','on','jitterAmount',0.25);
-e2 = errorbar(3,data.Rhodamine.Stim.meanmeanAch,data.Rhodamine.Stim.stdmeanAch,'d','MarkerEdgeColor','k','MarkerFaceColor','k');
-e2.Color = 'black';
-e2.MarkerSize = 10;
-e2.CapSize = 10;
+s4=scatter(xInds*4,data.Rhodamine.NREM.catmeanAch,75,'MarkerEdgeColor','k','MarkerFaceColor',colorNREM);
+% e4 = errorbar(4,data.Rhodamine.NREM.meanmeanAch,data.Rhodamine.NREM.stdmeanAch,'d','MarkerEdgeColor','k','MarkerFaceColor','k');
+% e4.Color = 'black';
+% e4.MarkerSize = 10;
+% e4.CapSize = 10;
 
-s3=scatter(xInds*1,data.Rhodamine.Rest.catmeanAch,75,'MarkerEdgeColor','k','MarkerFaceColor',colorRest,'jitter','on','jitterAmount',0.25);
-e3 = errorbar(1,data.Rhodamine.Rest.meanmeanAch,data.Rhodamine.Rest.stdmeanAch,'d','MarkerEdgeColor','k','MarkerFaceColor','k');
-e3.Color = 'black';
-e3.MarkerSize = 10;
-e3.CapSize = 10;
-
-s4=scatter(xInds*4,data.Rhodamine.NREM.catmeanAch,75,'MarkerEdgeColor','k','MarkerFaceColor',colorNREM,'jitter','on','jitterAmount',0.25);
-e4 = errorbar(4,data.Rhodamine.NREM.meanmeanAch,data.Rhodamine.NREM.stdmeanAch,'d','MarkerEdgeColor','k','MarkerFaceColor','k');
-e4.Color = 'black';
-e4.MarkerSize = 10;
-e4.CapSize = 10;
-
-s5=scatter(xInds*5,data.Rhodamine.REM.catmeanAch,75,'MarkerEdgeColor','k','MarkerFaceColor',colorREM,'jitter','on','jitterAmount',0.25);
-e5 = errorbar(5,data.Rhodamine.REM.meanmeanAch,data.Rhodamine.REM.stdmeanAch,'d','MarkerEdgeColor','k','MarkerFaceColor','k');
-e5.Color = 'black';
-e5.MarkerSize = 10;
-e5.CapSize = 10;
+s5=scatter(xInds*5,data.Rhodamine.REM.catmeanAch,75,'MarkerEdgeColor','k','MarkerFaceColor',colorREM);
+% e5 = errorbar(5,data.Rhodamine.REM.meanmeanAch,data.Rhodamine.REM.stdmeanAch,'d','MarkerEdgeColor','k','MarkerFaceColor','k');
+% e5.Color = 'black';
+% e5.MarkerSize = 10;
+% e5.CapSize = 10;
 
 title({'Median Zscored \DeltaRhodamine Ach'})
 ylabel('Median  \DeltaRhodamine Ach')
-legend([s3,s1,s2,s4,s5],'Rest','Whisk','Stim','NREM','REM','Location','best')
-set(gca,'xtick',[])
-set(gca,'xticklabel',[])
+% legend([s3, s4, s5],'Rest','NREM','REM')
+% set(gca,'xtick',[])
+% set(gca,'xticklabel',[])
 axis square
 axis tight
-xlim([0,length(behavFields) + 1])
+%xlim([0,length(behavFields) + 1])
 % ylim([0,140])
 set(gca,'box','off')
 ax1.TickLength = [0.03,0.03];
 %% Rhodamine NE
 ax1 = subplot(2,2,2);
 xInds = ones(1,length(FP_animalIDs));
-s1=scatter(xInds*2,data.Rhodamine.Whisk.catmeanNE,75,'MarkerEdgeColor','k','MarkerFaceColor',colorWhisk,'jitter','on','jitterAmount',0.25);
 hold on
-e1 = errorbar(2,data.Rhodamine.Whisk.meanmeanNE,data.Rhodamine.Whisk.stdmeanNE,'d','MarkerEdgeColor','k','MarkerFaceColor','k');
-e1.Color = 'black';
-e1.MarkerSize = 10;
-e1.CapSize = 10;
+% s1=scatter(xInds*2,data.Rhodamine.Whisk.catmeanNE,75,'MarkerEdgeColor','k','MarkerFaceColor',colorWhisk);
+% hold on
+% e1 = errorbar(2,data.Rhodamine.Whisk.meanmeanNE,data.Rhodamine.Whisk.stdmeanNE,'d','MarkerEdgeColor','k','MarkerFaceColor','k');
+% e1.Color = 'black';
+% e1.MarkerSize = 10;
+% e1.CapSize = 10;
 
-s2=scatter(xInds*3,data.Rhodamine.Stim.catmeanNE,75,'MarkerEdgeColor','k','MarkerFaceColor',colorStim,'jitter','on','jitterAmount',0.25);
-e2 = errorbar(3,data.Rhodamine.Stim.meanmeanNE,data.Rhodamine.Stim.stdmeanNE,'d','MarkerEdgeColor','k','MarkerFaceColor','k');
-e2.Color = 'black';
-e2.MarkerSize = 10;
-e2.CapSize = 10;
+% s2=scatter(xInds*3,data.Rhodamine.Stim.catmeanNE,75,'MarkerEdgeColor','k','MarkerFaceColor',colorStim);
+% e2 = errorbar(3,data.Rhodamine.Stim.meanmeanNE,data.Rhodamine.Stim.stdmeanNE,'d','MarkerEdgeColor','k','MarkerFaceColor','k');
+% e2.Color = 'black';
+% e2.MarkerSize = 10;
+% e2.CapSize = 10;
 
-s3=scatter(xInds*1,data.Rhodamine.Rest.catmeanNE,75,'MarkerEdgeColor','k','MarkerFaceColor',colorRest,'jitter','on','jitterAmount',0.25);
-e3 = errorbar(1,data.Rhodamine.Rest.meanmeanNE,data.Rhodamine.Rest.stdmeanNE,'d','MarkerEdgeColor','k','MarkerFaceColor','k');
-e3.Color = 'black';
-e3.MarkerSize = 10;
-e3.CapSize = 10;
+s3=scatter(xInds*3,data.Rhodamine.Rest.catmeanNE,75,'MarkerEdgeColor','k','MarkerFaceColor',colorRest);
+% e3 = errorbar(1,data.Rhodamine.Rest.meanmeanNE,data.Rhodamine.Rest.stdmeanNE,'d','MarkerEdgeColor','k','MarkerFaceColor','k');
+% e3.Color = 'black';
+% e3.MarkerSize = 10;
+% e3.CapSize = 10;
 
-s4=scatter(xInds*4,data.Rhodamine.NREM.catmeanNE,75,'MarkerEdgeColor','k','MarkerFaceColor',colorNREM,'jitter','on','jitterAmount',0.25);
-e4 = errorbar(4,data.Rhodamine.NREM.meanmeanNE,data.Rhodamine.NREM.stdmeanNE,'d','MarkerEdgeColor','k','MarkerFaceColor','k');
-e4.Color = 'black';
-e4.MarkerSize = 10;
-e4.CapSize = 10;
+s4=scatter(xInds*4,data.Rhodamine.NREM.catmeanNE,75,'MarkerEdgeColor','k','MarkerFaceColor',colorNREM);
+% e4 = errorbar(4,data.Rhodamine.NREM.meanmeanNE,data.Rhodamine.NREM.stdmeanNE,'d','MarkerEdgeColor','k','MarkerFaceColor','k');
+% e4.Color = 'black';
+% e4.MarkerSize = 10;
+% e4.CapSize = 10;
 
-s5=scatter(xInds*5,data.Rhodamine.REM.catmeanNE,75,'MarkerEdgeColor','k','MarkerFaceColor',colorREM,'jitter','on','jitterAmount',0.25);
-e5 = errorbar(5,data.Rhodamine.REM.meanmeanNE,data.Rhodamine.REM.stdmeanNE,'d','MarkerEdgeColor','k','MarkerFaceColor','k');
-e5.Color = 'black';
-e5.MarkerSize = 10;
-e5.CapSize = 10;
+s5=scatter(xInds*5,data.Rhodamine.REM.catmeanNE,75,'MarkerEdgeColor','k','MarkerFaceColor',colorREM);
+% e5 = errorbar(5,data.Rhodamine.REM.meanmeanNE,data.Rhodamine.REM.stdmeanNE,'d','MarkerEdgeColor','k','MarkerFaceColor','k');
+% e5.Color = 'black';
+% e5.MarkerSize = 10;
+% e5.CapSize = 10;
 
 title({'Median Zscored \DeltaRhodamine NE'})
 ylabel('Median  \DeltaRhodamine NE')
-legend([s3,s1,s2,s4,s5],'Rest','Whisk','Stim','NREM','REM','Location','best')
-set(gca,'xtick',[])
-set(gca,'xticklabel',[])
+% legend([s3,s1,s4,s5],'Rest','Whisk','NREM','REM','Location','best')
+% set(gca,'xtick',[])
+% set(gca,'xticklabel',[])
 axis square
 axis tight
-xlim([0,length(behavFields) + 1])
+%xlim([0,length(behavFields) + 1])
 % ylim([0,140])
 set(gca,'box','off')
 ax1.TickLength = [0.03,0.03];
 %% Mean GFP Ach
 ax3 = subplot(2,2,3);
 xInds = ones(1,length(FP_animalIDs));
-scatter(xInds*2,data.GFP.Whisk.catmeanAch,75,'MarkerEdgeColor','k','MarkerFaceColor',colorWhisk,'jitter','on','jitterAmount',0.25);
 hold on
-e1 = errorbar(2,data.GFP.Whisk.meanmeanAch,data.GFP.Whisk.stdmeanAch,'d','MarkerEdgeColor','k','MarkerFaceColor','k');
-e1.Color = 'black';
-e1.MarkerSize = 10;
-e1.CapSize = 10;
+% scatter(xInds*2,data.GFP.Whisk.catmeanAch,75,'MarkerEdgeColor','k','MarkerFaceColor',colorWhisk);
+% hold on
+% e1 = errorbar(2,data.GFP.Whisk.meanmeanAch,data.GFP.Whisk.stdmeanAch,'d','MarkerEdgeColor','k','MarkerFaceColor','k');
+% e1.Color = 'black';
+% e1.MarkerSize = 10;
+% e1.CapSize = 10;
 
-scatter(xInds*3,data.GFP.Stim.catmeanAch,75,'MarkerEdgeColor','k','MarkerFaceColor',colorStim,'jitter','on','jitterAmount',0.25);
-e2 = errorbar(3,data.GFP.Stim.meanmeanAch,data.GFP.Stim.stdmeanAch,'d','MarkerEdgeColor','k','MarkerFaceColor','k');
-e2.Color = 'black';
-e2.MarkerSize = 10;
-e2.CapSize = 10;
+% scatter(xInds*3,data.GFP.Stim.catmeanAch,75,'MarkerEdgeColor','k','MarkerFaceColor',colorStim);
+% e2 = errorbar(3,data.GFP.Stim.meanmeanAch,data.GFP.Stim.stdmeanAch,'d','MarkerEdgeColor','k','MarkerFaceColor','k');
+% e2.Color = 'black';
+% e2.MarkerSize = 10;
+% e2.CapSize = 10;
 
-scatter(xInds*1,data.GFP.Rest.catmeanAch,75,'MarkerEdgeColor','k','MarkerFaceColor',colorRest,'jitter','on','jitterAmount',0.25);
-e3 = errorbar(1,data.GFP.Rest.meanmeanAch,data.GFP.Rest.stdmeanAch,'d','MarkerEdgeColor','k','MarkerFaceColor','k');
-e3.Color = 'black';
-e3.MarkerSize = 10;
-e3.CapSize = 10;
+scatter(xInds*3,data.GFP.Rest.catmeanAch,75,'MarkerEdgeColor','k','MarkerFaceColor',colorRest);
+% e3 = errorbar(1,data.GFP.Rest.meanmeanAch,data.GFP.Rest.stdmeanAch,'d','MarkerEdgeColor','k','MarkerFaceColor','k');
+% e3.Color = 'black';
+% e3.MarkerSize = 10;
+% e3.CapSize = 10;
 
-scatter(xInds*4,data.GFP.NREM.catmeanAch,75,'MarkerEdgeColor','k','MarkerFaceColor',colorNREM,'jitter','on','jitterAmount',0.25);
-e4 = errorbar(4,data.GFP.NREM.meanmeanAch,data.GFP.NREM.stdmeanAch,'d','MarkerEdgeColor','k','MarkerFaceColor','k');
-e4.Color = 'black';
-e4.MarkerSize = 10;
-e4.CapSize = 10;
+scatter(xInds*4,data.GFP.NREM.catmeanAch,75,'MarkerEdgeColor','k','MarkerFaceColor',colorNREM);
+% e4 = errorbar(4,data.GFP.NREM.meanmeanAch,data.GFP.NREM.stdmeanAch,'d','MarkerEdgeColor','k','MarkerFaceColor','k');
+% e4.Color = 'black';
+% e4.MarkerSize = 10;
+% e4.CapSize = 10;
 
-scatter(xInds*5,data.GFP.REM.catmeanAch,75,'MarkerEdgeColor','k','MarkerFaceColor',colorREM,'jitter','on','jitterAmount',0.25);
-e5 = errorbar(5,data.GFP.REM.meanmeanAch,data.GFP.REM.stdmeanAch,'d','MarkerEdgeColor','k','MarkerFaceColor','k');
-e5.Color = 'black';
-e5.MarkerSize = 10;
-e5.CapSize = 10;
-
+scatter(xInds*5,data.GFP.REM.catmeanAch,75,'MarkerEdgeColor','k','MarkerFaceColor',colorREM);
+% e5 = errorbar(5,data.GFP.REM.meanmeanAch,data.GFP.REM.stdmeanAch,'d','MarkerEdgeColor','k','MarkerFaceColor','k');
+% e5.Color = 'black';
+% e5.MarkerSize = 10;
+% e5.CapSize = 10;
+%'jitter','on','jitterAmount',0.25
 title({'Median Zscored \DeltaGFP Ach'})
 ylabel('Median Zscored \DeltaGFP Ach')
-set(gca,'xtick',[])
-set(gca,'xticklabel',[])
+% set(gca,'xtick',[])
+% set(gca,'xticklabel',[])
 axis square
 axis tight
-xlim([0,length(behavFields) + 1])
+%xlim([0,length(behavFields) + 1])
 % ylim([0,140])
 set(gca,'box','off')
 ax3.TickLength = [0.03,0.03];
 %% Mean GFP NE
 ax3 = subplot(2,2,4);
 xInds = ones(1,length(FP_animalIDs));
-scatter(xInds*2,data.GFP.Whisk.catmeanNE,75,'MarkerEdgeColor','k','MarkerFaceColor',colorWhisk,'jitter','on','jitterAmount',0.25);
 hold on
-e1 = errorbar(2,data.GFP.Whisk.meanmeanNE,data.GFP.Whisk.stdmeanNE,'d','MarkerEdgeColor','k','MarkerFaceColor','k');
-e1.Color = 'black';
-e1.MarkerSize = 10;
-e1.CapSize = 10;
+% scatter(xInds*2,data.GFP.Whisk.catmeanNE,75,'MarkerEdgeColor','k','MarkerFaceColor',colorWhisk);
+% hold on
+% e1 = errorbar(2,data.GFP.Whisk.meanmeanNE,data.GFP.Whisk.stdmeanNE,'d','MarkerEdgeColor','k','MarkerFaceColor','k');
+% e1.Color = 'black';
+% e1.MarkerSize = 10;
+% e1.CapSize = 10;
 
-scatter(xInds*3,data.GFP.Stim.catmeanNE,75,'MarkerEdgeColor','k','MarkerFaceColor',colorStim,'jitter','on','jitterAmount',0.25);
-e2 = errorbar(3,data.GFP.Stim.meanmeanNE,data.GFP.Stim.stdmeanNE,'d','MarkerEdgeColor','k','MarkerFaceColor','k');
-e2.Color = 'black';
-e2.MarkerSize = 10;
-e2.CapSize = 10;
+% scatter(xInds*3,data.GFP.Stim.catmeanNE,75,'MarkerEdgeColor','k','MarkerFaceColor',colorStim);
+% e2 = errorbar(3,data.GFP.Stim.meanmeanNE,data.GFP.Stim.stdmeanNE,'d','MarkerEdgeColor','k','MarkerFaceColor','k');
+% e2.Color = 'black';
+% e2.MarkerSize = 10;
+% e2.CapSize = 10;
 
-scatter(xInds*1,data.GFP.Rest.catmeanNE,75,'MarkerEdgeColor','k','MarkerFaceColor',colorRest,'jitter','on','jitterAmount',0.25);
-e3 = errorbar(1,data.GFP.Rest.meanmeanNE,data.GFP.Rest.stdmeanNE,'d','MarkerEdgeColor','k','MarkerFaceColor','k');
-e3.Color = 'black';
-e3.MarkerSize = 10;
-e3.CapSize = 10;
+scatter(xInds*3,data.GFP.Rest.catmeanNE,75,'MarkerEdgeColor','k','MarkerFaceColor',colorRest);
+% e3 = errorbar(1,data.GFP.Rest.meanmeanNE,data.GFP.Rest.stdmeanNE,'d','MarkerEdgeColor','k','MarkerFaceColor','k');
+% e3.Color = 'black';
+% e3.MarkerSize = 10;
+% e3.CapSize = 10;
 
-scatter(xInds*4,data.GFP.NREM.catmeanNE,75,'MarkerEdgeColor','k','MarkerFaceColor',colorNREM,'jitter','on','jitterAmount',0.25);
-e4 = errorbar(4,data.GFP.NREM.meanmeanNE,data.GFP.NREM.stdmeanNE,'d','MarkerEdgeColor','k','MarkerFaceColor','k');
-e4.Color = 'black';
-e4.MarkerSize = 10;
-e4.CapSize = 10;
+scatter(xInds*4,data.GFP.NREM.catmeanNE,75,'MarkerEdgeColor','k','MarkerFaceColor',colorNREM);
+% e4 = errorbar(4,data.GFP.NREM.meanmeanNE,data.GFP.NREM.stdmeanNE,'d','MarkerEdgeColor','k','MarkerFaceColor','k');
+% e4.Color = 'black';
+% e4.MarkerSize = 10;
+% e4.CapSize = 10;
 
-scatter(xInds*5,data.GFP.REM.catmeanNE,75,'MarkerEdgeColor','k','MarkerFaceColor',colorREM,'jitter','on','jitterAmount',0.25);
-e5 = errorbar(5,data.GFP.REM.meanmeanNE,data.GFP.REM.stdmeanNE,'d','MarkerEdgeColor','k','MarkerFaceColor','k');
-e5.Color = 'black';
-e5.MarkerSize = 10;
-e5.CapSize = 10;
+scatter(xInds*5,data.GFP.REM.catmeanNE,75,'MarkerEdgeColor','k','MarkerFaceColor',colorREM);
+% e5 = errorbar(5,data.GFP.REM.meanmeanNE,data.GFP.REM.stdmeanNE,'d','MarkerEdgeColor','k','MarkerFaceColor','k');
+% e5.Color = 'black';
+% e5.MarkerSize = 10;
+% e5.CapSize = 10;
 
 title({'Median Zscored \DeltaGFP NE'})
 ylabel('Median Zscored \DeltaGFP NE')
-set(gca,'xtick',[])
-set(gca,'xticklabel',[])
+% set(gca,'xtick',[])
+% set(gca,'xticklabel',[])
 axis square
 axis tight
-xlim([0,length(behavFields) + 1])
+%xlim([0,length(behavFields) + 1])
 % ylim([0,140])
 set(gca,'box','off')
 ax3.TickLength = [0.03,0.03];
@@ -318,9 +320,9 @@ if strcmp(saveFigs,'y') == true
         mkdir(dirpath);
     end
     set(summaryFigure,'PaperPositionMode','auto');
-    savefig(summaryFigure,[dirpath animalID '_Fig1-S5-Stats']);
+    savefig(summaryFigure,[dirpath 'Fig1-S5-Stats']);
     set(summaryFigure,'PaperPositionMode','auto');
-    print('-painters','-dpdf','-bestfit',[dirpath animalID '_Fig1-S5-Stats'])
+    print('-painters','-dpdf','-bestfit',[dirpath 'Fig1-S5-Stats'])
     close 
     %% Text diary
 %     diaryFile = [dirpath 'Fig1-S4_Statistics.txt'];

@@ -1,4 +1,4 @@
-function [AnalysisResults] = Fig1_S2_Stim_GRABNE(rootFolder,saveFigs,delim,AnalysisResults,firstHrs)
+function [AnalysisResults] = Fig1_S2_Stim_GRABNE(rootFolder,saveFigs,delim,AnalysisResults,firstHrs,FPanimalIDs)
 %________________________________________________________________________________________________________________________
 % Written by Kevin L. Turner
 % The Pennsylvania State University, Dept. of Biomedical Engineering
@@ -9,7 +9,7 @@ function [AnalysisResults] = Fig1_S2_Stim_GRABNE(rootFolder,saveFigs,delim,Analy
 % AnalysisResults =  AnalysisResults_firstHrs; 
 % saveFigs = 'y';
 %% set-up and process data
-FPanimalIDs = {'NEACh001'};
+% FPanimalIDs = {'NEACh005'};
 solenoidNames = {'LPadSol','RPadSol','AudSol'};
 compDataTypes = {'Ipsi','Contra','Auditory'};
 % dataTypes = {'LH','RH'};
@@ -363,8 +363,8 @@ plot(data.Contra.mean_timeVector,data.Contra.Z_Achmean_GFP,'-','color',colors('i
 hold on
 plot(data.Contra.mean_timeVector,data.Contra.Z_Achmean_GFP + data.Contra.Z_Achstd_GFP,'-','color',colors('indian red'),'LineWidth',0.10)
 plot(data.Contra.mean_timeVector,data.Contra.Z_Achmean_GFP - data.Contra.Z_Achstd_GFP,'-','color',colors('indian red'),'LineWidth',0.10)
-title('Contra stim GFP')
-ylabel('Z \DeltaF/F GRAB Ach')
+title('Contra Green')
+ylabel('Z \DeltaF/F ACh')
 ax16.YLim = [-3 6];
 
 yyaxis right
@@ -372,7 +372,7 @@ plot(data.Contra.mean_timeVector,data.Contra.Z_NEmean_GFP,'-','color',colors('ar
 hold on
 plot(data.Contra.mean_timeVector,data.Contra.Z_NEmean_GFP + data.Contra.Z_NEstd_GFP,'-','color',colors('army green'),'LineWidth',0.10)
 plot(data.Contra.mean_timeVector,data.Contra.Z_NEmean_GFP - data.Contra.Z_NEstd_GFP,'-','color',colors('army green'),'LineWidth',0.10)
-title('Contra stim GFP')
+title('Contra Green')
 ylabel('Z \DeltaF/F GRAB NE')
 ax16.YAxis(1).Color = colors('indian red');
 ax16.YAxis(2).Color = colors('army green');
@@ -387,8 +387,8 @@ plot(data.Ipsi.mean_timeVector,data.Ipsi.Z_Achmean_GFP,'-','color',colors('india
 hold on
 plot(data.Ipsi.mean_timeVector,data.Ipsi.Z_Achmean_GFP + data.Ipsi.Z_Achstd_GFP,'-','color',colors('indian red'),'LineWidth',0.10)
 plot(data.Ipsi.mean_timeVector,data.Ipsi.Z_Achmean_GFP - data.Ipsi.Z_Achstd_GFP,'-','color',colors('indian red'),'LineWidth',0.10)
-title('Ipsi stim GFP')
-ylabel('Z \DeltaF/F GRAB Ach')
+title('Ipsi Green')
+ylabel('Z \DeltaF/F ACh')
 ax17.YLim = [-3 6];
 
 yyaxis right
@@ -396,7 +396,7 @@ plot(data.Ipsi.mean_timeVector,data.Ipsi.Z_NEmean_GFP,'-','color',colors('army g
 hold on
 plot(data.Ipsi.mean_timeVector,data.Ipsi.Z_NEmean_GFP + data.Ipsi.Z_NEstd_GFP,'-','color',colors('army green'),'LineWidth',0.10)
 plot(data.Ipsi.mean_timeVector,data.Ipsi.Z_NEmean_GFP - data.Ipsi.Z_NEstd_GFP,'-','color',colors('army green'),'LineWidth',0.10)
-title('Ipsi stim GFP')
+title('Ipsi Green')
 ylabel('Z \DeltaF/F GRAB NE')
 ax17.YAxis(1).Color = colors('indian red');
 ax17.YAxis(2).Color = colors('army green');
@@ -411,8 +411,8 @@ plot(data.Auditory.mean_timeVector,data.Auditory.Z_Achmean_GFP,'-','color',color
 hold on
 plot(data.Auditory.mean_timeVector,data.Auditory.Z_Achmean_GFP + data.Auditory.Z_Achstd_GFP,'-','color',colors('indian red'),'LineWidth',0.10)
 plot(data.Auditory.mean_timeVector,data.Auditory.Z_Achmean_GFP - data.Auditory.Z_Achstd_GFP,'-','color',colors('indian red'),'LineWidth',0.10)
-title('Auditory stim GFP')
-ylabel('Z \DeltaF/F GRAB Ach')
+title('Auditory Green')
+ylabel('Z \DeltaF/F ACh')
 ax18.YLim = [-3 6];
 
 yyaxis right
@@ -420,7 +420,7 @@ plot(data.Auditory.mean_timeVector,data.Auditory.Z_NEmean_GFP,'-','color',colors
 hold on
 plot(data.Auditory.mean_timeVector,data.Auditory.Z_NEmean_GFP + data.Auditory.Z_NEstd_GFP,'-','color',colors('army green'),'LineWidth',0.10)
 plot(data.Auditory.mean_timeVector,data.Auditory.Z_NEmean_GFP - data.Auditory.Z_NEstd_GFP,'-','color',colors('army green'),'LineWidth',0.10)
-title('Auditory stim GFP')
+title('Auditory Green')
 ylabel('Z \DeltaF/F GRAB NE')
 ax18.YAxis(1).Color = colors('indian red');
 ax18.YAxis(2).Color = colors('army green');
@@ -465,9 +465,9 @@ if strcmp(saveFigs,'y') == true
     if ~exist(dirpath,'dir')
         mkdir(dirpath);
     end
-    savefig(summaryFigure,[dirpath animalID 'Fig1-S2-Stim']);
+    savefig(summaryFigure,[dirpath animalID 'Stim']);
     set(summaryFigure,'PaperPositionMode','auto');
-    print('-painters','-dpdf','-fillpage',[dirpath animalID 'Fig1-S2-Stim'])
+    print('-painters','-dpdf','-fillpage',[dirpath animalID 'Stim'])
     close 
 end
 %% plot the comparison of GCaMP and Rhodamine with GRABNE and Rhodamine
@@ -635,9 +635,9 @@ if strcmp(saveFigs,'y') == true
     if ~exist(dirpath,'dir')
         mkdir(dirpath);
     end
-    savefig(summaryFigureN,[dirpath animalID 'Fig1-S2-Stim-FiberSignals']);
+    savefig(summaryFigureN,[dirpath animalID 'Stim-FiberSignals']);
     set(summaryFigureN,'PaperPositionMode','auto');
-    print('-painters','-dpdf','-fillpage',[dirpath animalID 'Fig1-S2-Stim-FiberSignals'])
+    print('-painters','-dpdf','-fillpage',[dirpath animalID 'Stim-FiberSignals'])
     close 
 end
 

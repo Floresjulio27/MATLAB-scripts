@@ -45,8 +45,8 @@ clear  fixedmicroarousalsIndex microarousalsCriteria microarousalsIndex
         % Skip file
     else
         microarousalsCriteria = (0:(microarousalsBins)-1);     % This will be used to fix the issue in microarousalsIndex
-        fixedmicroarousalsIndex = unique(microarousalsIndex + microarousalsCriteria);   % sleep Index now has the proper time stamps from sleep logical
-        for indexCount = 1:length(fixedmicroarousalsIndex)    % Loop through the length of sleep Index, and pull out associated data
+        fixedmicroarousalsIndex = unique(microarousalsIndex + microarousalsCriteria);   % MA Index now has the proper time stamps from MA logical
+        for indexCount = 1:length(fixedmicroarousalsIndex)    % Loop through the length of MA Index, and pull out associated data
             for dn = 1:length(dataTypes)
             dataType = char(dataTypes(dn));
                 if strcmp(dataType,'EMG') == true

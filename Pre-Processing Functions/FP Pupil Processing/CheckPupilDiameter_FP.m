@@ -9,7 +9,7 @@ function CheckPupilDiameter_FP(procDataFileID)
 
 load(procDataFileID)
 if strcmpi(ProcData.data.Pupil.frameCheck,'y') == true %#ok<*NODEF>
-    if isfield(ProcData.data.Pupil,'newDiameterCheck') == false
+    if isfield(ProcData.data.Pupil,'newDiameterCheck') == false %|| isfield(ProcData.data.Pupil,'newDiameterCheck') == true
         if isfield(ProcData.data.Pupil,'diametercheck') == false
             ProcData.data.Pupil.diameterCheck = 'n';
         end
@@ -26,8 +26,9 @@ if strcmpi(ProcData.data.Pupil.frameCheck,'y') == true %#ok<*NODEF>
                     colormap gray
                     axis image
                     axis off
-                    subplot(3,6,2:6)
+                    
                     try
+                        subplot(3,6,2:6)
                         p1 = plot((1:length(ProcData.data.Pupil.originalPupilArea))/samplingRate,ProcData.data.Pupil.originalPupilArea,'k','LineWidth',1);
                         hold on
                         s1 = scatter(ProcData.data.Pupil.originalBlinkInds/samplingRate,ones(length(ProcData.data.Pupil.originalBlinkInds),1)*max(ProcData.data.Pupil.originalPupilArea),'MarkerEdgeColor','b');

@@ -19,7 +19,7 @@ while strcmp(isok,'y') == 0
     thresh = input('No Threshold to binarize pressure sensor found. Please enter a threshold: '); disp(' ')
     binForceSensor = BinarizeForceSensor_FP(forceSensor,thresh);
     subplot(3,1,1)
-    plot(forceSensor,'k')
+    plot(forceSensor,'k'); hold on; yline(thresh,'r');
     axis tight
     subplot(3,1,2)
     plot(force,'k')

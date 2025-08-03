@@ -11,7 +11,7 @@ ROIFileName = {ROIFileDir.name}';
 ROIFileID = char(ROIFileName);
 load(ROIFileID);
 load(procDataFileID)
-if isfield(ProcData.data.Pupil,'frameCheck') == false 
+if isfield(ProcData.data.Pupil,'frameCheck') == false %|| isfield(ProcData.data.Pupil,'frameCheck') == true
     % load files and extract video information
     [animalID,fileDate,fileID] = GetFileInfo_JNeurosci2022(procDataFileID);
     pupilCamFileID = [fileID '_PupilCam.bin'];

@@ -36,8 +36,8 @@ procDataFileIDs = char(procDataFiles);
 curDir = cd;
 dirBreaks = strfind(curDir,'\');
 curFolder = curDir(dirBreaks(end) + 1:end);
-stimulationType = input('Input stimulation type (single or pulse): ','s'); disp(' ')
-dataTypes = {'Rhodamine','GFP','cortical_LH','EMG','Pupil'}; %'cortical_RH','hippocampus',
+stimulationType = 'pulse';%input('Input stimulation type (single or pulse): ','s'); disp(' ')
+dataTypes = {'CBV','GFP','Isos','cortical_LH','EMG','Pupil'}; %'cortical_RH','hippocampus',
 neuralDataTypes = {'cortical_LH'}; %,'cortical_RH','hippocampus'
 basefile = ([animalID '_RestingBaselines.mat']);
 %% BLOCK PURPOSE: [1] Categorize data
@@ -123,7 +123,9 @@ disp('Analyzing Block [11] Generating single trial summary figures'); disp(' ')
 saveFigs = 'y';
 for bb = 1:size(procDataFileIDs,1)
     procDataFileID = procDataFileIDs(bb,:);
-    [figHandle] = GenerateSingleFigures_FP_GRABNE(procDataFileID,saveFigs);
+    [figHandle] = GenerateSingleFigures_FP_SST_DLC(procDataFileID,saveFigs);
+    %[figHandle] = GenerateSingleFigures_FP_GRABNE(procDataFileID,saveFigs);
+    %[figHandle] = GenerateSingleFigures_FP_SST(procDataFileID,saveFigs);
     close(figHandle)
 end
 

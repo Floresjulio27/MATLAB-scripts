@@ -70,36 +70,36 @@ else
         load(trainingDataFileID)
         behavState = trainingTable.behavState;% traininglables;%
         % create a logical for each behavior bin
-%         for f = 1:length(behavState)
-%             if strcmp(behavState{f,1},'Not Sleep') == true
-%                 awakeLogical(f,1) = 1;
-%                 nremLogical(f,1) = 0;
-%                 remLogical(f,1) = 0;
-%             elseif strcmp(behavState{f,1},'NREM Sleep') == true
-%                 awakeLogical(f,1) = 0;
-%                 nremLogical(f,1) = 1;
-%                 remLogical(f,1) = 0;
-%             elseif strcmp(behavState{f,1},'REM Sleep') == true
-%                 awakeLogical(f,1) = 0;
-%                 nremLogical(f,1) = 0;
-%                 remLogical(f,1) = 1;
-%             end
-%         end
         for f = 1:length(behavState)
-            if behavState(f,1)=="Not Sleep"
+            if strcmp(behavState{f,1},'Not Sleep') == true
                 awakeLogical(f,1) = 1;
                 nremLogical(f,1) = 0;
                 remLogical(f,1) = 0;
-            elseif behavState(f,1)=="NREM Sleep"
+            elseif strcmp(behavState{f,1},'NREM Sleep') == true
                 awakeLogical(f,1) = 0;
                 nremLogical(f,1) = 1;
                 remLogical(f,1) = 0;
-            elseif behavState(f,1)=="REM Sleep"
+            elseif strcmp(behavState{f,1},'REM Sleep') == true
                 awakeLogical(f,1) = 0;
                 nremLogical(f,1) = 0;
                 remLogical(f,1) = 1;
             end
         end
+        % for f = 1:length(behavState)
+        %     if behavState(f,1)=="Not Sleep"
+        %         awakeLogical(f,1) = 1;
+        %         nremLogical(f,1) = 0;
+        %         remLogical(f,1) = 0;
+        %     elseif behavState(f,1)=="NREM Sleep"
+        %         awakeLogical(f,1) = 0;
+        %         nremLogical(f,1) = 1;
+        %         remLogical(f,1) = 0;
+        %     elseif behavState(f,1)=="REM Sleep"
+        %         awakeLogical(f,1) = 0;
+        %         nremLogical(f,1) = 0;
+        %         remLogical(f,1) = 1;
+        %     end
+        % end
         % save each logical under the sleep folder
         ProcData.sleep.logicals.(modelName).awakeLogical = logical(awakeLogical);
         ProcData.sleep.logicals.(modelName).nremLogical = logical(nremLogical);

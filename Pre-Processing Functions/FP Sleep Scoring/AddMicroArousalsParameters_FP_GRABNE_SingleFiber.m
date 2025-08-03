@@ -305,7 +305,7 @@ for a = 1:size(procDataFileIDs,1)
             end
         end
     %% Create folder for the EMG
-    EMG = ProcData.data.EMG.emg;
+    EMG = ProcData.data.EMG.emg';
     normEMG = EMG - RestingBaselines.(baselineType).EMG.emg.(strDay).mean;  
     tempEMGStruct = cell(NBins,1);
     for EMGBins = 1:NBins
@@ -317,7 +317,7 @@ for a = 1:size(procDataFileIDs,1)
     end
     ProcData.MicroArousals.parameters.EMG.emg = tempEMGStruct; 
     %% raw EMG Signal
-    EMG = ProcData.data.EMG.emgSignal;
+    EMG = ProcData.data.EMG.emgSignal';
     normEMG = EMG - RestingBaselines.(baselineType).EMG.emgSignal.(strDay).mean;  
     tempEMGStruct = cell(NBins,1);
     for EMGBins = 1:NBins

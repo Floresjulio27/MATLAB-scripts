@@ -1,5 +1,5 @@
 
-% function StageTwoHalfPupilTracking
+function StageTwoHalfPupilTracking
 
 clc; clear all; close all
 disp('Analyzing Block [0] reading the proc files to check the quality of pupil analysis.'); disp(' ')

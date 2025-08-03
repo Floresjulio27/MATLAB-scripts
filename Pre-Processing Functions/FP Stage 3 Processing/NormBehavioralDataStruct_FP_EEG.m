@@ -13,7 +13,7 @@ function [DataStruct] = NormBehavioralDataStruct_FP_EEG(DataStruct,RestingBaseli
 dataTypes = fieldnames(DataStruct);
 for dT = 1:length(dataTypes)
     dataType = char(dataTypes(dT));
-    if strcmp(dataType,'Rhodamine') == false && strcmp(dataType,'GFP') == false % normalize data for everything else
+    if strcmp(dataType,'CBV') == false && strcmp(dataType,'GFP') == false && strcmp(dataType,'Isos') == false % normalize data for everything else
         hemisphereDataTypes = fieldnames(DataStruct.(dataType));       
         for hDT = 1:length(hemisphereDataTypes)
             hemDataType = char(hemisphereDataTypes(hDT));           
@@ -90,7 +90,7 @@ for dT = 1:length(dataTypes)
                 end
             end
         end
-    elseif strcmp(dataType,'Rhodamine') == true || strcmp(dataType,'GFP') == true %% Zscore the data for fiber photometry
+    elseif strcmp(dataType,'CBV') == true || strcmp(dataType,'GFP') == true || strcmp(dataType,'Isos') == true %% subtract the resting value the data for fiber photometry
         hemisphereDataTypes = fieldnames(DataStruct.(dataType));       
         for hDT = 1:length(hemisphereDataTypes)
             hemDataType = char(hemisphereDataTypes(hDT));           
@@ -128,7 +128,7 @@ for dT = 1:length(dataTypes)
                                 % causes a matrix dimension error if not permuted)
                                 dayData = permute(normDayData,unique([2,1,ndims(normDayData)],'stable'));
                                 for dD = 1:size(dayData,2)
-                                    normDayData(dD,:,:) = (squeeze(dayData(:,dD,:))-(ones(size(dayData,1),1)*dayBaselineMean))./ (ones(size(dayData,1),1)*dayBaselineStd);
+                                    normDayData(dD,:,:) = (squeeze(dayData(:,dD,:))-(ones(size(dayData,1),1)*dayBaselineMean));%./ (ones(size(dayData,1),1)*dayBaselineStd);
                                 end
                                 NormData(dayInds,:,:) = normDayData;
                             end
@@ -166,7 +166,7 @@ for dT = 1:length(dataTypes)
                         dayData = permute(normDayData,unique([2,1,ndims(normDayData)],'stable'));
                         
                         for dD = 1:size(dayData,2)
-                            normDayData(dD,:,:) = (squeeze(dayData(:,dD,:))-(ones(size(dayData,1),1)*dayBaselineMean))./ (ones(size(dayData,1),1)*dayBaselineStd);
+                            normDayData(dD,:,:) = (squeeze(dayData(:,dD,:))-(ones(size(dayData,1),1)*dayBaselineMean));%./ (ones(size(dayData,1),1)*dayBaselineStd);
                         end
                         NormData(dayInds,:,:) = normDayData;
                     end

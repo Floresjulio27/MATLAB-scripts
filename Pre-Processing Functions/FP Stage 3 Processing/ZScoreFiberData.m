@@ -19,16 +19,21 @@ function [dFF0_z] =  ZScoreFiberData(Corrected,Params,ChannelName)
     dFF0_z.F405 = (dF.F405 - mean(baseline_F405))/std(baseline_F405);
     %% plot the data
     figTime=(1:length(dFF0_z.F465))/(Params.DataFs*60);
-    figure; 
-    h(1) = subplot(211);
+    % figure; 
+    h(1) = subplot(311);
     plot(figTime,filtfilt(Params.sos_Low,Params.g_Low,dFF0_z.F560)); 
-    title('Exp Corrected Zscored Rhodamine'); xlabel('Time (min)'); xlim([0 figTime(end)]);
+    title('Exp Corrected Zscored CBV'); xlabel('Time (min)'); xlim([0 figTime(end)]);
     ylabel('ZScored \DeltaF');
 
-    h(2) = subplot(212);
+    h(2) = subplot(312);
     plot(figTime,filtfilt(Params.sos_Low,Params.g_Low,dFF0_z.F465)); 
-    title('Exp Corrected Zscored GFP'); xlabel('Time (min)');  xlim([0 figTime(end)]);
+    title('Exp Corrected Zscored Green FP'); xlabel('Time (min)');  xlim([0 figTime(end)]);
     ylabel('ZScored \DeltaF');   
+
+    h(3) = subplot(313);
+    plot(figTime,filtfilt(Params.sos_Low,Params.g_Low,dFF0_z.F405)); 
+    title('Exp Corrected Zscored 405 FP'); xlabel('Time (min)');  xlim([0 figTime(end)]);
+    ylabel('ZScored \DeltaF'); 
 
     linkaxes(h);
     saveas(gcf,['../Figures/Corrections/' Params.savepath 'Zscored_' ChannelName '.fig'],'fig')

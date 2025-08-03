@@ -21,7 +21,7 @@ strDay = ConvertDate_FP(fileDate);
 filteredWhiskerAngle = filtfilt(sos1,g1,ProcData.data.whiskerAngle);
 binWhiskers = ProcData.data.binWhiskerAngle;
 %pupil 
-filteredpupildiameter = filtfilt(sos1,g1,ProcData.data.Pupil.zDiameter);
+filteredpupildiameter = ProcData.data.Pupil.zDiameter;
 % force sensor
 filtForceSensor = filtfilt(sos1,g1,ProcData.data.forceSensor);
 binForce = ProcData.data.binForceSensor;
@@ -33,7 +33,7 @@ LPadSol = ProcData.data.stimulations.LPadSol;
 RPadSol = ProcData.data.stimulations.RPadSol;
 AudSol = ProcData.data.stimulations.AudSol;
 % NE data
-NE_GFP = ProcData.data.GFP.Z_NE;
+NE_GFP = ProcData.data.GFP.P_NE;
 filtNE_GFP = filtfilt(sos2,g2,NE_GFP);
 % cortical and hippocampal spectrograms
 specDataFile = [animalID '_' fileID '_SpecDataA.mat'];
@@ -47,8 +47,7 @@ EEG_LH = ProcData.data.cortical_LH.corticalSignal;
 EEG_LH(1:ProcData.notes.dsFs) = EEG_LH(ProcData.notes.dsFs+1:ProcData.notes.dsFs+ProcData.notes.dsFs);
 EEG_LH = medfilt1(EEG_LH,3);
 % Yvals for behavior Indices
-indecesMax = max(filteredpupildiameter);
-% indecesMax = max([filtAch_Rhodamine;filtAch_GFP]);
+indecesMax = max(filtNE_GFP);
 whisking_Yvals = 1.10*max(indecesMax)*ones(size(binWhiskers));
 force_Yvals = 1.20*max(indecesMax)*ones(size(binForce));
 forceInds = binForce.*force_Yvals;
@@ -104,25 +103,61 @@ set(gca,'box','off')
 axis tight
 % pupil and behavioral indeces
 ax3 = subplot(7,1,3);
-s1 = scatter((1:length(binForce))/ProcData.notes.dsFs,forceInds,'.','MarkerEdgeColor',colors('north texas green'));
-hold on
-s2 = scatter((1:length(binWhiskers))/ProcData.notes.dsFs,whiskInds,'.','MarkerEdgeColor',colors('dark pink'));
-s3 = scatter(LPadSol,LPad_Yvals,'v','MarkerEdgeColor','k','MarkerFaceColor','c');
-s4 = scatter(RPadSol,RPad_Yvals,'v','MarkerEdgeColor','k','MarkerFaceColor','m');
-s5 = scatter(AudSol,Aud_Yvals,'v','MarkerEdgeColor','k','MarkerFaceColor','g');
+% s1 = scatter((1:length(binForce))/ProcData.notes.dsFs,forceInds,'.','MarkerEdgeColor',colors('north texas green'));
+% hold on
+% s2 = scatter((1:length(binWhiskers))/ProcData.notes.dsFs,whiskInds,'.','MarkerEdgeColor',colors('dark pink'));
+% s3 = scatter(LPadSol,LPad_Yvals,'v','MarkerEdgeColor','k','MarkerFaceColor','c');
+% s4 = scatter(RPadSol,RPad_Yvals,'v','MarkerEdgeColor','k','MarkerFaceColor','m');
+% s5 = scatter(AudSol,Aud_Yvals,'v','MarkerEdgeColor','k','MarkerFaceColor','g');
 p5 = plot((1:length(filteredpupildiameter))/ProcData.notes.dsFs,filteredpupildiameter,'color',colors('dark candy apple red'),'LineWidth',1);
-legend([p5,s1,s2,s3,s4,s5],'Pupil Diameter','movement','whisking','LSol','RSol','AudSol')
+legend([p5],'Pupil Diameter')
 ylabel('Diameter (Z)')
 xlim([0,ProcData.notes.trialDuration_sec])
 set(gca,'TickLength',[0,0])
 set(gca,'Xticklabel',[])
 set(gca,'box','off')
 axis tight
-% GRABNE and Sleep Score data
+% GRABNE and Sleep Score data. Original is down
+% ax4 = subplot(7,1,4);
+% p8 = plot((1:length(filtNE_GFP))/ProcData.notes.dsFs,filtNE_GFP,'color',colors('vegas gold'),'LineWidth',1);
+% hold on
+% s1 = scatter((1:length(binForce))/ProcData.notes.dsFs,forceInds,'.','MarkerEdgeColor',colors('north texas green'));
+% s2 = scatter((1:length(binWhiskers))/ProcData.notes.dsFs,whiskInds,'.','MarkerEdgeColor',colors('dark pink'));
+% 
+% s3 = scatter(LPadSol,LPad_Yvals,'v','MarkerEdgeColor','k','MarkerFaceColor','c');
+% s4 = scatter(RPadSol,RPad_Yvals,'v','MarkerEdgeColor','k','MarkerFaceColor','m');
+% s5 = scatter(AudSol,Aud_Yvals,'v','MarkerEdgeColor','k','MarkerFaceColor','g');
+% 
+% if (isempty(LPad_Yvals) == 1) && (isempty(RPad_Yvals) == 1) && (isempty(Aud_Yvals) == 1)
+%     legend([p8,s1,s2],'GRAB NE','movement','whisking')
+% else
+%     legend([p8,s1,s2,s3,s4,s5],'GRAB NE','movement','whisking','LSol','RSol','AudSol')
+% end
+% 
+% ylabel('\Delta F/F')
+% xlim([0,ProcData.notes.trialDuration_sec])
+% set(gca,'TickLength',[0,0])
+% set(gca,'Xticklabel',[])
+% set(gca,'box','off')
+% axis tight
+
 ax4 = subplot(7,1,4);
-p8 = plot((1:length(filtNE_GFP))/ProcData.notes.dsFs,filtNE_GFP,'color',colors('vegas gold'),'LineWidth',1);
-ylabel('\Delta F/F (Z)')
-legend(p8,'GRAB NE')
+% p8 = plot((1:length(filtNE_GFP))/ProcData.notes.dsFs,filtNE_GFP,'color',colors('vegas gold'),'LineWidth',1);
+hold on
+p8 = scatter((1:length(binForce))/ProcData.notes.dsFs,forceInds,'.','MarkerEdgeColor',colors('north texas green'));
+s1 = scatter((1:length(binWhiskers))/ProcData.notes.dsFs,whiskInds,'.','MarkerEdgeColor',colors('dark pink'));
+
+s2 = scatter(LPadSol,LPad_Yvals,'v','MarkerEdgeColor','k','MarkerFaceColor','c');
+s3 = scatter(RPadSol,RPad_Yvals,'v','MarkerEdgeColor','k','MarkerFaceColor','m');
+s4 = scatter(AudSol,Aud_Yvals,'v','MarkerEdgeColor','k','MarkerFaceColor','g');
+
+if (isempty(LPad_Yvals) == 1) && (isempty(RPad_Yvals) == 1) && (isempty(Aud_Yvals) == 1)
+    legend([s1,s2],'SST PFC','movement','whisking')
+else
+    legend([p8,s1,s2,s3,s4],'movement','whisking','LSol','RSol','AudSol')
+end
+
+ylabel('\Delta F/F')
 xlim([0,ProcData.notes.trialDuration_sec])
 set(gca,'TickLength',[0,0])
 set(gca,'Xticklabel',[])
@@ -156,7 +191,7 @@ xlabel('Time (sec)')
 set(gca,'TickLength',[0,0])
 set(gca,'box','off')
 yyaxis right
-ylabel('Right cortical LFP')
+ylabel('ECOG')
 set(gca,'Yticklabel',[])
 
 % Axes properties

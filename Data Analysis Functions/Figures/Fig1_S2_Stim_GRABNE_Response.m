@@ -1,4 +1,4 @@
-function [AnalysisResults] = Fig1_S2_Stim_GRABNE_Response(rootFolder,saveFigs,delim,AnalysisResults,firstHrs)
+function [AnalysisResults] = Fig1_S2_Stim_GRABNE_Response(rootFolder,saveFigs,delim,AnalysisResults,firstHrs,FPanimalIDs)
 %________________________________________________________________________________________________________________________
 % Written by Kevin L. Turner
 % The Pennsylvania State University, Dept. of Biomedical Engineering
@@ -9,7 +9,6 @@ function [AnalysisResults] = Fig1_S2_Stim_GRABNE_Response(rootFolder,saveFigs,de
 % load('S:\NEACh\AnalysisResults_firstHrs.mat');
 % AnalysisResults = AnalysisResults_firstHrs;
 %% set-up and process data
-FPanimalIDs = {'NEACh002'};
 solenoidNames = {'LPadSol','RPadSol','AudSol'};
 compDataTypes = {'Ipsi','Contra','Auditory'};
 % cd through each animal's directory and extract the appropriate analysis results
@@ -101,7 +100,6 @@ data.Auditory.cortS_Gam = data.cortical.AudSol.cortS_Gam;
 data.Auditory.T = data.cortical.AudSol.T;
 data.Auditory.F = data.cortical.AudSol.F;
 
-
 % take the averages of each field through the proper dimension
 for ff = 1:length(compDataTypes)
     compDataType = compDataTypes{1,ff};
@@ -121,11 +119,9 @@ for ff = 1:length(compDataTypes)
     data.(compDataType).Z_NEstd_GFP = std(data.(compDataType).Z_NEGFP,0,2);
 
     data.(compDataType).Z_Achmean_Rhodamine_std = mean(data.(compDataType).Z_AchRhodamine_std,2);
-
     data.(compDataType).Z_NEmean_Rhodamine_std = mean(data.(compDataType).Z_NERhodamine_std,2);
 
     data.(compDataType).Z_Achmean_GFP_std = mean(data.(compDataType).Z_AchGFP_std,2);
-
     data.(compDataType).Z_NEmean_GFP_std = mean(data.(compDataType).Z_NEGFP_std,2);
 
 
@@ -143,26 +139,60 @@ end
 
 %% plot the response
 summaryFigureN = figure ;
-% plot
-ax2 = subplot(2,2,1);
-p1= plot(data.Contra.mean_timeVector,data.Contra.Z_NEmean_Rhodamine,'-','color',[0.6350 0.0780 0.1840],'LineWidth',2);
+% Subplot 1
+% mSacrlet
+ax1 = subplot(2,2,1);
+p1= plot(data.Ipsi.mean_timeVector,data.Ipsi.Z_Achmean_Rhodamine,'-','color',[0.6350 0.0780 0.1840],'LineWidth',2);
 hold on
-plot(data.Contra.mean_timeVector,data.Contra.Z_NEmean_Rhodamine + data.Contra.Z_NEmean_Rhodamine_std,'-','color',[0.6350 0.0780 0.1840],'LineWidth',0.10)
-plot(data.Contra.mean_timeVector,data.Contra.Z_NEmean_Rhodamine - data.Contra.Z_NEmean_Rhodamine_std,'-','color',[0.6350 0.0780 0.1840],'LineWidth',0.10)
+plot(data.Ipsi.mean_timeVector,data.Ipsi.Z_Achmean_Rhodamine + data.Ipsi.Z_Achstd_Rhodamine,'-','color',[0.6350 0.0780 0.1840],'LineWidth',0.10)
+plot(data.Ipsi.mean_timeVector,data.Ipsi.Z_Achmean_Rhodamine - data.Ipsi.Z_Achstd_Rhodamine,'-','color',[0.6350 0.0780 0.1840],'LineWidth',0.10)
 title('Stimulus Evoked Response')
 ylabel('\DeltaF/F (Z)')
-ax2.YLim = [-7 8];
+ax1.YLim = [-2 6];
 
-% yyaxis right
+% NE
 p2 = plot(data.Contra.mean_timeVector,data.Contra.Z_NEmean_GFP,'-','color',[0.4660 0.6740 0.1880],'LineWidth',2);
 hold on
-plot(data.Contra.mean_timeVector,data.Contra.Z_NEmean_GFP + data.Contra.Z_NEmean_GFP_std,'-','color',[0.4660 0.6740 0.1880],'LineWidth',0.10)
-plot(data.Contra.mean_timeVector,data.Contra.Z_NEmean_GFP - data.Contra.Z_NEmean_GFP_std,'-','color',[0.4660 0.6740 0.1880],'LineWidth',0.10)
+plot(data.Contra.mean_timeVector,data.Contra.Z_NEmean_GFP + data.Contra.Z_NEstd_GFP,'-','color',[0.4660 0.6740 0.1880],'LineWidth',0.10)
+plot(data.Contra.mean_timeVector,data.Contra.Z_NEmean_GFP - data.Contra.Z_NEstd_GFP,'-','color',[0.4660 0.6740 0.1880],'LineWidth',0.10)
 
-
+%ACh
 p3 = plot(data.Ipsi.mean_timeVector,data.Ipsi.Z_Achmean_GFP,'-','color',[0 0.4470 0.7410],'LineWidth',2);
-plot(data.Ipsi.mean_timeVector,data.Ipsi.Z_Achmean_GFP + data.Ipsi.Z_Achmean_GFP_std,'-','color',[0 0.4470 0.7410],'LineWidth',0.10)
-plot(data.Ipsi.mean_timeVector,data.Ipsi.Z_Achmean_GFP - data.Ipsi.Z_Achmean_GFP_std,'-','color',[0 0.4470 0.7410],'LineWidth',0.10)
+plot(data.Ipsi.mean_timeVector,data.Ipsi.Z_Achmean_GFP + data.Ipsi.Z_Achstd_GFP,'-','color',[0 0.4470 0.7410],'LineWidth',0.10)
+plot(data.Ipsi.mean_timeVector,data.Ipsi.Z_Achmean_GFP - data.Ipsi.Z_Achstd_GFP,'-','color',[0 0.4470 0.7410],'LineWidth',0.10)
+ylabel('\DeltaF/F (Z)')
+ax1.YAxis(1).Color = 'k';
+% ax2.YAxis(2).Color = 'k';
+xlabel('Peri-stimulus time (s)')
+legend([p1,p2,p3],'CBV','NE', 'ACh')
+axis square
+set(gca,'box','off')
+ax1.TickLength = [0.03,0.03];
+ax1.YLim = [-2 6];
+xlim([-5 15])
+axis square
+
+% Subplot 2
+% mSacrlet
+ax2 = subplot(2,2,2);
+p1= plot(data.Ipsi.mean_timeVector,data.Contra.Z_NEmean_Rhodamine,'-','color',[0.6350 0.0780 0.1840],'LineWidth',2);
+hold on
+plot(data.Ipsi.mean_timeVector,data.Contra.Z_NEmean_Rhodamine + data.Contra.Z_NEstd_Rhodamine,'-','color',[0.6350 0.0780 0.1840],'LineWidth',0.10)
+plot(data.Ipsi.mean_timeVector,data.Contra.Z_NEmean_Rhodamine - data.Contra.Z_NEstd_Rhodamine,'-','color',[0.6350 0.0780 0.1840],'LineWidth',0.10)
+title('Stimulus Evoked Response')
+ylabel('\DeltaF/F (Z)')
+ax2.YLim = [-2 6];
+
+% NE
+p2 = plot(data.Contra.mean_timeVector,data.Contra.Z_NEmean_GFP,'-','color',[0.4660 0.6740 0.1880],'LineWidth',2);
+hold on
+plot(data.Contra.mean_timeVector,data.Contra.Z_NEmean_GFP + data.Contra.Z_NEstd_GFP,'-','color',[0.4660 0.6740 0.1880],'LineWidth',0.10)
+plot(data.Contra.mean_timeVector,data.Contra.Z_NEmean_GFP - data.Contra.Z_NEstd_GFP,'-','color',[0.4660 0.6740 0.1880],'LineWidth',0.10)
+
+%ACh
+p3 = plot(data.Ipsi.mean_timeVector,data.Ipsi.Z_Achmean_GFP,'-','color',[0 0.4470 0.7410],'LineWidth',2);
+plot(data.Ipsi.mean_timeVector,data.Ipsi.Z_Achmean_GFP + data.Ipsi.Z_Achstd_GFP,'-','color',[0 0.4470 0.7410],'LineWidth',0.10)
+plot(data.Ipsi.mean_timeVector,data.Ipsi.Z_Achmean_GFP - data.Ipsi.Z_Achstd_GFP,'-','color',[0 0.4470 0.7410],'LineWidth',0.10)
 ylabel('\DeltaF/F (Z)')
 ax2.YAxis(1).Color = 'k';
 % ax2.YAxis(2).Color = 'k';
@@ -171,13 +201,10 @@ legend([p1,p2,p3],'CBV','NE', 'ACh')
 axis square
 set(gca,'box','off')
 ax2.TickLength = [0.03,0.03];
-ax2.YLim = [-7 8];
+ax2.YLim = [-2 6];
 xlim([-5 15])
-
-
-
-
-% save figure(s)
+axis square
+%% save figure(s)
 if strcmp(saveFigs,'y') == true
     if firstHrs == "false"
         dirpath = [rootFolder delim 'Summary Figures and Structures' delim 'MATLAB Analysis Figures' delim 'lastHrs' delim];
@@ -187,9 +214,9 @@ if strcmp(saveFigs,'y') == true
     if ~exist(dirpath,'dir')
         mkdir(dirpath);
     end
-    savefig(summaryFigureN,[dirpath animalID 'Fig1-S2-Stim-FiberSignals_response']);
+    savefig(summaryFigureN,[dirpath 'Stim-FiberSignals_response']); %animalID 
     set(summaryFigureN,'PaperPositionMode','auto');
-    print('-painters','-dpdf','-fillpage',[dirpath animalID 'Fig1-S2-Stim-FiberSignals_response'])
+    print('-painters','-dpdf','-fillpage',[dirpath 'Stim-FiberSignals_response']) % animalID
     close 
 end
 

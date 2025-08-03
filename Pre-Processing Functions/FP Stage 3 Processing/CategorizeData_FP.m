@@ -8,11 +8,16 @@ function [] = CategorizeData_FP(procDataFileID,stimulationType)
 %________________________________________________________________________________________________________________________
 %
 % Purpose: Catagorizes data based on behavioral flags from whisking/movement events
-%________________________________________________________________________________________________________________________
-% Load and Setup
+%_______________________________________________________________________________________________________________________
+%jF comment: this categorize the data in periods of rest, stimulation, etc
+%and tells you when in the recording does it happen and the value of
+%parameters
+%% Load and Setup
+
 disp(['Categorizing data for: ' procDataFileID]); disp(' ')
 load(procDataFileID)
 % condense pulsed stimulations
+% Creating empty spaces to store the variables basically 
 if strcmp(stimulationType,'pulse') == true
     stimulationFields = fieldnames(ProcData.data.stimulations);
     for aa = 1:length(stimulationFields)
@@ -38,7 +43,7 @@ if strcmp(stimulationType,'pulse') == true
     end
 end
 whiskerSamplingRate = ProcData.notes.dsFs;
-% Process binary whisking waveform to detect whisking events
+%% Process binary whisking waveform to detect whisking events
 % Setup parameters for link_binary_events
 linkThresh = 0.5;   % seconds, Link events < 0.5 seconds apart
 breakThresh = 0;   % seconds changed by atw on 2/6/18 from 0.07
@@ -64,13 +69,35 @@ if binWhiskers(end) == 0 && binWhiskers(end - 1) == 1
 elseif binWhiskers(end) == 1 && binWhiskers(end - 1) == 0
     binWhiskers(end) = 0;
 end
-% Categorize data by behavior
+%% movement
+modBinForce = ProcData.data.binForceSensor;
+% modBinWhiskers([1,end]) = 1;
+% Link the binarized whisking for use in GetWhiskingdata function
+binForceSensor = LinkBinaryEvents_FP(gt(modBinForce,0),[linkThresh breakThresh]*whiskerSamplingRate);
+% Added 2/6/18 with atw. Code throws errors if binWhiskers(1)=1 and binWhiskers(2) = 0, or if 
+% binWhiskers(1) = 0 and binWhiskers(2) = 1. This happens in GetWhiskingdata because starts of 
+% whisks are detected by taking the derivative of binWhiskers. Purpose of following lines is to 
+% handle trials where the above conditions occur and avoid difficult dimension errors.
+if binForceSensor(1) == 0 && binForceSensor(2) == 1
+    binForceSensor(1) = 1;
+elseif binForceSensor(1) == 1 && binForceSensor(2) == 0
+    binForceSensor(1) = 0;
+end
+if binForceSensor(end) == 0 && binForceSensor(end - 1) == 1
+    binForceSensor(end) = 1;
+elseif binForceSensor(end) == 1 && binForceSensor(end - 1) == 0
+    binForceSensor(end) = 0;
+end
+%% Categorize data by behavior
+% Retrieve details on force sensor movement events
+[ProcData.flags.movement] = GetMovementdata_FP(ProcData,binForceSensor);
 % Retrieve details on whisking events
 [ProcData.flags.whisk] = GetWhiskingdata_FP(ProcData,binWhiskers);
 % Retrieve details on puffing events
 [ProcData.flags.stim] = GetStimdata_FP(ProcData);
 % Identify and separate resting data
 [ProcData.flags.rest] = GetRestdata(ProcData);
+
 % Save ProcData structure
 save(procDataFileID,'ProcData','-v7.3');
 end
@@ -248,7 +275,8 @@ linkThresh = 0.5;   % seconds
 breakThresh = 0;   % seconds
 binWhiskerAngle = LinkBinaryEvents_FP(gt(modBinarizedWhiskers,0),[linkThresh breakThresh]*whiskerSamplingRate);
 binForceSensor = LinkBinaryEvents_FP(modBinarizedForceSensor,[linkThresh breakThresh]*forceSensorSamplingRate);
-% Combine binWhiskerAngle, binForceSensor, and puffTimes, to find periods of rest. 
+% Combine binWhiskerAngle, binForceSensor, and puffTimes, to find periods
+% of rest. This is important
 % Downsample bin_wwf to match length of bin_pswf
 sampleVec = 1:length(binWhiskerAngle); 
 whiskHigh = sampleVec(binWhiskerAngle)/whiskerSamplingRate;
@@ -305,4 +333,76 @@ Rest.eventTime = stops';
 Rest.duration = restDur';
 Rest.puffDistance = puffTimeCell;
 Rest.whiskDuration = whiskDur';
+end
+%% get movement data
+function [Movement] = GetMovementdata_FP(ProcData,binForceSensor)
+    % Setup
+    forceSamplingRate = ProcData.notes.dsFs;
+    forceSensorSamplingRate = ProcData.notes.dsFs;
+    % Get Puff Times
+    [puffTimes] = GetPuffTimes_FP(ProcData);
+    % Find the starts of forceing
+    forceEdge = diff(binForceSensor);
+    forceSamples = find(forceEdge > 0);
+    forceStarts = forceSamples/forceSamplingRate;
+    % Classify each forceing event by duration, forceing intensity, rest durations
+    sampleVec = 1:length(binForceSensor); 
+    % Identify periods of forceing/resting, include beginning and end of trial
+    % if needed (hence unique command) for correct interval calculation
+    highSamples = unique([1, sampleVec(binForceSensor),sampleVec(end)]); 
+    lowSamples = unique([1, sampleVec(not(binForceSensor)),sampleVec(end)]);
+    % Calculate the number of samples between consecutive high/low samples.
+    dHigh = diff(highSamples);
+    dLow = diff(lowSamples);
+    % Identify skips in sample numbers which correspond to rests/forces,
+    % convert from samples to seconds.
+    restLength = dHigh(dHigh > 1);
+    forceLength = dLow(dLow > 1);
+    restDur = restLength/forceSamplingRate;
+    forceDur = forceLength/forceSamplingRate;
+    % Control for the beginning/end of the trial to correctly map rests/forces
+    % onto the force_starts.
+    if binForceSensor(1)
+        forceDur(1) = [];
+        forceLength(1) = [];
+    end
+    if not(binForceSensor(end))
+        restDur(end) = [];
+    end
+    % Calculate the forceing intensity -> sum(ProcData.Bin_wwf)/sum(Bin_wwf)
+    % over the duration of the force. Calculate the movement intensity over the same interval.
+    forceInt = zeros(size(forceStarts));
+    forcemovementInt = zeros(size(forceStarts));
+    for wS = 1:length(forceSamples)
+        % Force intensity
+        forceInds = forceSamples(wS):forceSamples(wS) + forceLength(wS);
+        forceInt(wS) = sum(ProcData.data.binForceSensor(forceInds))/numel(forceInds);
+        % Movement intensity
+        forcemovementStart = round(forceStarts(wS)*forceSensorSamplingRate);
+        forcemovementDur = round(forceDur(wS)*forceSensorSamplingRate);
+        forcemovementInds = max(forcemovementStart, 1):min(forcemovementStart + forcemovementDur,length(ProcData.data.binForceSensor));
+        forcemovementInt(wS) = sum(ProcData.data.binForceSensor(forcemovementInds))/numel(forcemovementInds);
+    end
+    % Calculate the time to the closest puff
+    % If no puff occurred during the trial, store 0 as a place holder.
+    if isempty(puffTimes)
+        puffTimes = 0;
+    end
+    puffMat = ones(length(forceSamples),1)*puffTimes;
+    forceMat = forceSamples'*ones(1,length(puffTimes))/forceSamplingRate;
+    puffTimeElapsed = abs(forceMat - puffMat);
+    % Convert to cell
+    puffTimeCell = mat2cell(puffTimeElapsed,ones(length(forceStarts),1));
+    % Error handle
+    if length(restDur) ~= length(forceDur)
+        disp('Error in GetMovementdata! The number of forces does not equal the number of rests...'); disp(' ')
+        keyboard;
+    end
+    % Compile into final structure
+    Movement.eventTime = forceStarts';
+    Movement.duration = forceDur';
+    Movement.restTime = restDur';
+    Movement.forceScore = forceInt';
+    Movement.movementScore = forcemovementInt';
+    Movement.puffDistance = puffTimeCell;
 end

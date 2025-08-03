@@ -1,4 +1,4 @@
-function [AnalysisResults] = Fig1_S4_FP_Stats_GRABNE(rootFolder,saveFigs,delim,AnalysisResults,firstHrs)
+function [AnalysisResults] = Fig1_S4_FP_Stats_GRABNE(rootFolder,saveFigs,delim,AnalysisResults,firstHrs,FP_animalIDs)
 %________________________________________________________________________________________________________________________
 % Written by Kevin L. Turner
 % The Pennsylvania State University, Dept. of Biomedical Engineering
@@ -6,7 +6,9 @@ function [AnalysisResults] = Fig1_S4_FP_Stats_GRABNE(rootFolder,saveFigs,delim,A
 %
 % Purpose: Generate figure panel 1-S4 for Turner_Gheres_Proctor_Drew
 %________________________________________________________________________________________________________________________
-
+FigInital = strfind(rootFolder,'\');
+ManipulationType = rootFolder(FigInital(end)+1:end);
+%%
 % colorBlack = [(0/256),(0/256),(0/256)];
 % colorGrey = [(209/256),(211/256),(212/256)];
 % colorRfcAwake = [(0/256),(64/256),(64/256)];
@@ -23,28 +25,28 @@ colorREM = [(254/256),(139/256),(0/256)];
 % colorAll = [(183/256),(115/256),(51/256)];
 % colorIso = [(0/256),(256/256),(256/256)];
 %% set-up and process data
-FP_animalIDs = {'GRABNE001','GRABNE002'};
-if firstHrs == "true"
-    behavFields = {'Rest','NREM','Stim', 'Whisk'};
-elseif firstHrs == "false"
-    behavFields = {'Rest','NREM','REM', 'Whisk'};
-end
-%% Rhodamine comparison between behaviors
-% pre-allocate the date for each day
+
+    % behavFields = {'Rest','NREM','REM','Stim', 'Whisk'}; %{'Rest','NREM','Stim', 'Whisk'}; %
+% elseif firstHrs == "false" 
+    % behavFields = {'Rest','NREM','REM', 'Whisk'};
+% end
+%% CBV comparison between behaviors
+% pre-allocate the date for eACh day
 for aa = 1:length(FP_animalIDs)
     animalID = FP_animalIDs{1,aa};
+
+    if ~isfield(AnalysisResults.(animalID).MeanCBV,'REM') % no REM data available
+    behavFields = {'Rest','NREM','Stim', 'Whisk'};
+    end
+
+    if isfield(AnalysisResults.(animalID).MeanCBV,'REM') % REM data available
+    behavFields = {'Rest','NREM','REM','Stim', 'Whisk'};
+    end
+
     for bb = 1:length(behavFields)
         behavField = behavFields{1,bb};
-            data.Rhodamine.(animalID).(behavField).meanAch = AnalysisResults.(animalID).MeanRhodamine.(behavField).Rhodamine.MeanAch;
-            data.Rhodamine.(animalID).(behavField).meanNE = AnalysisResults.(animalID).MeanRhodamine.(behavField).Rhodamine.MeanNE;
-
-
-%         for cc = 1:length(AnalysisResults.(animalID).MeanRhodamine.(behavField).Rhodamine.IndAch)
-%             data.Rhodamine.(animalID).(behavField).meanAch(cc,1) = mean(AnalysisResults.(animalID).MeanRhodamine.(behavField).Rhodamine.IndAch{cc,1});
-%         end
-%         for cc = 1:length(AnalysisResults.(animalID).MeanRhodamine.(behavField).Rhodamine.IndNE)
-%             data.Rhodamine.(animalID).(behavField).meanNE(cc,1) = mean(AnalysisResults.(animalID).MeanRhodamine.(behavField).Rhodamine.IndNE{cc,1});
-%         end
+            data.CBV.(animalID).(behavField).meanACh = AnalysisResults.(animalID).MeanCBV.(behavField).CBV.MeanACh;
+            data.CBV.(animalID).(behavField).meanNE = AnalysisResults.(animalID).MeanCBV.(behavField).CBV.MeanNE;
     end
 end
 
@@ -52,41 +54,90 @@ end
 % put data into arrays and prep for stats
 for dd = 1:length(FP_animalIDs)
     animalID = FP_animalIDs{1,dd};
+
+    if ~isfield(AnalysisResults.(animalID).MeanCBV,'REM') % no REM data available
+    behavFields = {'Rest','NREM','Stim', 'Whisk'};
+    end
+
+    if isfield(AnalysisResults.(animalID).MeanCBV,'REM') % REM data available
+    behavFields = {'Rest','NREM','REM','Stim', 'Whisk'};
+    end
+
     for ee = 1:length(behavFields)
         behavField = behavFields{1,ee};
-        if isfield(data.Rhodamine,behavField) == false
-            data.Rhodamine.(behavField).catmeanAch = [];
-            data.Rhodamine.(behavField).catmeanNE = [];
-            data.Rhodamine.(behavField).animalID = {};
-            data.Rhodamine.(behavField).behavior = {};
-            data.Rhodamine.(behavField).hemisphere = {};
+        if isfield(data.CBV,behavField) == false
+            data.CBV.(behavField).catmeanACh = [];
+            data.CBV.(behavField).catmeanNE = [];
+            data.CBV.(behavField).animalID = {};
+            data.CBV.(behavField).behavior = {};
+            data.CBV.(behavField).hemisphere = {};
         end
-        data.Rhodamine.(behavField).catmeanAch = cat(1,data.Rhodamine.(behavField).catmeanAch,mean(data.Rhodamine.(animalID).(behavField).meanAch));
-        data.Rhodamine.(behavField).catmeanNE = cat(1,data.Rhodamine.(behavField).catmeanNE,mean(data.Rhodamine.(animalID).(behavField).meanNE));        
-        data.Rhodamine.(behavField).animalID = cat(1,data.Rhodamine.(behavField).animalID,animalID,animalID);
-        data.Rhodamine.(behavField).behavior = cat(1,data.Rhodamine.(behavField).behavior,behavField,behavField);
-        data.Rhodamine.(behavField).hemisphere = cat(1,data.Rhodamine.(behavField).hemisphere,'Ach','NE');
+        data.CBV.(behavField).catmeanACh = cat(1,data.CBV.(behavField).catmeanACh,mean(data.CBV.(animalID).(behavField).meanACh));
+        data.CBV.(behavField).catmeanNE = cat(1,data.CBV.(behavField).catmeanNE,mean(data.CBV.(animalID).(behavField).meanNE));        
+        data.CBV.(behavField).animalID = cat(1,data.CBV.(behavField).animalID,animalID,animalID);
+        data.CBV.(behavField).behavior = cat(1,data.CBV.(behavField).behavior,behavField,behavField);
+        data.CBV.(behavField).hemisphere = cat(1,data.CBV.(behavField).hemisphere,'ACh','NE');
     end
 end
-% take mean/StD
+%% take mean/StD
+    if ~isfield(data.CBV,'REM') % no REM data available
+    behavFields = {'Rest','NREM','Stim', 'Whisk'};
+    end
+
+    if isfield(data.CBV,'REM') % REM data available
+    behavFields = {'Rest','NREM','REM','Stim', 'Whisk'};
+    end
+
 for ff = 1:length(behavFields)
     behavField = behavFields{1,ff};
-    data.Rhodamine.(behavField).meanmeanAch = mean(data.Rhodamine.(behavField).catmeanAch,1);
-    data.Rhodamine.(behavField).stdmeanAch = std(data.Rhodamine.(behavField).catmeanAch,0,1);
-    data.Rhodamine.(behavField).meanmeanNE = mean(data.Rhodamine.(behavField).catmeanNE,1);
-    data.Rhodamine.(behavField).stdmeanNE = std(data.Rhodamine.(behavField).catmeanNE,0,1);    
+    data.CBV.(behavField).meanmeanACh = mean(data.CBV.(behavField).catmeanACh,1);
+    data.CBV.(behavField).stdmeanACh = std(data.CBV.(behavField).catmeanACh,0,1);
+    data.CBV.(behavField).meanmeanNE = mean(data.CBV.(behavField).catmeanNE,1);
+    data.CBV.(behavField).stdmeanNE = std(data.CBV.(behavField).catmeanNE,0,1);    
 end
+%% combining CBV data from bilateral hemispheres
+    % for ee = 1:length(behavFields)
+    %     behavField = behavFields{1,ee};
+    %     data.CBV.(behavField).catmeanCBV = [];
+    %     data.CBV.(behavField).catmeanCBV = cat(1,data.CBV.(behavField).catmeanACh,data.CBV.(behavField).catmeanNE);
+    % end
+% take mean/StD
+% for ff = 1:length(behavFields)
+%     behavField = behavFields{1,ff};
+%     data.CBV.(behavField).meanmeanCBV = mean(data.CBV.(behavField).catmeanCBV,1);
+%     data.CBV.(behavField).stdmeanCBV = std(data.CBV.(behavField).catmeanCBV,0,1);
+% end
+    for ee = 1:length(behavFields)
+        behavField = behavFields{1,ee};
+        data.CBV.(behavField).catmeanCBV = [];
+        data.CBV.(behavField).catmeanCBV = mean([data.CBV.(behavField).catmeanACh,data.CBV.(behavField).catmeanNE],2);
+    end
+    % mean and std
+    for ff = 1:length(behavFields)
+        behavField = behavFields{1,ff};
+        data.CBV.(behavField).meanmeanCBV = mean(data.CBV.(behavField).catmeanCBV,1);
+        data.CBV.(behavField).stdmeanCBV = std(data.CBV.(behavField).catmeanCBV,0,1);
+    end
 %% GFP comparison between behaviors
-% pre-allocate the date for each day
+% pre-allocate the date for eACh day
 for aa = 1:length(FP_animalIDs)
     animalID = FP_animalIDs{1,aa};
+
+    if ~isfield(AnalysisResults.(animalID).MeanCBV,'REM') % no REM data available
+    behavFields = {'Rest','NREM','Stim', 'Whisk'};
+    end
+
+    if isfield(AnalysisResults.(animalID).MeanCBV,'REM') % REM data available
+    behavFields = {'Rest','NREM','REM','Stim', 'Whisk'};
+    end
+
     for bb = 1:length(behavFields)
         behavField = behavFields{1,bb};
-            data.GFP.(animalID).(behavField).meanAch = AnalysisResults.(animalID).MeanGFP.(behavField).GFP.MeanAch;
+            data.GFP.(animalID).(behavField).meanACh = AnalysisResults.(animalID).MeanGFP.(behavField).GFP.MeanACh;
             data.GFP.(animalID).(behavField).meanNE = AnalysisResults.(animalID).MeanGFP.(behavField).GFP.MeanNE;
 
-%         for cc = 1:length(AnalysisResults.(animalID).MeanGFP.(behavField).GFP.IndAch)
-%             data.GFP.(animalID).(behavField).meanAch(cc,1) = mean(AnalysisResults.(animalID).MeanGFP.(behavField).GFP.IndAch{cc,1});
+%         for cc = 1:length(AnalysisResults.(animalID).MeanGFP.(behavField).GFP.IndACh)
+%             data.GFP.(animalID).(behavField).meanACh(cc,1) = mean(AnalysisResults.(animalID).MeanGFP.(behavField).GFP.IndACh{cc,1});
 %         end
 %         for cc = 1:length(AnalysisResults.(animalID).MeanGFP.(behavField).GFP.IndNE)
 %             data.GFP.(animalID).(behavField).meanNE(cc,1) = mean(AnalysisResults.(animalID).MeanGFP.(behavField).GFP.IndNE{cc,1});
@@ -96,40 +147,57 @@ end
 % put data into arrays and prep for stats
 for dd = 1:length(FP_animalIDs)
     animalID = FP_animalIDs{1,dd};
+
+    if ~isfield(AnalysisResults.(animalID).MeanCBV,'REM') % no REM data available
+    behavFields = {'Rest','NREM','Stim', 'Whisk'};
+    end
+
+    if isfield(AnalysisResults.(animalID).MeanCBV,'REM') % REM data available
+    behavFields = {'Rest','NREM','REM','Stim', 'Whisk'};
+    end
+
     for ee = 1:length(behavFields)
         behavField = behavFields{1,ee};
         if isfield(data.GFP,behavField) == false
-            data.GFP.(behavField).catmeanAch = [];
+            data.GFP.(behavField).catmeanACh = [];
             data.GFP.(behavField).catmeanNE = [];
             data.GFP.(behavField).animalID = {};
             data.GFP.(behavField).behavior = {};
             data.GFP.(behavField).hemisphere = {};
         end
-        data.GFP.(behavField).catmeanAch = cat(1,data.GFP.(behavField).catmeanAch,mean(data.GFP.(animalID).(behavField).meanAch));
+        data.GFP.(behavField).catmeanACh = cat(1,data.GFP.(behavField).catmeanACh,mean(data.GFP.(animalID).(behavField).meanACh));
         data.GFP.(behavField).catmeanNE = cat(1,data.GFP.(behavField).catmeanNE,mean(data.GFP.(animalID).(behavField).meanNE));        
         data.GFP.(behavField).animalID = cat(1,data.GFP.(behavField).animalID,animalID,animalID);
         data.GFP.(behavField).behavior = cat(1,data.GFP.(behavField).behavior,behavField,behavField);
-        data.GFP.(behavField).hemisphere = cat(1,data.GFP.(behavField).hemisphere,'Ach','NE');
+        data.GFP.(behavField).hemisphere = cat(1,data.GFP.(behavField).hemisphere,'ACh','NE');
     end
 end
-% take mean/StD
+%% take mean/StD
+    if ~isfield(data.GFP,'REM') % no REM data available
+    behavFields = {'Rest','NREM','Stim', 'Whisk'};
+    end
+
+    if isfield(data.GFP,'REM') % REM data available
+    behavFields = {'Rest','NREM','REM','Stim', 'Whisk'};
+    end
+
 for ff = 1:length(behavFields)
     behavField = behavFields{1,ff};
-    data.GFP.(behavField).meanmeanAch = mean(data.GFP.(behavField).catmeanAch,1);
-    data.GFP.(behavField).stdmeanAch = std(data.GFP.(behavField).catmeanAch,0,1);
+    data.GFP.(behavField).meanmeanACh = mean(data.GFP.(behavField).catmeanACh,1);
+    data.GFP.(behavField).stdmeanACh = std(data.GFP.(behavField).catmeanACh,0,1);
     data.GFP.(behavField).meanmeanNE = mean(data.GFP.(behavField).catmeanNE,1);
     data.GFP.(behavField).stdmeanNE = std(data.GFP.(behavField).catmeanNE,0,1);    
 end
 %% statistics - generalized linear mixed-effects model
-% Rhodamine
-% tableSize = cat(1,data.Rhodamine.Rest.animalID,data.Rhodamine.Stim.animalID,data.Rhodamine.Whisk.animalID,data.Rhodamine.NREM.animalID);
-% Rhodamine_meanTable = table('Size',[size(tableSize,1),4],'VariableTypes',{'string','string','string','double'},'VariableNames',{'Mouse','Hemisphere','Behavior','Mean'});
-% Rhodamine_meanTable.Mouse = cat(1,data.Rhodamine.Rest.animalID,data.Rhodamine.Stim.animalID,data.Rhodamine.Whisk.animalID,data.Rhodamine.NREM.animalID,data.Rhodamine.REM.animalID);
-% Rhodamine_meanTable.Hemisphere = cat(1,data.Rhodamine.Rest.hemisphere,data.Rhodamine.Stim.hemisphere,data.Rhodamine.Whisk.hemisphere,data.Rhodamine.NREM.hemisphere,data.Rhodamine.REM.hemisphere);
-% Rhodamine_meanTable.Behavior = cat(1,data.Rhodamine.Rest.behavior,data.Rhodamine.Stim.behavior,data.Rhodamine.Whisk.behavior,data.Rhodamine.NREM.behavior,data.Rhodamine.REM.behavior);
-% Rhodamine_meanTable.Mean = cat(1,data.Rhodamine.Rest.catmean,data.Rhodamine.Stim.catmean,data.Rhodamine.Whisk.catmean,data.Rhodamine.NREM.catmean,data.Rhodamine.REM.catmean);
-% Rhodamine_meanFitFormula = 'Mean ~ 1 + Behavior + (1|Mouse) + (1|Mouse:Hemisphere)';
-% Rhodamine_meanStats = fitglme(Rhodamine_meanTable,Rhodamine_meanFitFormula)
+% CBV
+% tableSize = cat(1,data.CBV.Rest.animalID,data.CBV.Stim.animalID,data.CBV.Whisk.animalID,data.CBV.NREM.animalID);
+% CBV_meanTable = table('Size',[size(tableSize,1),4],'VariableTypes',{'string','string','string','double'},'VariableNames',{'Mouse','Hemisphere','Behavior','Mean'});
+% CBV_meanTable.Mouse = cat(1,data.CBV.Rest.animalID,data.CBV.Stim.animalID,data.CBV.Whisk.animalID,data.CBV.NREM.animalID,data.CBV.REM.animalID);
+% CBV_meanTable.Hemisphere = cat(1,data.CBV.Rest.hemisphere,data.CBV.Stim.hemisphere,data.CBV.Whisk.hemisphere,data.CBV.NREM.hemisphere,data.CBV.REM.hemisphere);
+% CBV_meanTable.Behavior = cat(1,data.CBV.Rest.behavior,data.CBV.Stim.behavior,data.CBV.Whisk.behavior,data.CBV.NREM.behavior,data.CBV.REM.behavior);
+% CBV_meanTable.Mean = cat(1,data.CBV.Rest.catmean,data.CBV.Stim.catmean,data.CBV.Whisk.catmean,data.CBV.NREM.catmean,data.CBV.REM.catmean);
+% CBV_meanFitFormula = 'Mean ~ 1 + Behavior + (1|Mouse) + (1|Mouse:Hemisphere)';
+% CBV_meanStats = fitglme(CBV_meanTable,CBV_meanFitFormula)
 
 % GFP
 % tableSize = cat(1,data.GFP.Rest.animalID,data.GFP.Stim.animalID,data.GFP.Whisk.animalID,data.GFP.NREM.animalID);
@@ -142,158 +210,213 @@ end
 % GFP_meanStats = fitglme(GFP_meanTable,GFP_meanFitFormula)
 
 %% Fig. 1-S4
-summaryFigure = figure('Name','Fig1-S4 Stats');
+summaryFigure = figure('Name','Stats');
 sgtitle('Mean hemodynamic changes')
-%% Mean Rhodamine Ach
+%% Mean CBV Bilateral
 ax1 = subplot(2,2,1);
 xInds = ones(1,length(FP_animalIDs));
-s1=scatter(xInds*2,data.Rhodamine.Whisk.catmeanAch,75,'MarkerEdgeColor','k','MarkerFaceColor',colorWhisk);
+s1=scatter(xInds*2,data.CBV.Whisk.catmeanCBV,75,'MarkerEdgeColor','k','MarkerFaceColor',colorWhisk);
 hold on
-e1 = errorbar(2,data.Rhodamine.Whisk.meanmeanAch,data.Rhodamine.Whisk.stdmeanAch,'d','MarkerEdgeColor','k','MarkerFaceColor','k');
-e1.Color = 'black';
+e1 = errorbar(2,data.CBV.Whisk.meanmeanCBV,data.CBV.Whisk.stdmeanCBV,'d','MarkerEdgeColor','k','MarkerFaceColor','k');
+% e1.Color = 'k';
 e1.MarkerSize = 10;
 e1.CapSize = 10;
 
-if firstHrs == "true"
-    s2=scatter(xInds*3,data.Rhodamine.Stim.catmeanAch,75,'MarkerEdgeColor','k','MarkerFaceColor',colorStim);
-    e2 = errorbar(3,data.Rhodamine.Stim.meanmeanAch,data.Rhodamine.Stim.stdmeanAch,'d','MarkerEdgeColor','k','MarkerFaceColor','k');
-    e2.Color = 'black';
+% if firstHrs == "true"
+    s2=scatter(xInds*3,data.CBV.Stim.catmeanCBV,75,'MarkerEdgeColor','k','MarkerFaceColor',colorStim);
+    e2 = errorbar(3,data.CBV.Stim.meanmeanCBV,data.CBV.Stim.stdmeanCBV,'d','MarkerEdgeColor','k','MarkerFaceColor','k');
+    % e2.Color = 'k';
     e2.MarkerSize = 10;
     e2.CapSize = 10;
-end
+% end
 
-s3=scatter(xInds*1,data.Rhodamine.Rest.catmeanAch,75,'MarkerEdgeColor','k','MarkerFaceColor',colorRest);
-e3 = errorbar(1,data.Rhodamine.Rest.meanmeanAch,data.Rhodamine.Rest.stdmeanAch,'d','MarkerEdgeColor','k','MarkerFaceColor','k');
-e3.Color = 'black';
+s3=scatter(xInds*1,data.CBV.Rest.catmeanCBV,75,'MarkerEdgeColor','k','MarkerFaceColor',colorRest);
+e3 = errorbar(1,data.CBV.Rest.meanmeanCBV,data.CBV.Rest.stdmeanCBV,'d','MarkerEdgeColor','k','MarkerFaceColor','k');
+% e3.Color = 'k';
 e3.MarkerSize = 10;
 e3.CapSize = 10;
 hold on
-s4=scatter(xInds*4,data.Rhodamine.NREM.catmeanAch,75,'MarkerEdgeColor','k','MarkerFaceColor',colorNREM);
-e4 = errorbar(4,data.Rhodamine.NREM.meanmeanAch,data.Rhodamine.NREM.stdmeanAch,'d','MarkerEdgeColor','k','MarkerFaceColor','k');
-e4.Color = 'black';
+s4=scatter(xInds*4,data.CBV.NREM.catmeanCBV,75,'MarkerEdgeColor','k','MarkerFaceColor',colorNREM);
+e4 = errorbar(4,data.CBV.NREM.meanmeanCBV,data.CBV.NREM.stdmeanCBV,'d','MarkerEdgeColor','k','MarkerFaceColor','k');
+% e4.Color = 'k';
 e4.MarkerSize = 10;
 e4.CapSize = 10;
 
-if firstHrs == "false"
-    s5=scatter(xInds*5,data.Rhodamine.REM.catmeanAch,75,'MarkerEdgeColor','k','MarkerFaceColor',colorREM);
-    e5 = errorbar(5,data.Rhodamine.REM.meanmeanAch,data.Rhodamine.REM.stdmeanAch,'d','MarkerEdgeColor','k','MarkerFaceColor','k');
-    e5.Color = 'black';
+if isfield(data.GFP,'REM') % REM data available
+    s5=scatter(xInds*5,data.CBV.REM.catmeanCBV,75,'MarkerEdgeColor','k','MarkerFaceColor',colorREM);
+    e5 = errorbar(5,data.CBV.REM.meanmeanCBV,data.CBV.REM.stdmeanCBV,'d','MarkerEdgeColor','k','MarkerFaceColor','k');
+    % e5.Color = 'k';
     e5.MarkerSize = 10;
     e5.CapSize = 10;
 end
 
-title({'Mean Zscored \DeltaRhodamine Ach'})
-ylabel('Mean  \DeltaRhodamine Ach')
-if firstHrs == "false"
-legend([s3,s1,s4,s5],'Rest','Whisk','NREM','REM','Location','best')
-elseif firstHrs == "true"
-legend([s3,s1,s2,s4],'Rest','Whisk','Stim','NREM','Location','best')
+title({'Mean \Delta F/F (%)CBV'})
+ylabel('Mean  \DeltaCBV LH')
+
+if isfield(data.GFP,'REM') % REM data available
+    legend([s3,s1,s2,s4,s5],'Rest','Whisk','Stim','NREM','REM','Location','best')
+elseif ~sum(data.GFP,'REM') % check if there is no REM data
+    legend([s3,s1,s2,s4],'Rest','Whisk','Stim','NREM','Location','best')
 end
+
 set(gca,'xtick',[])
 set(gca,'xticklabel',[])
 axis square
-axis tight
+% axis tight
  xlim([0,6])
-ylim([-1.5,1.5])
+% ylim([-1.5,1.5])
 set(gca,'box','off')
 % ax1.TickLength = [0.03,0.03];
-%% Rhodamine NE
-ax2 = subplot(2,2,2);
+%{
+%% Mean CBV ACh
+ax1 = subplot(2,2,1);
 xInds = ones(1,length(FP_animalIDs));
-s1=scatter(xInds*2,data.Rhodamine.Whisk.catmeanNE,75,'MarkerEdgeColor','k','MarkerFaceColor',colorWhisk);
+s1=scatter(xInds*2,data.CBV.Whisk.catmeanACh,75,'MarkerEdgeColor','k','MarkerFaceColor',colorWhisk);
 hold on
-e1 = errorbar(2,data.Rhodamine.Whisk.meanmeanNE,data.Rhodamine.Whisk.stdmeanNE,'d','MarkerEdgeColor','k','MarkerFaceColor','k');
-e1.Color = 'black';
+e1 = errorbar(2,data.CBV.Whisk.meanmeanACh,data.CBV.Whisk.stdmeanACh,'d','MarkerEdgeColor','k','MarkerFaceColor','k');
+% e1.Color = 'k';
 e1.MarkerSize = 10;
 e1.CapSize = 10;
 
-if firstHrs == "true"
-    s2=scatter(xInds*3,data.Rhodamine.Stim.catmeanNE,75,'MarkerEdgeColor','k','MarkerFaceColor',colorStim);
-    e2 = errorbar(3,data.Rhodamine.Stim.meanmeanNE,data.Rhodamine.Stim.stdmeanNE,'d','MarkerEdgeColor','k','MarkerFaceColor','k');
-    e2.Color = 'black';
+% if firstHrs == "true"
+    s2=scatter(xInds*3,data.CBV.Stim.catmeanACh,75,'MarkerEdgeColor','k','MarkerFaceColor',colorStim);
+    e2 = errorbar(3,data.CBV.Stim.meanmeanACh,data.CBV.Stim.stdmeanACh,'d','MarkerEdgeColor','k','MarkerFaceColor','k');
+    % e2.Color = 'k';
     e2.MarkerSize = 10;
     e2.CapSize = 10;
-end
+% end
 
-s3=scatter(xInds*1,data.Rhodamine.Rest.catmeanNE,75,'MarkerEdgeColor','k','MarkerFaceColor',colorRest);
-e3 = errorbar(1,data.Rhodamine.Rest.meanmeanNE,data.Rhodamine.Rest.stdmeanNE,'d','MarkerEdgeColor','k','MarkerFaceColor','k');
+s3=scatter(xInds*1,data.CBV.Rest.catmeanACh,75,'MarkerEdgeColor','k','MarkerFaceColor',colorRest);
+e3 = errorbar(1,data.CBV.Rest.meanmeanACh,data.CBV.Rest.stdmeanACh,'d','MarkerEdgeColor','k','MarkerFaceColor','k');
+% e3.Color = 'k';
+e3.MarkerSize = 10;
+e3.CapSize = 10;
+hold on
+s4=scatter(xInds*4,data.CBV.NREM.catmeanACh,75,'MarkerEdgeColor','k','MarkerFaceColor',colorNREM);
+e4 = errorbar(4,data.CBV.NREM.meanmeanACh,data.CBV.NREM.stdmeanACh,'d','MarkerEdgeColor','k','MarkerFaceColor','k');
+% e4.Color = 'k';
+e4.MarkerSize = 10;
+e4.CapSize = 10;
+
+% if firstHrs == "false"
+    s5=scatter(xInds*5,data.CBV.REM.catmeanACh,75,'MarkerEdgeColor','k','MarkerFaceColor',colorREM);
+    e5 = errorbar(5,data.CBV.REM.meanmeanACh,data.CBV.REM.stdmeanACh,'d','MarkerEdgeColor','k','MarkerFaceColor','k');
+    % e5.Color = 'k';
+    e5.MarkerSize = 10;
+    e5.CapSize = 10;
+% end
+
+title({'Mean \Delta F/F (%)CBV LH'})
+ylabel('Mean  \DeltaCBV LH')
+% if firstHrs == "false"
+legend([s3,s1,s2,s4,s5],'Rest','Whisk','Stim','NREM','REM','Location','best')
+% elseif firstHrs == "true"
+% legend([s3,s1,s2,s4],'Rest','Whisk','Stim','NREM','Location','best')
+% end
+set(gca,'xtick',[])
+set(gca,'xticklabel',[])
+axis square
+% axis tight
+ xlim([0,6])
+% ylim([-1.5,1.5])
+set(gca,'box','off')
+% ax1.TickLength = [0.03,0.03];
+%% mScarlet NE
+ax2 = subplot(2,2,2);
+xInds = ones(1,length(FP_animalIDs));
+s1=scatter(xInds*2,data.CBV.Whisk.catmeanNE,75,'MarkerEdgeColor','k','MarkerFaceColor',colorWhisk);
+hold on
+e1 = errorbar(2,data.CBV.Whisk.meanmeanNE,data.CBV.Whisk.stdmeanNE,'d','MarkerEdgeColor','k','MarkerFaceColor','k');
+% e1.Color = 'black';
+e1.MarkerSize = 10;
+e1.CapSize = 10;
+
+% if firstHrs == "true"
+    s2=scatter(xInds*3,data.CBV.Stim.catmeanNE,75,'MarkerEdgeColor','k','MarkerFaceColor',colorStim);
+    e2 = errorbar(3,data.CBV.Stim.meanmeanNE,data.CBV.Stim.stdmeanNE,'d','MarkerEdgeColor','k','MarkerFaceColor','k');
+    % e2.Color = 'black';
+    e2.MarkerSize = 10;
+    e2.CapSize = 10;
+% end
+
+s3=scatter(xInds*1,data.CBV.Rest.catmeanNE,75,'MarkerEdgeColor','k','MarkerFaceColor',colorRest);
+e3 = errorbar(1,data.CBV.Rest.meanmeanNE,data.CBV.Rest.stdmeanNE,'d','MarkerEdgeColor','k','MarkerFaceColor','k');
 e3.Color = 'black';
 e3.MarkerSize = 10;
 e3.CapSize = 10;
 hold on
 
-s4=scatter(xInds*4,data.Rhodamine.NREM.catmeanNE,75,'MarkerEdgeColor','k','MarkerFaceColor',colorNREM);
-e4 = errorbar(4,data.Rhodamine.NREM.meanmeanNE,data.Rhodamine.NREM.stdmeanNE,'d','MarkerEdgeColor','k','MarkerFaceColor','k');
-e4.Color = 'black';
+s4=scatter(xInds*4,data.CBV.NREM.catmeanNE,75,'MarkerEdgeColor','k','MarkerFaceColor',colorNREM);
+e4 = errorbar(4,data.CBV.NREM.meanmeanNE,data.CBV.NREM.stdmeanNE,'d','MarkerEdgeColor','k','MarkerFaceColor','k');
+% e4.Color = 'black';
 e4.MarkerSize = 10;
 e4.CapSize = 10;
 
-if firstHrs == "false"
-    s5=scatter(xInds*5,data.Rhodamine.REM.catmeanNE,75,'MarkerEdgeColor','k','MarkerFaceColor',colorREM);
-    e5 = errorbar(5,data.Rhodamine.REM.meanmeanNE,data.Rhodamine.REM.stdmeanNE,'d','MarkerEdgeColor','k','MarkerFaceColor','k');
-    e5.Color = 'black';
+% if firstHrs == "false"
+    s5=scatter(xInds*5,data.CBV.REM.catmeanNE,75,'MarkerEdgeColor','k','MarkerFaceColor',colorREM);
+    e5 = errorbar(5,data.CBV.REM.meanmeanNE,data.CBV.REM.stdmeanNE,'d','MarkerEdgeColor','k','MarkerFaceColor','k');
+    % e5.Color = 'black';
     e5.MarkerSize = 10;
     e5.CapSize = 10;
-end
+% end
 
-title({'Mean Zscored \DeltaRhodamine NE'})
-ylabel('Mean  \DeltaRhodamine NE')
+title({'Mean \Delta F/F (%)CBV RH'})
+ylabel('Mean  \DeltaCBV RH')
 % legend([s3,s1,s4,s5],'Rest','Whisk','NREM','REM','Location','best')
 set(gca,'xtick',[])
 set(gca,'xticklabel',[])
 axis square
-axis tight
+% axis tight
  xlim([0,6])
-ylim([-1.5,1.5])
+% ylim([-1.5,1.5])
 set(gca,'box','off')
 % ax2.TickLength = [0.03,0.03];
-%% Mean GFP Ach
+%}
+%% Mean GFP ACh
 ax3 = subplot(2,2,3);
 xInds = ones(1,length(FP_animalIDs));
-scatter(xInds*2,data.GFP.Whisk.catmeanAch,75,'MarkerEdgeColor','k','MarkerFaceColor',colorWhisk);
+scatter(xInds*2,data.GFP.Whisk.catmeanACh,75,'MarkerEdgeColor','k','MarkerFaceColor',colorWhisk);
 hold on
-e1 = errorbar(2,data.GFP.Whisk.meanmeanAch,data.GFP.Whisk.stdmeanAch,'d','MarkerEdgeColor','k','MarkerFaceColor','k');
-e1.Color = 'black';
-e1.MarkerSize = 10;
-e1.CapSize = 10;
+ex1 = errorbar(2,data.GFP.Whisk.meanmeanACh,data.GFP.Whisk.stdmeanACh,'d','MarkerEdgeColor','k','MarkerFaceColor','k');
+% e1.Color = 'black';
+% ex1.MarkerSize = 10;
+% ex1.CapSize = 10;
 
-if firstHrs == "true"
-scatter(xInds*3,data.GFP.Stim.catmeanAch,75,'MarkerEdgeColor','k','MarkerFaceColor',colorStim);
-e2 = errorbar(3,data.GFP.Stim.meanmeanAch,data.GFP.Stim.stdmeanAch,'d','MarkerEdgeColor','k','MarkerFaceColor','k');
-e2.Color = 'black';
-e2.MarkerSize = 10;
-e2.CapSize = 10;
+% if firstHrs == "true"
+scatter(xInds*3,data.GFP.Stim.catmeanACh,75,'MarkerEdgeColor','k','MarkerFaceColor',colorStim);
+e2 = errorbar(3,data.GFP.Stim.meanmeanACh,data.GFP.Stim.stdmeanACh,'d','MarkerEdgeColor','k','MarkerFaceColor','k');
+% e2.Color = 'black';
+% e2.MarkerSize = 10;
+% e2.CapSize = 10;
+% end
+
+scatter(xInds*1,data.GFP.Rest.catmeanACh,75,'MarkerEdgeColor','k','MarkerFaceColor',colorRest);
+hold on
+e3 = errorbar(1,data.GFP.Rest.meanmeanACh,data.GFP.Rest.stdmeanACh,'d','MarkerEdgeColor','k','MarkerFaceColor','k');
+% e3.Color = 'black';
+% e3.MarkerSize = 10;
+% e3.CapSize = 10;
+
+hold on
+
+scatter(xInds*4,data.GFP.NREM.catmeanACh,75,'MarkerEdgeColor','k','MarkerFaceColor',colorNREM);
+e4 = errorbar(4,data.GFP.NREM.meanmeanACh,data.GFP.NREM.stdmeanACh,'d','MarkerEdgeColor','k','MarkerFaceColor','k');
+% e4.Color = 'black';
+% e4.MarkerSize = 10;
+% e4.CapSize = 10;
+
+if isfield(data.GFP,'REM') % REM data available
+    scatter(xInds*5,data.GFP.REM.catmeanACh,75,'MarkerEdgeColor','k','MarkerFaceColor',colorREM);
+    e5 = errorbar(5,data.GFP.REM.meanmeanACh,data.GFP.REM.stdmeanACh,'d','MarkerEdgeColor','k','MarkerFaceColor','k');
 end
 
-scatter(xInds*1,data.GFP.Rest.catmeanAch,75,'MarkerEdgeColor','k','MarkerFaceColor',colorRest);
-e3 = errorbar(1,data.GFP.Rest.meanmeanAch,data.GFP.Rest.stdmeanAch,'d','MarkerEdgeColor','k','MarkerFaceColor','k');
-e3.Color = 'black';
-e3.MarkerSize = 10;
-e3.CapSize = 10;
-
-hold on
-
-scatter(xInds*4,data.GFP.NREM.catmeanAch,75,'MarkerEdgeColor','k','MarkerFaceColor',colorNREM);
-e4 = errorbar(4,data.GFP.NREM.meanmeanAch,data.GFP.NREM.stdmeanAch,'d','MarkerEdgeColor','k','MarkerFaceColor','k');
-e4.Color = 'black';
-e4.MarkerSize = 10;
-e4.CapSize = 10;
-if firstHrs == "false"
-scatter(xInds*5,data.GFP.REM.catmeanAch,75,'MarkerEdgeColor','k','MarkerFaceColor',colorREM);
-e5 = errorbar(5,data.GFP.REM.meanmeanAch,data.GFP.REM.stdmeanAch,'d','MarkerEdgeColor','k','MarkerFaceColor','k');
-e5.Color = 'black';
-e5.MarkerSize = 10;
-e5.CapSize = 10;
-end
-
-title({'Mean Zscored \DeltaGFP Ach'})
-ylabel('Mean Zscored \DeltaGFP Ach')
+title({'Mean \Delta F/F (%) ACh'})
+ylabel('Mean \Delta F/F (%) ACh')
 set(gca,'xtick',[])
 set(gca,'xticklabel',[])
 axis square
-axis tight
  xlim([0,6])
-ylim([-1.5,1.5])
+% ylim([-1.5,1.5])
 set(gca,'box','off')
 % ax3.TickLength = [0.03,0.03];
 %% Mean GFP NE
@@ -302,21 +425,22 @@ xInds = ones(1,length(FP_animalIDs));
 scatter(xInds*2,data.GFP.Whisk.catmeanNE,75,'MarkerEdgeColor','k','MarkerFaceColor',colorWhisk);
 hold on
 e1 = errorbar(2,data.GFP.Whisk.meanmeanNE,data.GFP.Whisk.stdmeanNE,'d','MarkerEdgeColor','k','MarkerFaceColor','k');
-e1.Color = 'black';
+% e1.Color = 'black';
 e1.MarkerSize = 10;
 e1.CapSize = 10;
 
-if firstHrs == "true"
+% if firstHrs == "true"
 scatter(xInds*3,data.GFP.Stim.catmeanNE,75,'MarkerEdgeColor','k','MarkerFaceColor',colorStim);
 e2 = errorbar(3,data.GFP.Stim.meanmeanNE,data.GFP.Stim.stdmeanNE,'d','MarkerEdgeColor','k','MarkerFaceColor','k');
-e2.Color = 'black';
+% e2.Color = 'black';
 e2.MarkerSize = 10;
 e2.CapSize = 10;
-end
+% end
 
 scatter(xInds*1,data.GFP.Rest.catmeanNE,75,'MarkerEdgeColor','k','MarkerFaceColor',colorRest);
+hold on
 e3 = errorbar(1,data.GFP.Rest.meanmeanNE,data.GFP.Rest.stdmeanNE,'d','MarkerEdgeColor','k','MarkerFaceColor','k');
-e3.Color = 'black';
+% e3.Color = 'black';
 e3.MarkerSize = 10;
 e3.CapSize = 10;
 
@@ -324,26 +448,26 @@ hold on
 
 scatter(xInds*4,data.GFP.NREM.catmeanNE,75,'MarkerEdgeColor','k','MarkerFaceColor',colorNREM);
 e4 = errorbar(4,data.GFP.NREM.meanmeanNE,data.GFP.NREM.stdmeanNE,'d','MarkerEdgeColor','k','MarkerFaceColor','k');
-e4.Color = 'black';
+% e4.Color = 'black';
 e4.MarkerSize = 10;
 e4.CapSize = 10;
 
-if firstHrs == "false"
-scatter(xInds*5,data.GFP.REM.catmeanNE,75,'MarkerEdgeColor','k','MarkerFaceColor',colorREM);
-e5 = errorbar(5,data.GFP.REM.meanmeanNE,data.GFP.REM.stdmeanNE,'d','MarkerEdgeColor','k','MarkerFaceColor','k');
-e5.Color = 'black';
-e5.MarkerSize = 10;
-e5.CapSize = 10;
+if isfield(data.GFP,'REM') % REM data available
+    scatter(xInds*5,data.GFP.REM.catmeanNE,75,'MarkerEdgeColor','k','MarkerFaceColor',colorREM);
+    e5 = errorbar(5,data.GFP.REM.meanmeanNE,data.GFP.REM.stdmeanNE,'d','MarkerEdgeColor','k','MarkerFaceColor','k');
+    % e5.Color = 'black';
+    e5.MarkerSize = 10;
+    e5.CapSize = 10;
 end
 
-title({'Mean Zscored \DeltaGFP NE'})
-ylabel('Mean Zscored \DeltaGFP NE')
+title({'Mean \Delta F/F (%) NE'})
+ylabel('Mean \Delta F/F (%) NE')
 set(gca,'xtick',[])
 set(gca,'xticklabel',[])
 axis square
-axis tight
+% axis tight
  xlim([0,6])
-ylim([-1.5,1.5])
+% ylim([-1.5,1.5])
 set(gca,'box','off')
 % ax4.TickLength = [0.03,0.03];
 %% save figure(s)
@@ -357,9 +481,9 @@ if strcmp(saveFigs,'y') == true
         mkdir(dirpath);
     end
     set(summaryFigure,'PaperPositionMode','auto');
-    savefig(summaryFigure,[dirpath 'Fig1-S4-Stats']);
+    savefig(summaryFigure,[dirpath ManipulationType '_Stats_CBV_ACh_NE']);
     set(summaryFigure,'PaperPositionMode','auto');
-    print('-painters','-dpdf','-bestfit',[dirpath 'Fig1-S4-Stats'])
+    print('-painters','-dpdf','-bestfit',[dirpath ManipulationType '_Stats_CBV_ACh_NE'])
     close 
     %% Text diary
 %     diaryFile = [dirpath 'Fig1-S4_Statistics.txt'];
@@ -368,15 +492,15 @@ if strcmp(saveFigs,'y') == true
 %     end
 %     diary(diaryFile)
 %     diary on
-%     Mean-to-Mean Rhodamine statistical diary
+%     Mean-to-Mean CBV statistical diary
 %     disp('======================================================================================================================')
-%     disp('[1-S4a] Generalized linear mixed-effects model statistics for Mean-to-Mean Rhodamine during Whisk, NREM, and REM')
+%     disp('[1-S4a] Generalized linear mixed-effects model statistics for Mean-to-Mean CBV during Whisk, NREM, and REM')
 %     disp('======================================================================================================================')
-%     disp(Rhodamine_p2pStats)
+%     disp(CBV_p2pStats)
 %     disp('----------------------------------------------------------------------------------------------------------------------')
-%     disp(['Whisk P2P [Rhodamine]: ' num2str(round(data.Rhodamine.Whisk.meanP2P,1)) ' +/- ' num2str(round(data.Rhodamine.Whisk.stdP2P,1))]); disp(' ')
-%     disp(['NREM P2P [Rhodamine]: ' num2str(round(data.Rhodamine.NREM.meanP2P,1)) ' +/- ' num2str(round(data.Rhodamine.NREM.stdP2P,1))]); disp(' ')
-%     disp(['REM P2P [Rhodamine]: ' num2str(round(data.Rhodamine.REM.meanP2P,1)) ' +/- ' num2str(round(data.Rhodamine.REM.stdP2P,1))]); disp(' ')
+%     disp(['Whisk P2P [CBV]: ' num2str(round(data.CBV.Whisk.meanP2P,1)) ' +/- ' num2str(round(data.CBV.Whisk.stdP2P,1))]); disp(' ')
+%     disp(['NREM P2P [CBV]: ' num2str(round(data.CBV.NREM.meanP2P,1)) ' +/- ' num2str(round(data.CBV.NREM.stdP2P,1))]); disp(' ')
+%     disp(['REM P2P [CBV]: ' num2str(round(data.CBV.REM.meanP2P,1)) ' +/- ' num2str(round(data.CBV.REM.stdP2P,1))]); disp(' ')
 %     disp('----------------------------------------------------------------------------------------------------------------------')
 %     Mean GFP statistical diary
 %     disp('======================================================================================================================')

@@ -9,8 +9,8 @@ function [AnalysisResults] = AnalyzeCoherence_Pupil_GRABNE(animalID,rootFolder,A
 %________________________________________________________________________________________________________________________
 
 %% function parameters
-dataTypes = {'zDiameter','Ach_Rhodamine','NE_Rhodamine','Ach_GFP','NE_GFP','RH_thetaBandPower','RH_alphaBandPower','RH_gammaBandPower'};
-hemDataTypes = {'zDiameter','Ach_Rhodamine','NE_Rhodamine','Ach_GFP','NE_GFP','RH_thetaBandPower','RH_alphaBandPower','RH_gammaBandPower'};
+dataTypes = {'NE_GFP'};%{'zDiameter','Ach_Rhodamine','NE_Rhodamine','Ach_GFP','NE_GFP','RH_thetaBandPower','RH_alphaBandPower','RH_gammaBandPower'};
+hemDataTypes = {'Ach_Rhodamine','NE_Rhodamine','Ach_GFP','NE_GFP'};
 modelType = 'Manual';
 params.minTime.Rest = 10;
 params.minTime.NREM = 30;
@@ -54,7 +54,7 @@ scoringResultsFile = {scoringResultsFileStruct.name}';
 scoringResultsFileID = char(scoringResultsFile);
 load(scoringResultsFileID,'-mat')
 % lowpass filter
-samplingRate = RestData.Rhodamine.Ach.RhodamineCamSamplingRate;
+samplingRate = RestData.Rhodamine.Z_Ach.RhodamineCamSamplingRate;
 % criteria for resting
 RestCriteria.Fieldname = {'durations'};
 RestCriteria.Comparison = {'gt'};
@@ -69,50 +69,49 @@ for zzz = 1:length(hemDataTypes)
         dataType = dataTypes{1,aa};
         %% analyze neural-hemo coherence during periods of rest
 
-
         % pull data from RestData.mat structure
-        [restLogical] = FilterEvents_IOS(RestData.GFP.NE,RestCriteria);
-        [puffLogical] = FilterEvents_IOS(RestData.GFP.NE,RestPuffCriteria);
+        [restLogical] = FilterEvents_IOS(RestData.GFP.Z_NE,RestCriteria);
+        [puffLogical] = FilterEvents_IOS(RestData.GFP.Z_NE,RestPuffCriteria);
         combRestLogical = logical(restLogical.*puffLogical);
-        restFileIDs = RestData.GFP.NE.fileIDs(combRestLogical,:);
-        restEventTimes = RestData.GFP.NE.eventTimes(combRestLogical,:);
-        restDurations = RestData.GFP.NE.durations(combRestLogical,:);
+        restFileIDs = RestData.GFP.Z_NE.fileIDs(combRestLogical,:);
+        restEventTimes = RestData.GFP.Z_NE.eventTimes(combRestLogical,:);
+        restDurations = RestData.GFP.Z_NE.durations(combRestLogical,:);
 
         if strcmp(dataType,'Ach_Rhodamine') == true
-             Pupil_restData = RestData.Rhodamine.Ach.data(combRestLogical,1);
+             Pupil_restData = RestData.Rhodamine.Z_Ach.data(combRestLogical,1);
         elseif strcmp(dataType,'NE_Rhodamine') == true
-            Pupil_restData = RestData.Rhodamine.NE.data(combRestLogical,:);
+            Pupil_restData = RestData.Rhodamine.Z_NE.data(combRestLogical,:);
         elseif strcmp(dataType,'Ach_GFP') == true
-            Pupil_restData = RestData.GFP.Ach.data(combRestLogical,:);
+            Pupil_restData = RestData.GFP.Z_Ach.data(combRestLogical,:);
         elseif strcmp(dataType,'NE_GFP') == true
-            Pupil_restData = RestData.GFP.NE.data(combRestLogical,:);
-        elseif strcmp(dataType,'zDiameter') == true
-            Pupil_restData = RestData.Pupil.zDiameter.data(combRestLogical,:);
-        elseif strcmp(dataType,'RH_thetaBandPower') == true
-            Pupil_restData = RestData.cortical_RH.thetaBandPower.data(combRestLogical,:);
-        elseif strcmp(dataType,'RH_alphaBandPower') == true
-            Pupil_restData = RestData.cortical_RH.alphaBandPower.data(combRestLogical,:);
-        elseif strcmp(dataType,'RH_gammaBandPower') == true
-            Pupil_restData = RestData.cortical_RH.gammaBandPower.data(combRestLogical,:);
+            Pupil_restData = RestData.GFP.Z_NE.data(combRestLogical,:);
+        % elseif strcmp(dataType,'zDiameter') == true
+        %     Pupil_restData = RestData.Pupil.zDiameter.data(combRestLogical,:);
+        % elseif strcmp(dataType,'RH_thetaBandPower') == true
+        %     Pupil_restData = RestData.cortical_RH.thetaBandPower.data(combRestLogical,:);
+        % elseif strcmp(dataType,'RH_alphaBandPower') == true
+        %     Pupil_restData = RestData.cortical_RH.alphaBandPower.data(combRestLogical,:);
+        % elseif strcmp(dataType,'RH_gammaBandPower') == true
+        %     Pupil_restData = RestData.cortical_RH.gammaBandPower.data(combRestLogical,:);
         end
         
 
         if strcmp(hemDataType,'Ach_Rhodamine') == true
-             HbT_restData = RestData.Rhodamine.Ach.data(combRestLogical,1);
+             HbT_restData = RestData.Rhodamine.Z_Ach.data(combRestLogical,1);
         elseif strcmp(hemDataType,'NE_Rhodamine') == true
-            HbT_restData = RestData.Rhodamine.NE.data(combRestLogical,:);
+            HbT_restData = RestData.Rhodamine.Z_NE.data(combRestLogical,:);
         elseif strcmp(hemDataType,'Ach_GFP') == true
-            HbT_restData = RestData.GFP.Ach.data(combRestLogical,:);
+            HbT_restData = RestData.GFP.Z_Ach.data(combRestLogical,:);
         elseif strcmp(hemDataType,'NE_GFP') == true
-            HbT_restData = RestData.GFP.NE.data(combRestLogical,:);
-        elseif strcmp(hemDataType,'zDiameter') == true
-            HbT_restData = RestData.Pupil.zDiameter.data(combRestLogical,:);
-        elseif strcmp(hemDataType,'RH_thetaBandPower') == true
-            HbT_restData = RestData.cortical_RH.thetaBandPower.data(combRestLogical,:);
-        elseif strcmp(hemDataType,'RH_alphaBandPower') == true
-            HbT_restData = RestData.cortical_RH.alphaBandPower.data(combRestLogical,:);
-        elseif strcmp(hemDataType,'RH_gammaBandPower') == true
-            HbT_restData = RestData.cortical_RH.gammaBandPower.data(combRestLogical,:);
+            HbT_restData = RestData.GFP.Z_NE.data(combRestLogical,:);
+        % elseif strcmp(hemDataType,'zDiameter') == true
+        %     HbT_restData = RestData.Pupil.zDiameter.data(combRestLogical,:);
+        % elseif strcmp(hemDataType,'RH_thetaBandPower') == true
+        %     HbT_restData = RestData.cortical_RH.thetaBandPower.data(combRestLogical,:);
+        % elseif strcmp(hemDataType,'RH_alphaBandPower') == true
+        %     HbT_restData = RestData.cortical_RH.alphaBandPower.data(combRestLogical,:);
+        % elseif strcmp(hemDataType,'RH_gammaBandPower') == true
+        %     HbT_restData = RestData.cortical_RH.gammaBandPower.data(combRestLogical,:);
         end
 
 
@@ -145,7 +144,7 @@ for zzz = 1:length(hemDataTypes)
             end
         end
         % parameters for coherencyc - information available in function
-        params.tapers = [1,1]; % Tapers [n, 2n - 1]
+        params.tapers = [3,5]; % Tapers [n, 2n - 1]
         params.pad = 1;
         params.Fs = samplingRate;
         params.fpass = [0,1]; % Pass band [0, nyquist]
@@ -178,7 +177,7 @@ for zzz = 1:length(hemDataTypes)
                 end
             end
             % check labels to match arousal state
-            if sum(strcmp(scoringLabels,'Not Sleep')) > 500   % 36 bins (180 total) or 3 minutes of asleep
+            if sum(strcmp(scoringLabels,'Not Sleep')) > 436   % 36 bins (180 total) or 3 minutes of asleep
                 load(procDataFileID,'-mat')
                 % don't include trials with stimulation
                 if strcmp(ProcData.data.Pupil.diameterCheck,'y') == true
@@ -191,39 +190,39 @@ for zzz = 1:length(hemDataTypes)
                         if sum(isnan(ProcData.data.Pupil.zDiameter)) == 0
 
                             if strcmp(hemDataType,'Ach_Rhodamine') == true
-                                HbT_awakeData{zz,1} = ProcData.data.Rhodamine.Ach;
+                                HbT_awakeData{zz,1} = ProcData.data.Rhodamine.Z_Ach;
                             elseif strcmp(hemDataType,'NE_Rhodamine') == true
-                                HbT_awakeData{zz,1} = ProcData.data.Rhodamine.NE;
+                                HbT_awakeData{zz,1} = ProcData.data.Rhodamine.Z_NE;
                             elseif strcmp(hemDataType,'Ach_GFP') == true
-                                HbT_awakeData{zz,1} = ProcData.data.GFP.Ach;
+                                HbT_awakeData{zz,1} = ProcData.data.GFP.Z_Ach;
                             elseif strcmp(hemDataType,'NE_GFP') == true
-                                HbT_awakeData{zz,1} = ProcData.data.GFP.NE;
-                            elseif strcmp(hemDataType,'zDiameter') == true
-                                HbT_awakeData{zz,1} = ProcData.data.Pupil.zDiameter;
-                            elseif strcmp(hemDataType,'RH_thetaBandPower') == true
-                                HbT_awakeData{zz,1} = (ProcData.data.cortical_RH.thetaBandPower);% - RestingBaselines.manualSelection.cortical_RH.thetaBandPower.(strDay).mean)./RestingBaselines.manualSelection.cortical_RH.thetaBandPower.(strDay).mean;
-                            elseif strcmp(hemDataType,'RH_alphaBandPower') == true
-                                HbT_awakeData{zz,1} = (ProcData.data.cortical_RH.alphaBandPower);% - RestingBaselines.manualSelection.cortical_RH.alphaBandPower.(strDay).mean)./RestingBaselines.manualSelection.cortical_RH.alphaBandPower.(strDay).mean;
-                            elseif strcmp(hemDataType,'RH_gammaBandPower') == true
-                                HbT_awakeData{zz,1} = (ProcData.data.cortical_RH.gammaBandPower);% - RestingBaselines.manualSelection.cortical_RH.gammaBandPower.(strDay).mean)./RestingBaselines.manualSelection.cortical_RH.gammaBandPower.(strDay).mean;
+                                HbT_awakeData{zz,1} = ProcData.data.GFP.Z_NE;
+                            % elseif strcmp(hemDataType,'zDiameter') == true
+                            %     HbT_awakeData{zz,1} = ProcData.data.Pupil.zDiameter;
+                            % elseif strcmp(hemDataType,'RH_thetaBandPower') == true
+                            %     HbT_awakeData{zz,1} = (ProcData.data.cortical_RH.thetaBandPower);% - RestingBaselines.manualSelection.cortical_RH.thetaBandPower.(strDay).mean)./RestingBaselines.manualSelection.cortical_RH.thetaBandPower.(strDay).mean;
+                            % elseif strcmp(hemDataType,'RH_alphaBandPower') == true
+                            %     HbT_awakeData{zz,1} = (ProcData.data.cortical_RH.alphaBandPower);% - RestingBaselines.manualSelection.cortical_RH.alphaBandPower.(strDay).mean)./RestingBaselines.manualSelection.cortical_RH.alphaBandPower.(strDay).mean;
+                            % elseif strcmp(hemDataType,'RH_gammaBandPower') == true
+                            %     HbT_awakeData{zz,1} = (ProcData.data.cortical_RH.gammaBandPower);% - RestingBaselines.manualSelection.cortical_RH.gammaBandPower.(strDay).mean)./RestingBaselines.manualSelection.cortical_RH.gammaBandPower.(strDay).mean;
                             end
 
                             if strcmp(dataType,'Ach_Rhodamine') == true
-                                Pupil_awakeData{zz,1} = ProcData.data.Rhodamine.Ach;
+                                Pupil_awakeData{zz,1} = ProcData.data.Rhodamine.Z_Ach;
                             elseif strcmp(dataType,'NE_Rhodamine') == true
-                                Pupil_awakeData{zz,1} = ProcData.data.Rhodamine.NE;
+                                Pupil_awakeData{zz,1} = ProcData.data.Rhodamine.Z_NE;
                             elseif strcmp(dataType,'Ach_GFP') == true
-                                Pupil_awakeData{zz,1} = ProcData.data.GFP.Ach;
+                                Pupil_awakeData{zz,1} = ProcData.data.GFP.Z_Ach;
                             elseif strcmp(dataType,'NE_GFP') == true
-                                Pupil_awakeData{zz,1} = ProcData.data.GFP.NE;
-                            elseif strcmp(dataType,'zDiameter') == true
-                                Pupil_awakeData{zz,1} = ProcData.data.Pupil.zDiameter;
-                            elseif strcmp(dataType,'RH_thetaBandPower') == true
-                                Pupil_awakeData{zz,1} = (ProcData.data.cortical_RH.thetaBandPower);% - RestingBaselines.manualSelection.cortical_RH.thetaBandPower.(strDay).mean)./RestingBaselines.manualSelection.cortical_RH.thetaBandPower.(strDay).mean;
-                            elseif strcmp(dataType,'RH_alphaBandPower') == true
-                                Pupil_awakeData{zz,1} = (ProcData.data.cortical_RH.alphaBandPower);% - RestingBaselines.manualSelection.cortical_RH.alphaBandPower.(strDay).mean)./RestingBaselines.manualSelection.cortical_RH.alphaBandPower.(strDay).mean;
-                            elseif strcmp(dataType,'RH_gammaBandPower') == true
-                                Pupil_awakeData{zz,1} = (ProcData.data.cortical_RH.gammaBandPower);% - RestingBaselines.manualSelection.cortical_RH.gammaBandPower.(strDay).mean)./RestingBaselines.manualSelection.cortical_RH.gammaBandPower.(strDay).mean;
+                                Pupil_awakeData{zz,1} = ProcData.data.GFP.Z_NE;
+                            % elseif strcmp(dataType,'zDiameter') == true
+                            %     Pupil_awakeData{zz,1} = ProcData.data.Pupil.zDiameter;
+                            % elseif strcmp(dataType,'RH_thetaBandPower') == true
+                            %     Pupil_awakeData{zz,1} = (ProcData.data.cortical_RH.thetaBandPower);% - RestingBaselines.manualSelection.cortical_RH.thetaBandPower.(strDay).mean)./RestingBaselines.manualSelection.cortical_RH.thetaBandPower.(strDay).mean;
+                            % elseif strcmp(dataType,'RH_alphaBandPower') == true
+                            %     Pupil_awakeData{zz,1} = (ProcData.data.cortical_RH.alphaBandPower);% - RestingBaselines.manualSelection.cortical_RH.alphaBandPower.(strDay).mean)./RestingBaselines.manualSelection.cortical_RH.alphaBandPower.(strDay).mean;
+                            % elseif strcmp(dataType,'RH_gammaBandPower') == true
+                            %     Pupil_awakeData{zz,1} = (ProcData.data.cortical_RH.gammaBandPower);% - RestingBaselines.manualSelection.cortical_RH.gammaBandPower.(strDay).mean)./RestingBaselines.manualSelection.cortical_RH.gammaBandPower.(strDay).mean;
                             end
                             zz = zz + 1;
                         end
@@ -245,7 +244,7 @@ for zzz = 1:length(hemDataTypes)
                 Pupil_awakeDataMat(:,cc) = Pupil_procAwakeData{cc,1}(1:length(Pupil_procAwakeData{1,1}));
             end
             % calculate the coherence between desired signals
-            params.tapers = [5 9]; % Tapers [n, 2n - 1]
+            params.tapers = [3 5]; % Tapers [n, 2n - 1]
             if size(HbT_awakeDataMat,1) > size(Pupil_awakeDataMat,1)
                 HbT_awakeDataMat = HbT_awakeDataMat(1:size(Pupil_awakeDataMat,1),:);
             elseif size(HbT_awakeDataMat,1) < size(Pupil_awakeDataMat,1)
@@ -279,7 +278,7 @@ for zzz = 1:length(hemDataTypes)
                 end
             end
             % check labels to match arousal state
-            if sum(strcmp(scoringLabels,'Not Sleep')) < 124   % 36 bins (180 total) or 3 minutes of awake
+            if sum(strcmp(scoringLabels,'Not Sleep')) < 312   % 36 bins (180 total) or 3 minutes of awake
                 load(procDataFileID,'-mat')
                 if strcmp(ProcData.data.Pupil.diameterCheck,'y') == true
                     try
@@ -291,39 +290,39 @@ for zzz = 1:length(hemDataTypes)
                     if isempty(puffs) == true
                         if sum(isnan(ProcData.data.Pupil.zDiameter)) == 0
                             if strcmp(hemDataType,'Ach_Rhodamine') == true
-                                HbT_asleepData{zz,1} = ProcData.data.Rhodamine.Ach;
+                                HbT_asleepData{zz,1} = ProcData.data.Rhodamine.Z_Ach;
                             elseif strcmp(hemDataType,'NE_Rhodamine') == true
-                                HbT_asleepData{zz,1} = ProcData.data.Rhodamine.NE;
+                                HbT_asleepData{zz,1} = ProcData.data.Rhodamine.Z_NE;
                             elseif strcmp(hemDataType,'Ach_GFP') == true
-                                HbT_asleepData{zz,1} = ProcData.data.GFP.Ach;
+                                HbT_asleepData{zz,1} = ProcData.data.GFP.Z_Ach;
                             elseif strcmp(hemDataType,'NE_GFP') == true
-                                HbT_asleepData{zz,1} = ProcData.data.GFP.NE;
-                            elseif strcmp(hemDataType,'zDiameter') == true
-                                HbT_asleepData{zz,1} = ProcData.data.Pupil.zDiameter;
-                            elseif strcmp(hemDataType,'RH_thetaBandPower') == true
-                                HbT_asleepData{zz,1} = (ProcData.data.cortical_RH.thetaBandPower);% - RestingBaselines.manualSelection.cortical_RH.thetaBandPower.(strDay).mean)./RestingBaselines.manualSelection.cortical_RH.thetaBandPower.(strDay).mean;
-                            elseif strcmp(hemDataType,'RH_alphaBandPower') == true
-                                HbT_asleepData{zz,1} = (ProcData.data.cortical_RH.alphaBandPower);% - RestingBaselines.manualSelection.cortical_RH.alphaBandPower.(strDay).mean)./RestingBaselines.manualSelection.cortical_RH.alphaBandPower.(strDay).mean;
-                            elseif strcmp(hemDataType,'RH_gammaBandPower') == true
-                                HbT_asleepData{zz,1} = (ProcData.data.cortical_RH.gammaBandPower);% - RestingBaselines.manualSelection.cortical_RH.gammaBandPower.(strDay).mean)./RestingBaselines.manualSelection.cortical_RH.gammaBandPower.(strDay).mean;
+                                HbT_asleepData{zz,1} = ProcData.data.GFP.Z_NE;
+                            % elseif strcmp(hemDataType,'zDiameter') == true
+                            %     HbT_asleepData{zz,1} = ProcData.data.Pupil.zDiameter;
+                            % elseif strcmp(hemDataType,'RH_thetaBandPower') == true
+                            %     HbT_asleepData{zz,1} = (ProcData.data.cortical_RH.thetaBandPower);% - RestingBaselines.manualSelection.cortical_RH.thetaBandPower.(strDay).mean)./RestingBaselines.manualSelection.cortical_RH.thetaBandPower.(strDay).mean;
+                            % elseif strcmp(hemDataType,'RH_alphaBandPower') == true
+                            %     HbT_asleepData{zz,1} = (ProcData.data.cortical_RH.alphaBandPower);% - RestingBaselines.manualSelection.cortical_RH.alphaBandPower.(strDay).mean)./RestingBaselines.manualSelection.cortical_RH.alphaBandPower.(strDay).mean;
+                            % elseif strcmp(hemDataType,'RH_gammaBandPower') == true
+                            %     HbT_asleepData{zz,1} = (ProcData.data.cortical_RH.gammaBandPower);% - RestingBaselines.manualSelection.cortical_RH.gammaBandPower.(strDay).mean)./RestingBaselines.manualSelection.cortical_RH.gammaBandPower.(strDay).mean;
                             end
 
                             if strcmp(dataType,'Ach_Rhodamine') == true
-                                Pupil_asleepData{zz,1} = ProcData.data.Rhodamine.Ach;
+                                Pupil_asleepData{zz,1} = ProcData.data.Rhodamine.Z_Ach;
                             elseif strcmp(dataType,'NE_Rhodamine') == true
-                                Pupil_asleepData{zz,1} = ProcData.data.Rhodamine.NE;
+                                Pupil_asleepData{zz,1} = ProcData.data.Rhodamine.Z_NE;
                             elseif strcmp(dataType,'Ach_GFP') == true
-                                Pupil_asleepData{zz,1} = ProcData.data.GFP.Ach;
+                                Pupil_asleepData{zz,1} = ProcData.data.GFP.Z_Ach;
                             elseif strcmp(dataType,'NE_GFP') == true
-                                Pupil_asleepData{zz,1} = ProcData.data.GFP.NE;
-                            elseif strcmp(dataType,'zDiameter') == true
-                                Pupil_asleepData{zz,1} = ProcData.Pupil.data.zDiameter;
-                            elseif strcmp(dataType,'RH_thetaBandPower') == true
-                                Pupil_asleepData{zz,1} = (ProcData.data.cortical_RH.thetaBandPower);% - RestingBaselines.manualSelection.cortical_RH.thetaBandPower.(strDay).mean)./RestingBaselines.manualSelection.cortical_RH.thetaBandPower.(strDay).mean;
-                            elseif strcmp(dataType,'RH_alphaBandPower') == true
-                                Pupil_asleepData{zz,1} = (ProcData.data.cortical_RH.alphaBandPower);% - RestingBaselines.manualSelection.cortical_RH.alphaBandPower.(strDay).mean)./RestingBaselines.manualSelection.cortical_RH.alphaBandPower.(strDay).mean;
-                            elseif strcmp(dataType,'RH_gammaBandPower') == true
-                                Pupil_asleepData{zz,1} = (ProcData.data.cortical_RH.gammaBandPower);% - RestingBaselines.manualSelection.cortical_RH.gammaBandPower.(strDay).mean)./RestingBaselines.manualSelection.cortical_RH.gammaBandPower.(strDay).mean;
+                                Pupil_asleepData{zz,1} = ProcData.data.GFP.Z_NE;
+                            % elseif strcmp(dataType,'zDiameter') == true
+                            %     Pupil_asleepData{zz,1} = ProcData.Pupil.data.zDiameter;
+                            % elseif strcmp(dataType,'RH_thetaBandPower') == true
+                            %     Pupil_asleepData{zz,1} = (ProcData.data.cortical_RH.thetaBandPower);% - RestingBaselines.manualSelection.cortical_RH.thetaBandPower.(strDay).mean)./RestingBaselines.manualSelection.cortical_RH.thetaBandPower.(strDay).mean;
+                            % elseif strcmp(dataType,'RH_alphaBandPower') == true
+                            %     Pupil_asleepData{zz,1} = (ProcData.data.cortical_RH.alphaBandPower);% - RestingBaselines.manualSelection.cortical_RH.alphaBandPower.(strDay).mean)./RestingBaselines.manualSelection.cortical_RH.alphaBandPower.(strDay).mean;
+                            % elseif strcmp(dataType,'RH_gammaBandPower') == true
+                            %     Pupil_asleepData{zz,1} = (ProcData.data.cortical_RH.gammaBandPower);% - RestingBaselines.manualSelection.cortical_RH.gammaBandPower.(strDay).mean)./RestingBaselines.manualSelection.cortical_RH.gammaBandPower.(strDay).mean;
                             end
 
                             zz = zz + 1;
@@ -346,7 +345,7 @@ for zzz = 1:length(hemDataTypes)
                 Pupil_asleepDataMat(:,cc) = Pupil_procAsleepData{cc,1}(1:length(Pupil_procAsleepData{1,1}));
             end
             % calculate the coherence between desired signals
-            params.tapers = [5 9]; % Tapers [n, 2n - 1]
+            params.tapers = [3 5]; % Tapers [n, 2n - 1]
             if size(HbT_asleepDataMat,1) > size(Pupil_asleepDataMat,1)
                 HbT_asleepDataMat = HbT_asleepDataMat(1:size(Pupil_asleepDataMat,1),:);
             elseif size(HbT_asleepDataMat,1) < size(Pupil_asleepDataMat,1)
@@ -382,41 +381,41 @@ for zzz = 1:length(hemDataTypes)
                 end
                 % don't include trials with stimulation
                 if isempty(puffs) == true
-                    if sum(isnan(ProcData.data.Rhodamine.NE)) == 0
+                    if sum(isnan(ProcData.data.Rhodamine.Z_NE)) == 0
                             if strcmp(hemDataType,'Ach_Rhodamine') == true
-                                HbT_allData{zz,1} = ProcData.data.Rhodamine.Ach;
+                                HbT_allData{zz,1} = ProcData.data.Rhodamine.Z_Ach;
                             elseif strcmp(hemDataType,'NE_Rhodamine') == true
-                                HbT_allData{zz,1} = ProcData.data.Rhodamine.NE;
+                                HbT_allData{zz,1} = ProcData.data.Rhodamine.Z_NE;
                             elseif strcmp(hemDataType,'Ach_GFP') == true
-                                HbT_allData{zz,1} = ProcData.data.GFP.Ach;
+                                HbT_allData{zz,1} = ProcData.data.GFP.Z_Ach;
                             elseif strcmp(hemDataType,'NE_GFP') == true
-                                HbT_allData{zz,1} = ProcData.data.GFP.NE;
-                            elseif strcmp(hemDataType,'zDiameter') == true
-                                HbT_allData{zz,1} = ProcData.data.Pupil.zDiameter;
-                            elseif strcmp(hemDataType,'RH_thetaBandPower') == true
-                                HbT_allData{zz,1} = (ProcData.data.cortical_RH.thetaBandPower);% - RestingBaselines.manualSelection.cortical_RH.thetaBandPower.(strDay).mean)./RestingBaselines.manualSelection.cortical_RH.thetaBandPower.(strDay).mean;
-                            elseif strcmp(hemDataType,'RH_alphaBandPower') == true
-                                HbT_allData{zz,1} = (ProcData.data.cortical_RH.alphaBandPower);% - RestingBaselines.manualSelection.cortical_RH.alphaBandPower.(strDay).mean)./RestingBaselines.manualSelection.cortical_RH.alphaBandPower.(strDay).mean;
-                            elseif strcmp(hemDataType,'RH_gammaBandPower') == true
-                                HbT_allData{zz,1} = (ProcData.data.cortical_RH.gammaBandPower);% - RestingBaselines.manualSelection.cortical_RH.gammaBandPower.(strDay).mean)./RestingBaselines.manualSelection.cortical_RH.gammaBandPower.(strDay).mean;
+                                HbT_allData{zz,1} = ProcData.data.GFP.Z_NE;
+                            % elseif strcmp(hemDataType,'zDiameter') == true
+                            %     HbT_allData{zz,1} = ProcData.data.Pupil.zDiameter;
+                            % elseif strcmp(hemDataType,'RH_thetaBandPower') == true
+                            %     HbT_allData{zz,1} = (ProcData.data.cortical_RH.thetaBandPower);% - RestingBaselines.manualSelection.cortical_RH.thetaBandPower.(strDay).mean)./RestingBaselines.manualSelection.cortical_RH.thetaBandPower.(strDay).mean;
+                            % elseif strcmp(hemDataType,'RH_alphaBandPower') == true
+                            %     HbT_allData{zz,1} = (ProcData.data.cortical_RH.alphaBandPower);% - RestingBaselines.manualSelection.cortical_RH.alphaBandPower.(strDay).mean)./RestingBaselines.manualSelection.cortical_RH.alphaBandPower.(strDay).mean;
+                            % elseif strcmp(hemDataType,'RH_gammaBandPower') == true
+                            %     HbT_allData{zz,1} = (ProcData.data.cortical_RH.gammaBandPower);% - RestingBaselines.manualSelection.cortical_RH.gammaBandPower.(strDay).mean)./RestingBaselines.manualSelection.cortical_RH.gammaBandPower.(strDay).mean;
                             end
 
                             if strcmp(dataType,'Ach_Rhodamine') == true
-                                Pupil_allData{zz,1} = ProcData.data.Rhodamine.Ach;
+                                Pupil_allData{zz,1} = ProcData.data.Rhodamine.Z_Ach;
                             elseif strcmp(dataType,'NE_Rhodamine') == true
-                                Pupil_allData{zz,1} = ProcData.data.Rhodamine.NE;
+                                Pupil_allData{zz,1} = ProcData.data.Rhodamine.Z_NE;
                             elseif strcmp(dataType,'Ach_GFP') == true
-                                Pupil_allData{zz,1} = ProcData.data.GFP.Ach;
+                                Pupil_allData{zz,1} = ProcData.data.GFP.Z_Ach;
                             elseif strcmp(dataType,'NE_GFP') == true
-                                Pupil_allData{zz,1} = ProcData.data.GFP.NE;
-                            elseif strcmp(dataType,'zDiameter') == true
-                                Pupil_allData{zz,1} = ProcData.data.Pupil.zDiameter;
-                            elseif strcmp(dataType,'RH_thetaBandPower') == true
-                                Pupil_allData{zz,1} = (ProcData.data.cortical_RH.thetaBandPower);% - RestingBaselines.manualSelection.cortical_RH.thetaBandPower.(strDay).mean)./RestingBaselines.manualSelection.cortical_RH.thetaBandPower.(strDay).mean;
-                            elseif strcmp(dataType,'RH_alphaBandPower') == true
-                                Pupil_allData{zz,1} = (ProcData.data.cortical_RH.alphaBandPower);% - RestingBaselines.manualSelection.cortical_RH.alphaBandPower.(strDay).mean)./RestingBaselines.manualSelection.cortical_RH.alphaBandPower.(strDay).mean;
-                            elseif strcmp(dataType,'RH_gammaBandPower') == true
-                                Pupil_allData{zz,1} = (ProcData.data.cortical_RH.gammaBandPower);% - RestingBaselines.manualSelection.cortical_RH.gammaBandPower.(strDay).mean)./RestingBaselines.manualSelection.cortical_RH.gammaBandPower.(strDay).mean;
+                                Pupil_allData{zz,1} = ProcData.data.GFP.Z_NE;
+                            % elseif strcmp(dataType,'zDiameter') == true
+                            %     Pupil_allData{zz,1} = ProcData.data.Pupil.zDiameter;
+                            % elseif strcmp(dataType,'RH_thetaBandPower') == true
+                            %     Pupil_allData{zz,1} = (ProcData.data.cortical_RH.thetaBandPower);% - RestingBaselines.manualSelection.cortical_RH.thetaBandPower.(strDay).mean)./RestingBaselines.manualSelection.cortical_RH.thetaBandPower.(strDay).mean;
+                            % elseif strcmp(dataType,'RH_alphaBandPower') == true
+                            %     Pupil_allData{zz,1} = (ProcData.data.cortical_RH.alphaBandPower);% - RestingBaselines.manualSelection.cortical_RH.alphaBandPower.(strDay).mean)./RestingBaselines.manualSelection.cortical_RH.alphaBandPower.(strDay).mean;
+                            % elseif strcmp(dataType,'RH_gammaBandPower') == true
+                            %     Pupil_allData{zz,1} = (ProcData.data.cortical_RH.gammaBandPower);% - RestingBaselines.manualSelection.cortical_RH.gammaBandPower.(strDay).mean)./RestingBaselines.manualSelection.cortical_RH.gammaBandPower.(strDay).mean;
                             end
                         
                         
@@ -439,7 +438,7 @@ for zzz = 1:length(hemDataTypes)
                 Pupil_allDataMat(:,cc) = Pupil_procAllData{cc,1}(1:length(Pupil_procAllData{1,1}));
             end
             % calculate the coherence between desired signals
-            params.tapers = [5 9]; % Tapers [n, 2n - 1]
+            params.tapers = [3 5]; % Tapers [n, 2n - 1]
             if size(HbT_allDataMat,1) > size(Pupil_allDataMat,1)
                 HbT_allDataMat = HbT_allDataMat(1:size(Pupil_allDataMat,1),:);
             elseif size(HbT_allDataMat,1) < size(Pupil_allDataMat,1)
@@ -464,39 +463,39 @@ for zzz = 1:length(hemDataTypes)
         if isempty(SleepData.(modelType).NREM.data.Pupil) == false
             
             if strcmp(hemDataType,'Ach_Rhodamine') == true
-                [HbT_nremData,~,~] = RemoveStimSleepData_IOS(animalID,SleepData.(modelType).NREM.data.Rhodamine.Ach,SleepData.(modelType).NREM.FileIDs,SleepData.(modelType).NREM.BinTimes);
+                [HbT_nremData,~,~] = RemoveStimSleepData_IOS(animalID,SleepData.(modelType).NREM.data.Rhodamine.Z_Ach,SleepData.(modelType).NREM.FileIDs,SleepData.(modelType).NREM.BinTimes);
             elseif strcmp(hemDataType,'NE_Rhodamine') == true
-                [HbT_nremData,~,~] = RemoveStimSleepData_IOS(animalID,SleepData.(modelType).NREM.data.Rhodamine.NE,SleepData.(modelType).NREM.FileIDs,SleepData.(modelType).NREM.BinTimes);
+                [HbT_nremData,~,~] = RemoveStimSleepData_IOS(animalID,SleepData.(modelType).NREM.data.Rhodamine.Z_NE,SleepData.(modelType).NREM.FileIDs,SleepData.(modelType).NREM.BinTimes);
             elseif strcmp(hemDataType,'Ach_GFP') == true
-                [HbT_nremData,~,~] = RemoveStimSleepData_IOS(animalID,SleepData.(modelType).NREM.data.GFP.Ach,SleepData.(modelType).NREM.FileIDs,SleepData.(modelType).NREM.BinTimes);
+                [HbT_nremData,~,~] = RemoveStimSleepData_IOS(animalID,SleepData.(modelType).NREM.data.GFP.Z_Ach,SleepData.(modelType).NREM.FileIDs,SleepData.(modelType).NREM.BinTimes);
             elseif strcmp(hemDataType,'NE_GFP') == true
-                [HbT_nremData,~,~] = RemoveStimSleepData_IOS(animalID,SleepData.(modelType).NREM.data.GFP.NE,SleepData.(modelType).NREM.FileIDs,SleepData.(modelType).NREM.BinTimes);
-            elseif strcmp(hemDataType,'zDiameter') == true
-                [HbT_nremData,~,~] = RemoveStimSleepData_IOS(animalID,SleepData.(modelType).NREM.data.Pupil.zDiameter,SleepData.(modelType).NREM.FileIDs,SleepData.(modelType).NREM.BinTimes);
-            elseif strcmp(hemDataType,'RH_thetaBandPower') == true
-                [HbT_nremData,~,~] = RemoveStimSleepData_IOS(animalID,SleepData.(modelType).NREM.data.cortical_RH.thetaBandPower,SleepData.(modelType).NREM.FileIDs,SleepData.(modelType).NREM.BinTimes);           
-            elseif strcmp(hemDataType,'RH_alphaBandPower') == true
-                [HbT_nremData,~,~] = RemoveStimSleepData_IOS(animalID,SleepData.(modelType).NREM.data.cortical_RH.alphaBandPower,SleepData.(modelType).NREM.FileIDs,SleepData.(modelType).NREM.BinTimes);
-            elseif strcmp(hemDataType,'RH_gammaBandPower') == true
-                [HbT_nremData,~,~] = RemoveStimSleepData_IOS(animalID,SleepData.(modelType).NREM.data.cortical_RH.gammaBandPower,SleepData.(modelType).NREM.FileIDs,SleepData.(modelType).NREM.BinTimes);
+                [HbT_nremData,~,~] = RemoveStimSleepData_IOS(animalID,SleepData.(modelType).NREM.data.GFP.Z_NE,SleepData.(modelType).NREM.FileIDs,SleepData.(modelType).NREM.BinTimes);
+            % elseif strcmp(hemDataType,'zDiameter') == true
+            %     [HbT_nremData,~,~] = RemoveStimSleepData_IOS(animalID,SleepData.(modelType).NREM.data.Pupil.zDiameter,SleepData.(modelType).NREM.FileIDs,SleepData.(modelType).NREM.BinTimes);
+            % elseif strcmp(hemDataType,'RH_thetaBandPower') == true
+            %     [HbT_nremData,~,~] = RemoveStimSleepData_IOS(animalID,SleepData.(modelType).NREM.data.cortical_RH.thetaBandPower,SleepData.(modelType).NREM.FileIDs,SleepData.(modelType).NREM.BinTimes);           
+            % elseif strcmp(hemDataType,'RH_alphaBandPower') == true
+            %     [HbT_nremData,~,~] = RemoveStimSleepData_IOS(animalID,SleepData.(modelType).NREM.data.cortical_RH.alphaBandPower,SleepData.(modelType).NREM.FileIDs,SleepData.(modelType).NREM.BinTimes);
+            % elseif strcmp(hemDataType,'RH_gammaBandPower') == true
+            %     [HbT_nremData,~,~] = RemoveStimSleepData_IOS(animalID,SleepData.(modelType).NREM.data.cortical_RH.gammaBandPower,SleepData.(modelType).NREM.FileIDs,SleepData.(modelType).NREM.BinTimes);
             end           
 
             if strcmp(dataType,'Ach_Rhodamine') == true
-                [Pupil_nremData,~,~] = RemoveStimSleepData_IOS(animalID,SleepData.(modelType).NREM.data.Rhodamine.Ach,SleepData.(modelType).NREM.FileIDs,SleepData.(modelType).NREM.BinTimes);
+                [Pupil_nremData,~,~] = RemoveStimSleepData_IOS(animalID,SleepData.(modelType).NREM.data.Rhodamine.Z_Ach,SleepData.(modelType).NREM.FileIDs,SleepData.(modelType).NREM.BinTimes);
             elseif strcmp(dataType,'NE_Rhodamine') == true
-                [Pupil_nremData,~,~] = RemoveStimSleepData_IOS(animalID,SleepData.(modelType).NREM.data.Rhodamine.NE,SleepData.(modelType).NREM.FileIDs,SleepData.(modelType).NREM.BinTimes);
+                [Pupil_nremData,~,~] = RemoveStimSleepData_IOS(animalID,SleepData.(modelType).NREM.data.Rhodamine.Z_NE,SleepData.(modelType).NREM.FileIDs,SleepData.(modelType).NREM.BinTimes);
             elseif strcmp(dataType,'Ach_GFP') == true
-                [Pupil_nremData,~,~] = RemoveStimSleepData_IOS(animalID,SleepData.(modelType).NREM.data.GFP.Ach,SleepData.(modelType).NREM.FileIDs,SleepData.(modelType).NREM.BinTimes);
+                [Pupil_nremData,~,~] = RemoveStimSleepData_IOS(animalID,SleepData.(modelType).NREM.data.GFP.Z_Ach,SleepData.(modelType).NREM.FileIDs,SleepData.(modelType).NREM.BinTimes);
             elseif strcmp(dataType,'NE_GFP') == true
-                [Pupil_nremData,~,~] = RemoveStimSleepData_IOS(animalID,SleepData.(modelType).NREM.data.GFP.NE,SleepData.(modelType).NREM.FileIDs,SleepData.(modelType).NREM.BinTimes);
-            elseif strcmp(dataType,'zDiameter') == true
-                [Pupil_nremData,~,~] = RemoveStimSleepData_IOS(animalID,SleepData.(modelType).NREM.data.Pupil.zDiameter,SleepData.(modelType).NREM.FileIDs,SleepData.(modelType).NREM.BinTimes);
-            elseif strcmp(dataType,'RH_thetaBandPower') == true
-                [Pupil_nremData,~,~] = RemoveStimSleepData_IOS(animalID,SleepData.(modelType).NREM.data.cortical_RH.thetaBandPower,SleepData.(modelType).NREM.FileIDs,SleepData.(modelType).NREM.BinTimes);           
-            elseif strcmp(dataType,'RH_alphaBandPower') == true
-                [Pupil_nremData,~,~] = RemoveStimSleepData_IOS(animalID,SleepData.(modelType).NREM.data.cortical_RH.alphaBandPower,SleepData.(modelType).NREM.FileIDs,SleepData.(modelType).NREM.BinTimes);
-            elseif strcmp(dataType,'RH_gammaBandPower') == true
-                [Pupil_nremData,~,~] = RemoveStimSleepData_IOS(animalID,SleepData.(modelType).NREM.data.cortical_RH.gammaBandPower,SleepData.(modelType).NREM.FileIDs,SleepData.(modelType).NREM.BinTimes);
+                [Pupil_nremData,~,~] = RemoveStimSleepData_IOS(animalID,SleepData.(modelType).NREM.data.GFP.Z_NE,SleepData.(modelType).NREM.FileIDs,SleepData.(modelType).NREM.BinTimes);
+            % elseif strcmp(dataType,'zDiameter') == true
+            %     [Pupil_nremData,~,~] = RemoveStimSleepData_IOS(animalID,SleepData.(modelType).NREM.data.Pupil.zDiameter,SleepData.(modelType).NREM.FileIDs,SleepData.(modelType).NREM.BinTimes);
+            % elseif strcmp(dataType,'RH_thetaBandPower') == true
+            %     [Pupil_nremData,~,~] = RemoveStimSleepData_IOS(animalID,SleepData.(modelType).NREM.data.cortical_RH.thetaBandPower,SleepData.(modelType).NREM.FileIDs,SleepData.(modelType).NREM.BinTimes);           
+            % elseif strcmp(dataType,'RH_alphaBandPower') == true
+            %     [Pupil_nremData,~,~] = RemoveStimSleepData_IOS(animalID,SleepData.(modelType).NREM.data.cortical_RH.alphaBandPower,SleepData.(modelType).NREM.FileIDs,SleepData.(modelType).NREM.BinTimes);
+            % elseif strcmp(dataType,'RH_gammaBandPower') == true
+            %     [Pupil_nremData,~,~] = RemoveStimSleepData_IOS(animalID,SleepData.(modelType).NREM.data.cortical_RH.gammaBandPower,SleepData.(modelType).NREM.FileIDs,SleepData.(modelType).NREM.BinTimes);
             end        
         else
             HbT_nremData = [];
@@ -543,38 +542,38 @@ for zzz = 1:length(hemDataTypes)
          if firstHrs == "false"
             if isempty(SleepData.(modelType).REM.data.Pupil) == false
                 if strcmp(hemDataType,'Ach_Rhodamine') == true
-                    [HbT_remData,~,~] = RemoveStimSleepData_IOS(animalID,SleepData.(modelType).REM.data.Rhodamine.Ach,SleepData.(modelType).REM.FileIDs,SleepData.(modelType).REM.BinTimes);
+                    [HbT_remData,~,~] = RemoveStimSleepData_IOS(animalID,SleepData.(modelType).REM.data.Rhodamine.Z_Ach,SleepData.(modelType).REM.FileIDs,SleepData.(modelType).REM.BinTimes);
                 elseif strcmp(hemDataType,'NE_Rhodamine') == true
-                    [HbT_remData,~,~] = RemoveStimSleepData_IOS(animalID,SleepData.(modelType).REM.data.Rhodamine.NE,SleepData.(modelType).REM.FileIDs,SleepData.(modelType).REM.BinTimes);
+                    [HbT_remData,~,~] = RemoveStimSleepData_IOS(animalID,SleepData.(modelType).REM.data.Rhodamine.Z_NE,SleepData.(modelType).REM.FileIDs,SleepData.(modelType).REM.BinTimes);
                 elseif strcmp(hemDataType,'Ach_GFP') == true
-                    [HbT_remData,~,~] = RemoveStimSleepData_IOS(animalID,SleepData.(modelType).REM.data.GFP.Ach,SleepData.(modelType).REM.FileIDs,SleepData.(modelType).REM.BinTimes);
+                    [HbT_remData,~,~] = RemoveStimSleepData_IOS(animalID,SleepData.(modelType).REM.data.GFP.Z_Ach,SleepData.(modelType).REM.FileIDs,SleepData.(modelType).REM.BinTimes);
                 elseif strcmp(hemDataType,'NE_GFP') == true
-                    [HbT_remData,~,~] = RemoveStimSleepData_IOS(animalID,SleepData.(modelType).REM.data.GFP.NE,SleepData.(modelType).REM.FileIDs,SleepData.(modelType).REM.BinTimes);
-                elseif strcmp(hemDataType,'zDiameter') == true
-                    [HbT_remData,~,~] = RemoveStimSleepData_IOS(animalID,SleepData.(modelType).REM.data.Pupil.zDiameter,SleepData.(modelType).REM.FileIDs,SleepData.(modelType).REM.BinTimes);
-                elseif strcmp(hemDataType,'RH_thetaBandPower') == true
-                    [HbT_remData,~,~] = RemoveStimSleepData_IOS(animalID,SleepData.(modelType).REM.data.cortical_RH.thetaBandPower,SleepData.(modelType).REM.FileIDs,SleepData.(modelType).REM.BinTimes);           
-                elseif strcmp(hemDataType,'RH_alphaBandPower') == true
-                    [HbT_remData,~,~] = RemoveStimSleepData_IOS(animalID,SleepData.(modelType).REM.data.cortical_RH.alphaBandPower,SleepData.(modelType).REM.FileIDs,SleepData.(modelType).REM.BinTimes);
-                elseif strcmp(hemDataType,'RH_gammaBandPower') == true
-                    [HbT_remData,~,~] = RemoveStimSleepData_IOS(animalID,SleepData.(modelType).REM.data.cortical_RH.gammaBandPower,SleepData.(modelType).REM.FileIDs,SleepData.(modelType).REM.BinTimes);
+                    [HbT_remData,~,~] = RemoveStimSleepData_IOS(animalID,SleepData.(modelType).REM.data.GFP.Z_NE,SleepData.(modelType).REM.FileIDs,SleepData.(modelType).REM.BinTimes);
+                % elseif strcmp(hemDataType,'zDiameter') == true
+                %     [HbT_remData,~,~] = RemoveStimSleepData_IOS(animalID,SleepData.(modelType).REM.data.Pupil.zDiameter,SleepData.(modelType).REM.FileIDs,SleepData.(modelType).REM.BinTimes);
+                % elseif strcmp(hemDataType,'RH_thetaBandPower') == true
+                %     [HbT_remData,~,~] = RemoveStimSleepData_IOS(animalID,SleepData.(modelType).REM.data.cortical_RH.thetaBandPower,SleepData.(modelType).REM.FileIDs,SleepData.(modelType).REM.BinTimes);           
+                % elseif strcmp(hemDataType,'RH_alphaBandPower') == true
+                %     [HbT_remData,~,~] = RemoveStimSleepData_IOS(animalID,SleepData.(modelType).REM.data.cortical_RH.alphaBandPower,SleepData.(modelType).REM.FileIDs,SleepData.(modelType).REM.BinTimes);
+                % elseif strcmp(hemDataType,'RH_gammaBandPower') == true
+                %     [HbT_remData,~,~] = RemoveStimSleepData_IOS(animalID,SleepData.(modelType).REM.data.cortical_RH.gammaBandPower,SleepData.(modelType).REM.FileIDs,SleepData.(modelType).REM.BinTimes);
                 end  
                 if strcmp(dataType,'Ach_Rhodamine') == true
-                    [Pupil_remData,~,~] = RemoveStimSleepData_IOS(animalID,SleepData.(modelType).REM.data.Rhodamine.Ach,SleepData.(modelType).REM.FileIDs,SleepData.(modelType).REM.BinTimes);
+                    [Pupil_remData,~,~] = RemoveStimSleepData_IOS(animalID,SleepData.(modelType).REM.data.Rhodamine.Z_Ach,SleepData.(modelType).REM.FileIDs,SleepData.(modelType).REM.BinTimes);
                 elseif strcmp(dataType,'NE_Rhodamine') == true
-                    [Pupil_remData,~,~] = RemoveStimSleepData_IOS(animalID,SleepData.(modelType).REM.data.Rhodamine.NE,SleepData.(modelType).REM.FileIDs,SleepData.(modelType).REM.BinTimes);
+                    [Pupil_remData,~,~] = RemoveStimSleepData_IOS(animalID,SleepData.(modelType).REM.data.Rhodamine.Z_NE,SleepData.(modelType).REM.FileIDs,SleepData.(modelType).REM.BinTimes);
                 elseif strcmp(dataType,'Ach_GFP') == true
-                    [Pupil_remData,~,~] = RemoveStimSleepData_IOS(animalID,SleepData.(modelType).REM.data.GFP.Ach,SleepData.(modelType).REM.FileIDs,SleepData.(modelType).REM.BinTimes);
+                    [Pupil_remData,~,~] = RemoveStimSleepData_IOS(animalID,SleepData.(modelType).REM.data.GFP.Z_Ach,SleepData.(modelType).REM.FileIDs,SleepData.(modelType).REM.BinTimes);
                 elseif strcmp(dataType,'NE_GFP') == true
-                    [Pupil_remData,~,~] = RemoveStimSleepData_IOS(animalID,SleepData.(modelType).REM.data.GFP.NE,SleepData.(modelType).REM.FileIDs,SleepData.(modelType).REM.BinTimes);
-                elseif strcmp(dataType,'zDiameter') == true
-                    [Pupil_remData,~,~] = RemoveStimSleepData_IOS(animalID,SleepData.(modelType).REM.data.Pupil.zDiameter,SleepData.(modelType).REM.FileIDs,SleepData.(modelType).REM.BinTimes);
-                elseif strcmp(dataType,'RH_thetaBandPower') == true
-                    [Pupil_remData,~,~] = RemoveStimSleepData_IOS(animalID,SleepData.(modelType).REM.data.cortical_RH.thetaBandPower,SleepData.(modelType).REM.FileIDs,SleepData.(modelType).REM.BinTimes);           
-                elseif strcmp(dataType,'RH_alphaBandPower') == true
-                    [Pupil_remData,~,~] = RemoveStimSleepData_IOS(animalID,SleepData.(modelType).REM.data.cortical_RH.alphaBandPower,SleepData.(modelType).REM.FileIDs,SleepData.(modelType).REM.BinTimes);
-                elseif strcmp(dataType,'RH_gammaBandPower') == true
-                    [Pupil_remData,~,~] = RemoveStimSleepData_IOS(animalID,SleepData.(modelType).REM.data.cortical_RH.gammaBandPower,SleepData.(modelType).REM.FileIDs,SleepData.(modelType).REM.BinTimes);
+                    [Pupil_remData,~,~] = RemoveStimSleepData_IOS(animalID,SleepData.(modelType).REM.data.GFP.Z_NE,SleepData.(modelType).REM.FileIDs,SleepData.(modelType).REM.BinTimes);
+                % elseif strcmp(dataType,'zDiameter') == true
+                %     [Pupil_remData,~,~] = RemoveStimSleepData_IOS(animalID,SleepData.(modelType).REM.data.Pupil.zDiameter,SleepData.(modelType).REM.FileIDs,SleepData.(modelType).REM.BinTimes);
+                % elseif strcmp(dataType,'RH_thetaBandPower') == true
+                %     [Pupil_remData,~,~] = RemoveStimSleepData_IOS(animalID,SleepData.(modelType).REM.data.cortical_RH.thetaBandPower,SleepData.(modelType).REM.FileIDs,SleepData.(modelType).REM.BinTimes);           
+                % elseif strcmp(dataType,'RH_alphaBandPower') == true
+                %     [Pupil_remData,~,~] = RemoveStimSleepData_IOS(animalID,SleepData.(modelType).REM.data.cortical_RH.alphaBandPower,SleepData.(modelType).REM.FileIDs,SleepData.(modelType).REM.BinTimes);
+                % elseif strcmp(dataType,'RH_gammaBandPower') == true
+                %     [Pupil_remData,~,~] = RemoveStimSleepData_IOS(animalID,SleepData.(modelType).REM.data.cortical_RH.gammaBandPower,SleepData.(modelType).REM.FileIDs,SleepData.(modelType).REM.BinTimes);
                 end
             else
                 HbT_remData = [];
@@ -597,7 +596,7 @@ for zzz = 1:length(hemDataTypes)
                     end
                 end
                 % calculate the coherence between desired signals
-                params.tapers = [5,9]; % Tapers [n, 2n - 1]
+                params.tapers = [3,5]; % Tapers [n, 2n - 1]
                 if size(HbT_remMat,1) > size(Pupil_remMat,1)
                     HbT_remMat = HbT_remMat(1:size(Pupil_remMat,1),:);
                 elseif size(HbT_remMat,1) < size(Pupil_remMat,1)

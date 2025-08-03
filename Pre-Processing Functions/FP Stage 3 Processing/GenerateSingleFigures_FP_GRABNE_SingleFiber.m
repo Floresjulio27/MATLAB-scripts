@@ -31,15 +31,15 @@ EMG = ProcData.data.EMG.emg;
 LPadSol = ProcData.data.stimulations.LPadSol;
 RPadSol = ProcData.data.stimulations.RPadSol;
 AudSol = ProcData.data.stimulations.AudSol;
-% Rhodamine and GFP data
+% CBV and GFP data
 % no LH
-% Ach_Rhodamine = ProcData.data.Rhodamine.Z_Ach;
-% filtAch_Rhodamine = filtfilt(sos2,g2,Ach_Rhodamine);
-NE_Rhodamine = ProcData.data.Rhodamine.Z_NE;
-filtNE_Rhodamine = filtfilt(sos2,g2,NE_Rhodamine);
-% Ach_GFP = ProcData.data.GFP.Z_Ach;
+% Ach_CBV = ProcData.data.CBV.P_Ach;
+% filtAch_CBV = filtfilt(sos2,g2,Ach_CBV);
+NE_CBV = ProcData.data.CBV.P_NE;
+filtNE_CBV = filtfilt(sos2,g2,NE_CBV);
+% Ach_GFP = ProcData.data.GFP.P_Ach;
 % filtAch_GFP = filtfilt(sos2,g2,Ach_GFP);
-NE_GFP = ProcData.data.GFP.Z_NE;
+NE_GFP = ProcData.data.GFP.P_NE;
 filtNE_GFP = filtfilt(sos2,g2,NE_GFP);
 % cortical and hippocampal spectrograms
 specDataFile = [animalID '_' fileID '_SpecDataA.mat'];
@@ -56,8 +56,8 @@ EEG_LH(1:ProcData.notes.dsFs) = EEG_LH(ProcData.notes.dsFs+1:ProcData.notes.dsFs
 EEG_LH = medfilt1(EEG_LH,3);
 
 % Yvals for behavior Indices
-indecesMax = max([filtNE_Rhodamine;filtNE_GFP]);
-% indecesMax = max([filtAch_Rhodamine;filtAch_GFP]);
+indecesMax = max([filtNE_CBV;filtNE_GFP]);
+% indecesMax = max([filtAch_CBV;filtAch_GFP]);
 whisking_Yvals = 1.10*max(indecesMax)*ones(size(binWhiskers));
 force_Yvals = 1.20*max(indecesMax)*ones(size(binForce));
 LPad_Yvals = 1.30*max(indecesMax)*ones(size(LPadSol));
@@ -83,7 +83,7 @@ figHandle = figure;
 ax1 = subplot(6,1,1);
 fileID2 = strrep(fileID,'_',' ');
 p1 = plot((1:length(filtForceSensor))/ProcData.notes.dsFs,filtForceSensor,'color',colors('north texas green'),'LineWidth',1);
-title([animalID ' FP behavioral characterization and Rhodamine dynamics for ' fileID2])
+title([animalID ' FP behavioral characterization and CBV dynamics for ' fileID2])
 ylabel('Force Sensor (V)')
 xlim([0,ProcData.notes.trialDuration_sec])
 yyaxis right
@@ -111,7 +111,7 @@ set(gca,'TickLength',[0,0])
 set(gca,'Xticklabel',[])
 set(gca,'box','off')
 axis tight
-% Rhodamine and behavioral indeces
+% CBV and behavioral indeces
 ax3 = subplot(6,1,3);
 s1 = scatter((1:length(binForce))/ProcData.notes.dsFs,forceInds,'.','MarkerEdgeColor',colors('north texas green'));
 hold on
@@ -119,11 +119,11 @@ s2 = scatter((1:length(binWhiskers))/ProcData.notes.dsFs,whiskInds,'.','MarkerEd
 s3 = scatter(LPadSol,LPad_Yvals,'v','MarkerEdgeColor','k','MarkerFaceColor','c');
 s4 = scatter(RPadSol,RPad_Yvals,'v','MarkerEdgeColor','k','MarkerFaceColor','m');
 s5 = scatter(AudSol,Aud_Yvals,'v','MarkerEdgeColor','k','MarkerFaceColor','g');
-% p5 = plot((1:length(filtAch_Rhodamine))/ProcData.notes.dsFs,filtAch_Rhodamine,'color',colors('dark candy apple red'),'LineWidth',1);
-p6 = plot((1:length(filtNE_Rhodamine))/ProcData.notes.dsFs,filtNE_Rhodamine,'color',colors('sapphire'),'LineWidth',1);
-ylabel('\Delta F/F (Z)')
-legend([p6,s1,s2,s3,s4,s5],'NE Rhodamine','movement','whisking','LSol','RSol','AudSol')
-% legend([p6,s1,s2],'RH Rhodamine','movement','whisking')
+% p5 = plot((1:length(filtAch_CBV))/ProcData.notes.dsFs,filtAch_CBV,'color',colors('dark candy apple red'),'LineWidth',1);
+p6 = plot((1:length(filtNE_CBV))/ProcData.notes.dsFs,filtNE_CBV,'color',colors('sapphire'),'LineWidth',1);
+ylabel('\Delta F/F')
+legend([p6,s1,s2,s3,s4,s5],'NE CBV','movement','whisking','LSol','RSol','AudSol')
+% legend([p6,s1,s2],'RH CBV','movement','whisking')
 xlim([0,ProcData.notes.trialDuration_sec])
 set(gca,'TickLength',[0,0])
 set(gca,'Xticklabel',[])
@@ -145,7 +145,7 @@ axis tight
 % GRAB NE
 ax4 = subplot(6,1,4);
 p8 = plot((1:length(filtNE_GFP))/ProcData.notes.dsFs,filtNE_GFP,'color',colors('vegas gold'),'LineWidth',1);
-ylabel('\Delta F/F (Z)')
+ylabel('\Delta F/F')
 legend(p8,'GRAB NE')
 
 xlim([0,ProcData.notes.trialDuration_sec])

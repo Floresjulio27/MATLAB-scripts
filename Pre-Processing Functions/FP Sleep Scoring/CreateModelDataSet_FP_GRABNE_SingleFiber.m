@@ -18,13 +18,13 @@ for a = 1:size(procDataFileIDs,1)
             'WhiskEvents','sumWhiskMotion',...
             'meanForce','stdForce',...
             'medEMG','stdEMG',...
-            'meanMDiameter','minMDiameter',...
-            'meanZDiameter','minZDiameter',...
-            'sumEyeMotion','maxEyeMotion',...
-            'meanCentroidX','maxCentroidX',...
-            'meanCentroidY','maxCentroidY',...
+
             };%,...
-    
+                % 'meanMDiameter','minMDiameter',...
+            % 'meanZDiameter','minZDiameter',...
+            % 'sumEyeMotion','maxEyeMotion',...
+            % 'meanCentroidX','maxCentroidX',...
+            % 'meanCentroidY','maxCentroidY',...
     % pre-allocation
     maxCortDelta_column = zeros(NBins,1);
     maxCortTheta_column = zeros(NBins,1);
@@ -40,21 +40,21 @@ for a = 1:size(procDataFileIDs,1)
     medEMG_column = zeros(NBins,1);
     stdEMG_column = zeros(NBins,1);
 
-    avgMDiameterColumn = zeros(NBins,1);
-    varMDiameterColumn = zeros(NBins,1);
-    minMDiameterColumn = zeros(NBins,1);
-    avgZDiameterColumn = zeros(NBins,1);
-    varZDiameterColumn = zeros(NBins,1);
-    minZDiameterColumn = zeros(NBins,1);
-    sumEyeMotionColumn = zeros(NBins,1);
-    maxEyeMotionColumn = zeros(NBins,1);
-    varEyeMotionColumn = zeros(NBins,1);
-    avgCentroidXColumn = zeros(NBins,1);
-    varCentroidXColumn = zeros(NBins,1);
-    maxCentroidXColumn = zeros(NBins,1);
-    avgCentroidYColumn = zeros(NBins,1);
-    varCentroidYColumn = zeros(NBins,1);
-    maxCentroidYColumn = zeros(NBins,1);
+    % avgMDiameterColumn = zeros(NBins,1);
+    % varMDiameterColumn = zeros(NBins,1);
+    % minMDiameterColumn = zeros(NBins,1);
+    % avgZDiameterColumn = zeros(NBins,1);
+    % varZDiameterColumn = zeros(NBins,1);
+    % minZDiameterColumn = zeros(NBins,1);
+    % sumEyeMotionColumn = zeros(NBins,1);
+    % maxEyeMotionColumn = zeros(NBins,1);
+    % varEyeMotionColumn = zeros(NBins,1);
+    % avgCentroidXColumn = zeros(NBins,1);
+    % varCentroidXColumn = zeros(NBins,1);
+    % maxCentroidXColumn = zeros(NBins,1);
+    % avgCentroidYColumn = zeros(NBins,1);
+    % varCentroidYColumn = zeros(NBins,1);
+    % maxCentroidYColumn = zeros(NBins,1);
     sumBinWhiskColumn = zeros(NBins,1);
     sumWhiskAngleColumn = zeros(NBins,1);
     varWhiskAngleColumn = zeros(NBins,1);
@@ -89,36 +89,37 @@ for a = 1:size(procDataFileIDs,1)
         medEMG_column(b,1) = median(EMG);
         stdEMG_column(b,1) = std(EMG);
         % pupil parameters
-        avgMDiameterColumn(b,1) = mean(ProcData.sleep.parameters.Pupil.mmDiameter{b,1},'omitnan');
-        varMDiameterColumn(b,1) = var(ProcData.sleep.parameters.Pupil.mmDiameter{b,1},'omitnan');
-        minMDiameterColumn(b,1) = min(ProcData.sleep.parameters.Pupil.mmDiameter{b,1},[],'omitnan');
-        avgZDiameterColumn(b,1) = mean(ProcData.sleep.parameters.Pupil.zDiameter{b,1},'omitnan');
-        varZDiameterColumn(b,1) = var(ProcData.sleep.parameters.Pupil.zDiameter{b,1},'omitnan');
-        minZDiameterColumn(b,1) = min(ProcData.sleep.parameters.Pupil.zDiameter{b,1},[],'omitnan');
-        sumEyeMotionColumn(b,1) = sum(ProcData.sleep.parameters.Pupil.eyeMotion{b,1},'omitnan');
-        maxEyeMotionColumn(b,1) = max(ProcData.sleep.parameters.Pupil.eyeMotion{b,1},[],'omitnan');
-        varEyeMotionColumn(b,1) = var(ProcData.sleep.parameters.Pupil.eyeMotion{b,1},'omitnan');
-        avgCentroidXColumn(b,1) = mean(ProcData.sleep.parameters.Pupil.CentroidX{b,1},'omitnan');
-        varCentroidXColumn(b,1) = var(ProcData.sleep.parameters.Pupil.CentroidX{b,1},'omitnan');
-        maxCentroidXColumn(b,1) = max(ProcData.sleep.parameters.Pupil.CentroidX{b,1},[],'omitnan');
-        avgCentroidYColumn(b,1) = mean(ProcData.sleep.parameters.Pupil.CentroidY{b,1},'omitnan');
-        varCentroidYColumn(b,1) = var(ProcData.sleep.parameters.Pupil.CentroidY{b,1},'omitnan');
-        maxCentroidYColumn(b,1) = max(ProcData.sleep.parameters.Pupil.CentroidY{b,1},[],'omitnan');
+        % avgMDiameterColumn(b,1) = mean(ProcData.sleep.parameters.Pupil.mmDiameter{b,1},'omitnan');
+        % varMDiameterColumn(b,1) = var(ProcData.sleep.parameters.Pupil.mmDiameter{b,1},'omitnan');
+        % minMDiameterColumn(b,1) = min(ProcData.sleep.parameters.Pupil.mmDiameter{b,1},[],'omitnan');
+        % avgZDiameterColumn(b,1) = mean(ProcData.sleep.parameters.Pupil.zDiameter{b,1},'omitnan');
+        % varZDiameterColumn(b,1) = var(ProcData.sleep.parameters.Pupil.zDiameter{b,1},'omitnan');
+        % minZDiameterColumn(b,1) = min(ProcData.sleep.parameters.Pupil.zDiameter{b,1},[],'omitnan');
+        % sumEyeMotionColumn(b,1) = sum(ProcData.sleep.parameters.Pupil.eyeMotion{b,1},'omitnan');
+        % maxEyeMotionColumn(b,1) = max(ProcData.sleep.parameters.Pupil.eyeMotion{b,1},[],'omitnan');
+        % varEyeMotionColumn(b,1) = var(ProcData.sleep.parameters.Pupil.eyeMotion{b,1},'omitnan');
+        % avgCentroidXColumn(b,1) = mean(ProcData.sleep.parameters.Pupil.CentroidX{b,1},'omitnan');
+        % varCentroidXColumn(b,1) = var(ProcData.sleep.parameters.Pupil.CentroidX{b,1},'omitnan');
+        % maxCentroidXColumn(b,1) = max(ProcData.sleep.parameters.Pupil.CentroidX{b,1},[],'omitnan');
+        % avgCentroidYColumn(b,1) = mean(ProcData.sleep.parameters.Pupil.CentroidY{b,1},'omitnan');
+        % varCentroidYColumn(b,1) = var(ProcData.sleep.parameters.Pupil.CentroidY{b,1},'omitnan');
+        % maxCentroidYColumn(b,1) = max(ProcData.sleep.parameters.Pupil.CentroidY{b,1},[],'omitnan');
         sumBinWhiskColumn(b,1) = sum(ProcData.sleep.parameters.binWhiskerAngle{b,1},'omitnan');
-        sumWhiskAngleColumn(b,1) = sum(ProcData.sleep.parameters.Pupil.whiskerMotion{b,1},'omitnan');
-        varWhiskAngleColumn(b,1) = var(ProcData.sleep.parameters.Pupil.whiskerMotion{b,1},'omitnan');
+        sumWhiskAngleColumn(b,1) = sum(ProcData.sleep.parameters.whiskerAngle{b,1},'omitnan');
+        % varWhiskAngleColumn(b,1) = var(ProcData.sleep.parameters.Pupil.whiskerMotion{b,1},'omitnan');
     end
     % create table
 paramsTable = table(maxCortDelta_column,maxCortThetaAlpha_column,maxCortAlpha_column,maxCortBeta_column,maxCortGamma_column,...
             sumBinWhiskColumn,sumWhiskAngleColumn,...
             meanForce_column,stdForce_column,...
             medEMG_column,stdEMG_column,...
-            avgMDiameterColumn,minMDiameterColumn,...
-            avgZDiameterColumn,minZDiameterColumn,...
-            sumEyeMotionColumn,maxEyeMotionColumn,...
-            avgCentroidXColumn,maxCentroidXColumn,...
-            avgCentroidYColumn,maxCentroidYColumn,...
             'VariableNames',variableNames);
+            % avgMDiameterColumn,minMDiameterColumn,...
+            % avgZDiameterColumn,minZDiameterColumn,...
+            % sumEyeMotionColumn,maxEyeMotionColumn,...
+            % avgCentroidXColumn,maxCentroidXColumn,...
+            % avgCentroidYColumn,maxCentroidYColumn,...
+            
     save(modelDataSetID,'paramsTable')
 end
 

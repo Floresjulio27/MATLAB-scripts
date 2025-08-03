@@ -92,8 +92,8 @@ for gg = 1:length(Ach_finalRestData)
 end
 % take mean [Rhodamine] during resting epochs
 for nn = 1:length(Ach_ProcRestData)
-    Ach_restRhodamineMean(nn,1) = max(Ach_ProcRestData{nn,1}(1:end));
-    NE_restRhodamineMean(nn,1) = max(NE_ProcRestData{nn,1}(1:end));
+    Ach_restRhodamineMean(nn,1) = mean(Ach_ProcRestData{nn,1}(1:end));
+    NE_restRhodamineMean(nn,1) = mean(NE_ProcRestData{nn,1}(1:end));
 end
 % save results
 AnalysisResults.(animalID).MeanRhodamine.Rest.Rhodamine.MeanAch = Ach_restRhodamineMean;
@@ -123,14 +123,17 @@ for gg = 1:size(Ach_finalWhiskData,1)
 end
 % take mean [Rhodamine] during whisking epochs from onset through 5 seconds
 for nn = 1:size(Ach_ProcWhiskData,1)
-    Ach_whiskRhodamineMean{nn,1} = max(Ach_ProcWhiskData(nn,params.Offset*samplingRate:params.minTime.Whisk*samplingRate),2); % mean
-    NE_whiskRhodamineMean{nn,1} = max(NE_ProcWhiskData(nn,params.Offset*samplingRate:params.minTime.Whisk*samplingRate),2);  % mean
+    Ach_whiskRhodamineMean(nn,1) = mean(Ach_ProcWhiskData(nn,params.Offset*samplingRate:params.minTime.Whisk*samplingRate),2); % mean
+    NE_whiskRhodamineMean(nn,1) = mean(NE_ProcWhiskData(nn,params.Offset*samplingRate:params.minTime.Whisk*samplingRate),2);  % mean
+end
+
+for nn = 1:size(Ach_ProcWhiskData,1)
     Ach_whiskRhodamine{nn,1} = Ach_ProcWhiskData(nn,params.Offset*samplingRate:params.minTime.Whisk*samplingRate);
     NE_whiskRhodamine{nn,1} = NE_ProcWhiskData(nn,params.Offset*samplingRate:params.minTime.Whisk*samplingRate);
 end
 % save results
-AnalysisResults.(animalID).MeanRhodamine.Whisk.Rhodamine.MeanAch = cell2mat(Ach_whiskRhodamineMean);
-AnalysisResults.(animalID).MeanRhodamine.Whisk.Rhodamine.MeanNE = cell2mat(NE_whiskRhodamineMean);
+AnalysisResults.(animalID).MeanRhodamine.Whisk.Rhodamine.MeanAch = Ach_whiskRhodamineMean;
+AnalysisResults.(animalID).MeanRhodamine.Whisk.Rhodamine.MeanNE = NE_whiskRhodamineMean;
 AnalysisResults.(animalID).MeanRhodamine.Whisk.Rhodamine.IndAch = Ach_whiskRhodamine;
 AnalysisResults.(animalID).MeanRhodamine.Whisk.Rhodamine.IndNE = NE_whiskRhodamine;
 AnalysisResults.(animalID).MeanRhodamine.Whisk.Rhodamine.FileIDs = finalWhiskFileIDs;
@@ -189,8 +192,8 @@ elseif firstHrs == "false"
 end
 % filter and take mean [Rhodamine] during NREM epochs
 for nn = 1:length(AchremData)
-    AchremRhodamineMean(nn,1) = max(filtfilt(sos,g,AchremData{nn,1}(1:end)));
-    NEremRhodamineMean(nn,1) = max(filtfilt(sos,g,NEremData{nn,1}(1:end)));
+    AchremRhodamineMean(nn,1) = mean(filtfilt(sos,g,AchremData{nn,1}(1:end)));
+    NEremRhodamineMean(nn,1) = mean(filtfilt(sos,g,NEremData{nn,1}(1:end)));
 end
 % save results
 AnalysisResults.(animalID).MeanRhodamine.NREM.Rhodamine.MeanAch = AchremRhodamineMean;
@@ -205,8 +208,8 @@ if firstHrs == "false"
     [NE_remData,~,~] = RemoveStimSleepData_IOS(animalID,SleepData.(modelType).REM.data.Rhodamine.Z_NE,SleepData.(modelType).REM.FileIDs,SleepData.(modelType).REM.BinTimes);
     % filter and take mean [Rhodamine] during REM epochs
     for nn = 1:length(Ach_remData)
-        Ach_remRhodamineMean(nn,1) = max(filtfilt(sos,g,Ach_remData{nn,1}(1:end)));
-        NE_remRhodamineMean(nn,1) = max(filtfilt(sos,g,NE_remData{nn,1}(1:end)));
+        Ach_remRhodamineMean(nn,1) = mean(filtfilt(sos,g,Ach_remData{nn,1}(1:end)));
+        NE_remRhodamineMean(nn,1) = mean(filtfilt(sos,g,NE_remData{nn,1}(1:end)));
     end
     % save results
     AnalysisResults.(animalID).MeanRhodamine.REM.Rhodamine.MeanAch = Ach_remRhodamineMean;

@@ -27,10 +27,11 @@ load(restDataFileID)
 fileBreaks = strfind(restDataFileID,'_');
 animalID = restDataFileID(1:fileBreaks(1)-1);
 % the RestData.mat struct has all resting events, regardless of duration. We want to set the threshold for rest as anything
-% that is greater than a certain amount of time
+% that is greater than a certain amount of time. Here changed to 3 the
+% value 
 RestCriteria.Fieldname = {'durations'};
 RestCriteria.Comparison = {'gt'};
-RestCriteria.Value = {5}; %5
+RestCriteria.Value = {3}; %5
 PuffCriteria.Fieldname = {'puffDistances'};
 PuffCriteria.Comparison = {'gt'};
 PuffCriteria.Value = {5};
@@ -52,8 +53,9 @@ for a = 1:size(procDataFileIDs,1)
             elseif fiberType == 2
             [singleTrialFig] = GenerateSingleFigures_FP_GRABNE(procDataFileID,saveFigs);
             end
+
             fileDecision = input(['Use data from ' procDataFileID ' for resting baseline calculation? (y/n): '], 's'); disp(' ')
-            if strcmp(fileDecision,'y') || strcmp(fileDecision,'n')
+            if strcmp(fileDecision,'y') %|| strcmp(fileDecision,'n')
                 b = true;
                 ManualDecisions.validFiles{a,1} = fileDecision;
                 if strcmp(fileDecision,'y') == true
@@ -80,6 +82,18 @@ for a = 1:size(procDataFileIDs,1)
                 b = false;
                 close(singleTrialFig)
             end
+            %% I have decided not to request user for the manual baseline decision. 
+                % b = true;
+                % ManualDecisions.startTimes{a,1} = 1;
+                % ManualDecisions.endTimes{a,1} =3120;
+                % 
+                % close(singleTrialFig)
+                % load(procDataFileID)
+                % ProcData.manualBaselineInfo.fileDecision = 'y';
+                % ProcData.manualBaselineInfo.startTime = 1;
+                % ProcData.manualBaselineInfo.endTime = 3120;
+                % save(procDataFileID,'ProcData')
+            %
         end
     else 
                 ManualDecisions.validFiles{a,1} = ProcData.manualBaselineInfo.fileDecision;
@@ -103,6 +117,8 @@ for d = 1:length(ManualDecisions.validFiles)
 end
 % find the fieldnames of RestData and loop through each field. Each fieldname should be a different dataType of interest.
 % these will typically be CBV, Delta, Theta, Gamma, and MUA, etc
+%JF comment: Here is the key. because it loops with the previous
+%categorized data that we know where is the rest data 
 dataTypes = fieldnames(RestData);
 for e = 1:length(dataTypes)
     dataType = char(dataTypes(e));   
@@ -111,6 +127,8 @@ for e = 1:length(dataTypes)
     for f = 1:length(subDataTypes)
         subDataType = char(subDataTypes(f));
         % use the criteria we specified earlier to find all resting events that are greater than the criteria
+        % This is why you run the first resting baselines. Because you need
+        % the criteria 
         [restLogical] = FilterEvents_FP(RestData.(dataType).(subDataType),RestCriteria);
         [puffLogical] = FilterEvents_FP(RestData.(dataType).(subDataType),PuffCriteria);
         combRestLogical = logical(restLogical.*puffLogical);

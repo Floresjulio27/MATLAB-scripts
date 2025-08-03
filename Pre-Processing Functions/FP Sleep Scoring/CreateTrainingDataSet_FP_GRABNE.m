@@ -16,7 +16,22 @@ for a = 1:size(procDataFileIDs,1)
         load(procDataFileID)
         load(modelDataFileID)
         saveFigs = 'y';
-        [figHandle,ax1,ax2,ax3,ax4,ax5,ax6,ax7] = GenerateSingleFigures_Sleep_FP_GRABNE_NoECOG(procDataFileID,saveFigs);
+        % not all animal has good ECoG recording
+        ECoGChoice = input('Do you want to use ECoG (y/n)?','s'); disp(" ");
+        ECoGLoop = 1;
+        while ECoGLoop == 1
+            if ECoGChoice == "y"
+                ECoGLoop = 2;
+                [figHandle,ax1,ax2,ax3,ax6,ax5] = GenerateSingleFigures_Sleep_FP_GRABNE(procDataFileID,saveFigs);
+                
+            elseif ECoGChoice == "n"
+                ECoGLoop = 2;
+                [figHandle,ax1,ax2,ax3,ax4,ax5,ax6,ax7] = GenerateSingleFigures_Sleep_FP_GRABNE_NoECOG(procDataFileID,saveFigs);
+            else 
+                ECoGLoop = 2;
+            end 
+        end
+        %
         numBins = NBins;
         behavioralState = cell(numBins,1);
         for b = 1:numBins

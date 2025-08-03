@@ -9,9 +9,8 @@ function [AnalysisResults] = AnalyzeBehavioralDistributions_GRABNE(animalID,root
 %________________________________________________________________________________________________________________________
 
 %% function parameters
-animalIDs = {'NEACh001'};
 %% only run analysis for valid animal IDs
-if any(strcmp(animalIDs,animalID))
+% if any(strcmp(animalIDs,animalID))
     if firstHrs == "false"
          dataLocation = [rootFolder '\' animalID '\CombinedImaging\'];
     elseif firstHrs == "true"
@@ -48,7 +47,17 @@ if any(strcmp(animalIDs,animalID))
             end
         end
         % process data for subdividing
-        EMG = filtfilt(sos,g,ProcData.data.EMG.emg - RestingBaselines.manualSelection.EMG.emg.(strDay).mean);
+        EMG_prefilt = (ProcData.data.EMG.emg - RestingBaselines.manualSelection.EMG.emg.(strDay).mean);
+        % replace any nan values
+        if sum(isinf(EMG_prefilt)|isnan(EMG_prefilt)) 
+        Dummy_EMG_prefilt = EMG_prefilt;
+        Dummy_EMG_prefilt(isinf(EMG_prefilt)|isnan(EMG_prefilt)) = [];
+        EMG_prefilt(isinf(EMG_prefilt)|isnan(EMG_prefilt)) = nanmean(Dummy_EMG_prefilt);
+        end
+        
+
+        EMG = filtfilt(sos,g,EMG_prefilt);
+        
         whiskers = ProcData.data.whiskerAngle;
         for cc = 1:length(labels)
             label = labels{cc,1};
@@ -83,7 +92,7 @@ if any(strcmp(animalIDs,animalID))
     AnalysisResults.(animalID).BehaviorDistributions.NREM.Whisk = var(nremWhisk,0,2);
     AnalysisResults.(animalID).BehaviorDistributions.REM.EMG = mean(remEMG,2);
     AnalysisResults.(animalID).BehaviorDistributions.REM.Whisk = var(remWhisk,0,2);
-end
+% end
  % save data
     cd(rootFolder)
     if firstHrs == "false"

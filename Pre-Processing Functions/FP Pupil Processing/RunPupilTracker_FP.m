@@ -257,7 +257,7 @@ for cc = 1:size(rawDataFileIDs,1)
         %% this section is different from kevin's code. 
         % changes are made to allow analyzing longer duration files.
 
-        maxGPUArraySize = 10000;
+        maxGPUArraySize = 8000;
         InitialIdx = 1;
         MaxFrames = size(imageStack,3);
         LoopSize = ceil(MaxFrames/maxGPUArraySize);
@@ -333,6 +333,7 @@ for cc = 1:size(rawDataFileIDs,1)
                     % fill any subthreshold pixels inside the pupil boundary
                     fillPupil = imfill(fillPupil,8,'holes'); % fill any holes within identified objects
                     areaFilled = regionprops(fillPupil,'FilledArea','Image','FilledImage','Centroid','MajorAxisLength','MinorAxisLength');%identify binarized image object properties. This should be the Pupil!
+                    theArea = zeros(1,size(areaFilled,1));
                     for num = 1:size(areaFilled,1)
                         theArea(num) = areaFilled(num).FilledArea; %#ok<*SAGROW>
                     end
@@ -381,7 +382,8 @@ for cc = 1:size(rawDataFileIDs,1)
                                     correctedFlag = true;
                                 end
                                 % correct aberrant diameters by altering radon threshold
-                                pupilSweep = intensityThresh - (1:100); % adjust threshold of binary image instead of radon image KWG
+                                % toc(procStart)
+                                pupilSweep = intensityThresh - (1:2:30); %  (1:100); adjust threshold of binary image instead of radon image KWG
                                 for sweepNum = 1:size(pupilSweep,2)
                                     if volFlag == true
                                         isoSweep = threshImg; % get video frame
@@ -417,6 +419,7 @@ for cc = 1:size(rawDataFileIDs,1)
                                         end
                                     end
                                 end
+                                % toc(procStart)
                                 % this can be used to insert NaN if the change is > 10%
                                 if  abs(fracChange) < 0.1 % changed to only fill data withing a +/- 10% change in area
                                     fillPupil = fuseMask;
@@ -447,7 +450,8 @@ for cc = 1:size(rawDataFileIDs,1)
                                     correctedFlag = true;
                                 end
                                 % correct aberrant diameters with previous pupil locations
-                                pupilSweep = intensityThresh - (1:100); % adjust threshold of binary image instead of radon image KWG
+                                % toc(procStart)
+                                pupilSweep = intensityThresh - (1:2:30); %(1:100); adjust threshold of binary image instead of radon image KWG
                                 for sweepNum = 1:size(pupilSweep,2)
                                     if volFlag == true
                                         isoSweep = threshImg; % get video frame
@@ -481,6 +485,7 @@ for cc = 1:size(rawDataFileIDs,1)
                                         volFlag = fracChange < -0.1;
                                     end
                                 end
+                                % toc(procStart)
                                 % this can be used to insert NaN if the change is > 10%
                                 if abs(fracChange) < 0.1
                                     fillPupil = fillCorrection;
@@ -551,10 +556,9 @@ for cc = 1:size(rawDataFileIDs,1)
         end
         proceEnd = toc(procStart);
         procMin = proceEnd/60;
-        minText = num2str(procMin);
-        procSec = round(str2double(minText(2:end))*60,0);
-        secText = num2str(procSec);
-        disp(['File processing time: ' minText(1) ' min ' secText ' seconds']); disp(' ')
+        minText = num2str(fix(procMin));
+        secText = num2str(mod(procMin,1));
+        disp(['Pupil tracking time: ' minText ' min ' secText ' seconds']); disp(' ')
         %% save data
         RawData.data.Pupil.rawPupilArea = pupilArea;
         RawData.data.Pupil.pupilMajor = pupilMajor;
@@ -565,10 +569,10 @@ for cc = 1:size(rawDataFileIDs,1)
 
         RawData.data.Pupil.inspectFile = inspectFlag; % did the first frame include more than one ROI?
 
-        blinks = find((abs(diff(RawData.data.Pupil.roiIntensity))./RawData.data.Pupil.roiIntensity(2:end)) >= blinkThresh) + 1;
 %         RawData.data.Pupil.blinkFrames = overlay(:,:,:,blinks);
-        RawData.data.Pupil.blinkInds = blinks;
+        RawData.data.Pupil.blinkInds = find((abs(diff(RawData.data.Pupil.roiIntensity))./RawData.data.Pupil.roiIntensity(2:end)) >= blinkThresh) + 1;
         %% patch NaNs due to blinking
+        PatchBlinkStart = tic;
         blinkNaNs = isnan(pupilArea);
         [linkedBlinkIndex] = LinkBinaryEvents_JNeurosci2022(gt(blinkNaNs,0),[samplingRate,0]); % link greater than 1 second
         % identify edges for interpolation
@@ -610,7 +614,9 @@ for cc = 1:size(rawDataFileIDs,1)
         catch
             RawData.data.Pupil.patchedPupilAreaA = testPupilAreaA;
         end
+        
         %% patch sudden spikes
+
         diffArea = abs(diff(RawData.data.Pupil.patchedPupilAreaA));
         % threshold for interpolation
         threshold = 250;
@@ -655,57 +661,11 @@ for cc = 1:size(rawDataFileIDs,1)
 
         
         save(procDataFileID,'RawData','-v7.3')
-        %% original vs. updated algorithm
-%         trackingFig = figure;
-%         sgtitle(strrep(procDataFileID,'_',' '))
-%         subplot(3,6,[1,7,13])
-%         imagesc(RawData.data.Pupil.firstFrame)
-% %         title(['Previous file choice: ' RawData.data.Pupil.diameterCheck]);
-%         colormap gray
-%         axis image
-%         axis off
-%         subplot(3,6,2:6)
-%         p1 = plot((1:length(RawData.data.Pupil.originalPupilArea))/samplingRate,RawData.data.Pupil.originalPupilArea,'k','LineWidth',1);
-%         hold on
-%         s1 = scatter(RawData.data.Pupil.originalBlinkInds/samplingRate,ones(length(RawData.data.Pupil.originalBlinkInds),1)*max(RawData.data.Pupil.originalPupilArea),'MarkerEdgeColor','b');
-%         title('Original pupil area')
-%         xlabel('Time (sec)');
-%         ylabel('Area (pixels)');
-%         legend([p1,s1],'pupil area','blinks')
-%         set(gca,'box','off')
-%         axis tight
-%         subplot(3,6,8:12)
-%         plot((1:length(RawData.data.Pupil.pupilArea))/samplingRate,RawData.data.Pupil.pupilArea,'k','LineWidth',1);
-%         hold on
-%         scatter(RawData.data.Pupil.blinkInds/samplingRate,ones(length(RawData.data.Pupil.blinkInds),1)*max(RawData.data.Pupil.pupilArea),'MarkerEdgeColor','b');
-%         title('Updated pupil area');
-%         xlabel('Time (sec)');
-%         ylabel('Area (pixels)');
-%         set(gca,'box','off')
-%         axis tight
-%         subplot(3,6,14:18)
-%         [z,p,k] = butter(4,1/(samplingRate/2),'low');
-%         [sos,g] = zp2sos(z,p,k);
-%         try
-%             plot((1:length(RawData.data.Pupil.pupilArea))/samplingRate,filtfilt(sos,g,RawData.data.Pupil.pupilArea),'k','LineWidth',1);
-%         catch
-%             plot((1:length(RawData.data.Pupil.pupilArea))/samplingRate,RawData.data.Pupil.pupilArea,'k','LineWidth',1);
-%         end
-%         hold on
-%         scatter(RawData.data.Pupil.blinkInds/samplingRate,ones(length(RawData.data.Pupil.blinkInds),1)*max(RawData.data.Pupil.pupilArea),'MarkerEdgeColor','b');
-%         title('Filt pupil area');
-%         xlabel('Time (sec)');
-%         ylabel('Area (pixels)');
-%         set(gca,'box','off')
-%         axis tight
-%         % save figure
-%         [pathstr,~,~] = fileparts(cd);
-%         dirpath = [pathstr '/Figures/Pupil Algorithm Update/'];
-%         if ~exist(dirpath,'dir')
-%             mkdir(dirpath);
-%         end
-%         savefig(trackingFig,[dirpath animalID '_' fileID '_Tracking']);
-%         close(trackingFig)
-        % end
+        %
+        PatchBlinkEnd = toc(PatchBlinkStart);
+        PatchBlinkMin = PatchBlinkEnd/60;
+        minText = num2str(fix(PatchBlinkMin));
+        secText = num2str(mod(PatchBlinkMin,1));
+        disp(['Pupil NaN value patch time: ' minText ' min ' secText ' seconds']); disp(' ')
     end
 end

@@ -190,6 +190,7 @@ ax1.YAxis(2).Color = 'k';
 % ylim([-1,0.5])
 ax1.TickLength = [0.03,0.03];
 
+axis square
 % cort LH neural
 ax3 = subplot(6,2,3);
 Semilog_ImageSC(T2,data.AWAKEtoNREM.F,data.AWAKEtoNREM.mean_LH_Cort,'y')
@@ -203,7 +204,7 @@ set(gca,'Yticklabel','10^1')
 xlim([-30,30])
 set(gca,'box','off')
 ax3.TickLength = [0.03,0.03];
-
+axis square
 % hippocampal neural
 % ax4 = subplot(6,2,5);
 % Semilog_ImageSC(T2,data.AWAKEtoNREM.F,data.AWAKEtoNREM.meanHip,'y')
@@ -244,11 +245,11 @@ xlabel('Time (s)')
 ylabel('EMG power (a.u.)','rotation',-90,'VerticalAlignment','bottom')
 set(gca,'box','off')
 % legend([p1,p2,p3],'Ach Rhodamine','NE Rhodamine','EMG','Location','northeast','FontSize',5)
-ax1.YAxis(1).Color = colors('dark candy apple red');
-ax1.YAxis(2).Color = 'k';
+ax5.YAxis(1).Color = colors('dark candy apple red');
+ax5.YAxis(2).Color = 'k';
 % ylim([-1,0.5])
-ax1.TickLength = [0.03,0.03];
-
+ax5.TickLength = [0.03,0.03];
+axis square
 % LH cort neural
 ax7 = subplot(6,2,4);
 Semilog_ImageSC(T2,data.NREMtoAWAKE.F,data.NREMtoAWAKE.mean_LH_Cort,'y')
@@ -262,7 +263,7 @@ set(gca,'Yticklabel','10^1')
 xlim([-30,30])
 set(gca,'box','off')
 ax7.TickLength = [0.03,0.03];
-
+axis square
 % hippocampal neural
 % ax8 = subplot(6,2,6);
 % Semilog_ImageSC(T2,data.NREMtoAWAKE.F,data.NREMtoAWAKE.meanHip,'y')
@@ -308,7 +309,7 @@ if firstHrs == "false"
     ax9.YAxis(2).Color = 'k';
     % ylim([-1,0.5])
     ax9.TickLength = [0.03,0.03];
-    
+    axis square
     % cort LH neural
     ax11 = subplot(6,2,9);
     Semilog_ImageSC(T2,data.NREMtoREM.F,data.NREMtoREM.mean_LH_Cort,'y')
@@ -322,7 +323,7 @@ if firstHrs == "false"
     xlim([-30,30])
     set(gca,'box','off')
     ax11.TickLength = [0.03,0.03];
-    
+    axis square
     % hippocampal neural
 %     ax12 = subplot(6,2,11);
 %     Semilog_ImageSC(T2,data.NREMtoREM.F,data.NREMtoREM.meanHip,'y')
@@ -367,7 +368,7 @@ if firstHrs == "false"
     ax13.YAxis(2).Color = 'k';
     % ylim([-1,0.5])
     ax13.TickLength = [0.03,0.03];
-    
+    axis square
     % LH cort neural
     ax15 = subplot(6,2,10);
     Semilog_ImageSC(T2,data.REMtoAWAKE.F,data.REMtoAWAKE.mean_LH_Cort,'y')
@@ -381,7 +382,7 @@ if firstHrs == "false"
     xlim([-30,30])
     set(gca,'box','off')
     ax15.TickLength = [0.03,0.03];
-    
+    axis square
     % hippocampal neural
 %     ax16 = subplot(6,2,12);
 %     Semilog_ImageSC(T2,data.REMtoAWAKE.F,data.REMtoAWAKE.meanHip,'y')

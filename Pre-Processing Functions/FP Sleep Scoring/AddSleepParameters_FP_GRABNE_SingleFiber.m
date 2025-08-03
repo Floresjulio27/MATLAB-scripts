@@ -189,8 +189,7 @@ for a = 1:size(procDataFileIDs,1)
     ProcData.sleep.parameters.cortical_LH.specThetaBandPower = LH_tempThetaSpecStruct;
     ProcData.sleep.parameters.cortical_LH.specAlphaBandPower = LH_tempAlphaSpecStruct;
     ProcData.sleep.parameters.cortical_LH.specBetaBandPower = LH_tempBetaSpecStruct;
-    ProcData.sleep.parameters.cortical_LH.specGammaBandPower = LH_tempGammaSpecStruct;
-    
+    ProcData.sleep.parameters.cortical_LH.specGammaBandPower = LH_tempGammaSpecStruct;   
     %% BLOCK PURPOSE: Create folder for binarized whisking and binarized force sensor
     binWhiskerAngle = ProcData.data.binWhiskerAngle;
     binForceSensor = ProcData.data.binForceSensor;
@@ -234,9 +233,10 @@ for a = 1:size(procDataFileIDs,1)
     ProcData.sleep.parameters.ForceSensor = tempForceRStruct;
     %% add pupil parameters
     ProcData.data.Pupil.mmPerPixel = 0.018; % used to convert pixels to mm
-        if strcmp(ProcData.data.Pupil.diameterCheck,'y') == true
+   
+        % if strcmp(ProcData.data.Pupil.diameterCheck,'y') == true
         % create fields for the data
-        dataTypes = {'pupilArea','Diameter','mmarea','mmDiameter','zArea','zDiameter','eyeMotion','CentroidX','CentroidY','whiskerMotion'};
+        dataTypes = {'zDiameter'};%{'mmarea','mmDiameter','zArea','zDiameter','eyeMotion','CentroidX','CentroidY','whiskerMotion'};
             for aa = 1:length(dataTypes)
                 dataType = dataTypes{1,aa};
                 samplingRate = ProcData.notes.dsFs;
@@ -288,19 +288,24 @@ for a = 1:size(procDataFileIDs,1)
                     end
                 end
                 data.(dataType).struct = cell(NBins,1);
-                % loop through all samples across the 15 minutes in 5 second bins (NBins total)
+                % loop through all samples across the 52 minutes in 5 second bins (NBins total)
                 for b = 1:NBins
                     if b == 1
                         data.(dataType).struct(b,1) = {data.(dataType).data(b:150)};
                     elseif b == NBins
-                        data.(dataType).struct(b,1) = {data.(dataType).data((((150*(b - 1)) + 1)):(150*b))};%end)};
+                        if length(data.(dataType).data(:)) < (150*b)
+                            data.(dataType).struct(b,1) = {data.(dataType).data((((150*(b - 1)))):end)};
+                        elseif length(data.(dataType).data(:)) == (150*b)
+                            data.(dataType).struct(b,1) = {data.(dataType).data((((150*(b - 1)) + 1)):end)};
+                        end
                     else
                         data.(dataType).struct(b,1) = {data.(dataType).data((((150*(b - 1)) + 1)):(150*b))};
                     end
                 end
                 ProcData.sleep.parameters.Pupil.(dataType) = data.(dataType).struct;
             end
-        end
+        % end
+        %}
     %% Create folder for the EMG
     EMG = ProcData.data.EMG.emg;
     normEMG = EMG - RestingBaselines.(baselineType).EMG.emg.(strDay).mean;  
@@ -312,6 +317,7 @@ for a = 1:size(procDataFileIDs,1)
             tempEMGStruct(EMGBins,1) = {normEMG((((150*(EMGBins-1)) + 1)):(150*EMGBins))};
         end
     end
+    ProcData.sleep.parameters.EMG.emg = tempEMGStruct; 
     %% raw EMG Signal
     EMG = ProcData.data.EMG.emgSignal;
     normEMG = EMG - RestingBaselines.(baselineType).EMG.emgSignal.(strDay).mean;  
@@ -323,85 +329,106 @@ for a = 1:size(procDataFileIDs,1)
             tempEMGStruct(EMGBins,1) = {normEMG((((150*(EMGBins-1)) + 1)):(150*EMGBins))};
         end
     end
-    % save EMG data under ProcData file
-%     ProcData.sleep.parameters = rmfield(ProcData.sleep.parameters,'EMG');
     ProcData.sleep.parameters.EMG.emgSignal = tempEMGStruct;  
-    %% BLOCK PURPOSE: Create folder for the left and right Rhodamine data
-%     NE_GFP = ProcData.data.GFP.NE; 
-%     NE_Rhodamine = ProcData.data.Rhodamine.NE;
-% 
-%     NE_NormRhodamine = (NE_Rhodamine - RestingBaselines.(baselineType).Rhodamine.NE.(strDay).mean)/RestingBaselines.(baselineType).Rhodamine.NE.(strDay).std;
-%     NE_NormGFP = (NE_GFP - RestingBaselines.(baselineType).GFP.NE.(strDay).mean)/RestingBaselines.(baselineType).GFP.NE.(strDay).std;
-% 
-%     NE_tempGFPStruct = cell(NBins,1);  
-%     RhodamineNE_tempRhodamineStruct = cell(NBins,1);
-% 
-%     for RhodamineBins = 1:NBins
-%         if RhodamineBins == 1
-%             NE_tempGFPStruct(RhodamineBins,1) = {NE_NormGFP(RhodamineBins:150)};
-% 
-%             RhodamineNE_tempRhodamineStruct(RhodamineBins,1) = {NE_NormRhodamine(RhodamineBins:150)};
-%         else
-%             NE_tempGFPStruct(RhodamineBins,1) = {NE_NormGFP((((150*(RhodamineBins-1)) + 1)):(150*RhodamineBins))};
-%             RhodamineNE_tempRhodamineStruct(RhodamineBins,1) = {NE_NormRhodamine((((150*(RhodamineBins-1)) + 1)):(150*RhodamineBins))};
-% 
-%         end
-%     end
-%     % save hemodynamic data under ProcData file
-%     ProcData.sleep.parameters.GFP.NE = NE_tempGFPStruct;
-%     ProcData.sleep.parameters.Rhodamine.NE = RhodamineNE_tempRhodamineStruct;
-    %% BLOCK PURPOSE: Create folder for the left and right fiber data (z Scored)
+    %% BLOCK PURPOSE: Create folder for right hemisphere fiber data (z Scored)
     Z_NE_GFP = ProcData.data.GFP.Z_NE; 
-    Z_NE_Rhodamine = ProcData.data.Rhodamine.Z_NE;
+    Z_NE_CBV = ProcData.data.CBV.Z_NE;
 
-    Z_NE_NormRhodamine = (Z_NE_Rhodamine - RestingBaselines.(baselineType).Rhodamine.Z_NE.(strDay).mean)/RestingBaselines.(baselineType).Rhodamine.Z_NE.(strDay).std;
-    Z_NE_NormGFP = (Z_NE_GFP - RestingBaselines.(baselineType).GFP.Z_NE.(strDay).mean)/RestingBaselines.(baselineType).GFP.Z_NE.(strDay).std;
+    Z_NE_NormCBV = (Z_NE_CBV - RestingBaselines.(baselineType).CBV.Z_NE.(strDay).mean);%/RestingBaselines.(baselineType).CBV.Z_NE.(strDay).std;
+    Z_NE_NormGFP = (Z_NE_GFP - RestingBaselines.(baselineType).GFP.Z_NE.(strDay).mean);%/RestingBaselines.(baselineType).GFP.Z_NE.(strDay).std;
 
     Z_NE_tempGFPStruct = cell(NBins,1);  
-    RhodamineZ_NE_tempRhodamineStruct = cell(NBins,1);
+    CBVZ_NE_tempCBVStruct = cell(NBins,1);
 
-    for RhodamineBins = 1:NBins
-        if RhodamineBins == 1
-            Z_NE_tempGFPStruct(RhodamineBins,1) = {Z_NE_NormGFP(RhodamineBins:150)};
-
-            RhodamineZ_NE_tempRhodamineStruct(RhodamineBins,1) = {Z_NE_NormRhodamine(RhodamineBins:150)};
+    for CBVBins = 1:NBins
+        if CBVBins == 1
+            Z_NE_tempGFPStruct(CBVBins,1) = {Z_NE_NormGFP(CBVBins:150)};
+            CBVZ_NE_tempCBVStruct(CBVBins,1) = {Z_NE_NormCBV(CBVBins:150)};
         else
-            Z_NE_tempGFPStruct(RhodamineBins,1) = {Z_NE_NormGFP((((150*(RhodamineBins-1)) + 1)):(150*RhodamineBins))};
-            RhodamineZ_NE_tempRhodamineStruct(RhodamineBins,1) = {Z_NE_NormRhodamine((((150*(RhodamineBins-1)) + 1)):(150*RhodamineBins))};
+            Z_NE_tempGFPStruct(CBVBins,1) = {Z_NE_NormGFP((((150*(CBVBins-1)) + 1)):(150*CBVBins))};
+            CBVZ_NE_tempCBVStruct(CBVBins,1) = {Z_NE_NormCBV((((150*(CBVBins-1)) + 1)):(150*CBVBins))};
 
         end
     end
     % save hemodynamic data under ProcData file
     ProcData.sleep.parameters.GFP.Z_NE = Z_NE_tempGFPStruct;
-    ProcData.sleep.parameters.Rhodamine.Z_NE = RhodamineZ_NE_tempRhodamineStruct;
+    ProcData.sleep.parameters.CBV.Z_NE = CBVZ_NE_tempCBVStruct;
+    %% BLOCK PURPOSE: Create folder for the right hemisphere fiber data (Percentage)
+    P_NE_GFP = ProcData.data.GFP.P_NE; 
+    P_NE_CBV = ProcData.data.CBV.P_NE;
+
+    P_NE_NormCBV = (P_NE_CBV - RestingBaselines.(baselineType).CBV.P_NE.(strDay).mean);%/RestingBaselines.(baselineType).CBV.P_NE.(strDay).std;
+    P_NE_NormGFP = (P_NE_GFP - RestingBaselines.(baselineType).GFP.P_NE.(strDay).mean);%/RestingBaselines.(baselineType).GFP.P_NE.(strDay).std;
+
+    P_NE_tempGFPStruct = cell(NBins,1);  
+    CBVP_NE_tempCBVStruct = cell(NBins,1);
+
+    for CBVBins = 1:NBins
+        if CBVBins == 1
+            P_NE_tempGFPStruct(CBVBins,1) = {P_NE_NormGFP(CBVBins:150)};
+            CBVP_NE_tempCBVStruct(CBVBins,1) = {P_NE_NormCBV(CBVBins:150)};
+        else
+            P_NE_tempGFPStruct(CBVBins,1) = {P_NE_NormGFP((((150*(CBVBins-1)) + 1)):(150*CBVBins))};
+            CBVP_NE_tempCBVStruct(CBVBins,1) = {P_NE_NormCBV((((150*(CBVBins-1)) + 1)):(150*CBVBins))};
+
+        end
+    end
+    % save hemodynamic data under ProcData file
+    ProcData.sleep.parameters.GFP.P_NE = P_NE_tempGFPStruct;
+    ProcData.sleep.parameters.CBV.P_NE = CBVP_NE_tempCBVStruct;
         %% BLOCK PURPOSE: Create folder for the left and right fiber data (z Scored)
-        if  isfield(ProcData.data.GFP,'Z_Ach') == true
-            Z_Ach_GFP = ProcData.data.GFP.Z_Ach; 
-            Z_Ach_Rhodamine = ProcData.data.Rhodamine.Z_Ach;
+        if  isfield(ProcData.data.GFP,'Z_ACh') == true
+            Z_ACh_GFP = ProcData.data.GFP.Z_ACh; 
+            Z_ACh_CBV = ProcData.data.CBV.Z_ACh;
         
-            Z_Ach_NormRhodamine = (Z_Ach_Rhodamine - RestingBaselines.(baselineType).Rhodamine.Z_Ach.(strDay).mean)/RestingBaselines.(baselineType).Rhodamine.Z_Ach.(strDay).std;
-            Z_Ach_NormGFP = (Z_Ach_GFP - RestingBaselines.(baselineType).GFP.Z_Ach.(strDay).mean)/RestingBaselines.(baselineType).GFP.Z_Ach.(strDay).std;
+            Z_ACh_NormCBV = (Z_ACh_CBV - RestingBaselines.(baselineType).CBV.Z_ACh.(strDay).mean)/RestingBaselines.(baselineType).CBV.Z_ACh.(strDay).std;
+            Z_ACh_NormGFP = (Z_ACh_GFP - RestingBaselines.(baselineType).GFP.Z_ACh.(strDay).mean)/RestingBaselines.(baselineType).GFP.Z_ACh.(strDay).std;
         
-            Z_Ach_tempGFPStruct = cell(NBins,1);  
-            RhodamineZ_Ach_tempRhodamineStruct = cell(NBins,1);
+            Z_ACh_tempGFPStruct = cell(NBins,1);  
+            CBVZ_ACh_tempCBVStruct = cell(NBins,1);
         
-            for RhodamineBins = 1:NBins
-                if RhodamineBins == 1
-                    Z_Ach_tempGFPStruct(RhodamineBins,1) = {Z_Ach_NormGFP(RhodamineBins:150)};
-        
-                    RhodamineZ_Ach_tempRhodamineStruct(RhodamineBins,1) = {Z_Ach_NormRhodamine(RhodamineBins:150)};
+            for CBVBins = 1:NBins
+                if CBVBins == 1
+                    Z_ACh_tempGFPStruct(CBVBins,1) = {Z_ACh_NormGFP(CBVBins:150)};       
+                    CBVZ_ACh_tempCBVStruct(CBVBins,1) = {Z_ACh_NormCBV(CBVBins:150)};
                 else
-                    Z_Ach_tempGFPStruct(RhodamineBins,1) = {Z_Ach_NormGFP((((150*(RhodamineBins-1)) + 1)):(150*RhodamineBins))};
-                    RhodamineZ_Ach_tempRhodamineStruct(RhodamineBins,1) = {Z_Ach_NormRhodamine((((150*(RhodamineBins-1)) + 1)):(150*RhodamineBins))};
+                    Z_ACh_tempGFPStruct(CBVBins,1) = {Z_ACh_NormGFP((((150*(CBVBins-1)) + 1)):(150*CBVBins))};
+                    CBVZ_ACh_tempCBVStruct(CBVBins,1) = {Z_ACh_NormCBV((((150*(CBVBins-1)) + 1)):(150*CBVBins))};
         
                 end
             end
             % save hemodynamic data under ProcData file
-            ProcData.sleep.parameters.GFP.Z_Ach = Z_Ach_tempGFPStruct;
-            ProcData.sleep.parameters.Rhodamine.Z_Ach = RhodamineZ_Ach_tempRhodamineStruct;
+            ProcData.sleep.parameters.GFP.Z_ACh = Z_ACh_tempGFPStruct;
+            ProcData.sleep.parameters.CBV.Z_ACh = CBVZ_ACh_tempCBVStruct;
+        end
+        %% BLOCK PURPOSE: Create folder for the left hemisphere fiber data (z Scored)
+        if  isfield(ProcData.data.GFP,'P_ACh') == true
+            P_ACh_GFP = ProcData.data.GFP.P_ACh; 
+            P_ACh_CBV = ProcData.data.CBV.P_ACh;
+        
+            P_ACh_NormCBV = (P_ACh_CBV - RestingBaselines.(baselineType).CBV.P_ACh.(strDay).mean)/RestingBaselines.(baselineType).CBV.P_ACh.(strDay).std;
+            P_ACh_NormGFP = (P_ACh_GFP - RestingBaselines.(baselineType).GFP.P_ACh.(strDay).mean)/RestingBaselines.(baselineType).GFP.P_ACh.(strDay).std;
+        
+            P_ACh_tempGFPStruct = cell(NBins,1);  
+            CBVP_ACh_tempCBVStruct = cell(NBins,1);
+        
+            for CBVBins = 1:NBins
+                if CBVBins == 1
+                    P_ACh_tempGFPStruct(CBVBins,1) = {P_ACh_NormGFP(CBVBins:150)};      
+                    CBVP_ACh_tempCBVStruct(CBVBins,1) = {P_ACh_NormCBV(CBVBins:150)};
+                else
+                    P_ACh_tempGFPStruct(CBVBins,1) = {P_ACh_NormGFP((((150*(CBVBins-1)) + 1)):(150*CBVBins))};
+                    CBVP_ACh_tempCBVStruct(CBVBins,1) = {P_ACh_NormCBV((((150*(CBVBins-1)) + 1)):(150*CBVBins))};
+        
+                end
+            end
+            % save hemodynamic data under ProcData file
+            ProcData.sleep.parameters.GFP.P_ACh = P_ACh_tempGFPStruct;
+            ProcData.sleep.parameters.CBV.P_ACh = CBVP_ACh_tempCBVStruct;
         end
     %%
     save(procDataFileID,'ProcData');
 end
 
 end
+

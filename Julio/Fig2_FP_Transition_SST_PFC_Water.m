@@ -1,0 +1,373 @@
+function [] = Fig2_FP_Transition_SST_PFC_Water(rootFolder,saveFigs,delim)
+%________________________________________________________________________________________________________________________
+% Written by Kevin L. Turner
+% The Pennsylvania State University, Dept. of Biomedical Engineering
+% https://github.com/KL-Turner
+%
+%Modified by Julio Flores-Cuadra. Re adapted from Shakhawat Hossain code
+%________________________________________________________________________________________________________________________
+
+%% set-up and process data
+path = [rootFolder delim 'Results_SST_project']; %Path works way better
+cd(path)
+resultsStruct = 'Results_Transitions';
+load(resultsStruct)
+
+groups = {'Water', 'Alcohol'};
+days = {'Day1', 'Day2', 'Day3', 'Day4', 'Day5', 'Day6'};
+transitions = {'AWAKEtoNREM','NREMtoAWAKE','NREMtoREM','REMtoAWAKE'};
+
+% Loop through groups
+for ee = 1:length(groups)
+    currentGroup = groups{1,ee};
+
+    % Loop through animals
+    for  xx = 1:length(days)
+        currentDay = days{1,xx};
+        % Skip if this day doesn't exist
+        if ~isfield(Results_Transitions.(currentGroup), currentDay)
+            continue;
+        end
+        FPanimalIDs = fieldnames(Results_Transitions.(currentGroup).(currentDay));
+
+        if isempty(FPanimalIDs)
+            continue
+        end
+
+        % Loop through days
+        for aa = 1:length(FPanimalIDs)
+            animalID = FPanimalIDs{aa,1}; %it is organizing it as a column vector
+
+
+            % Loop through transitions
+            for cc = 1:length(transitions)
+                transition = transitions{1,cc};
+                if ~isfield(Results_Transitions.(currentGroup).(currentDay).(animalID).Transitions, transition)
+                    continue;
+                end
+
+                %Concatenate Raw Data
+                %Barrel cortex
+                data.(currentGroup).(currentDay).(animalID).(transition).AChCBVRaw = Results_Transitions.(currentGroup).(currentDay).(animalID).Transitions.(transition).ACh_CBVRaw;
+                data.(currentGroup).(currentDay).(animalID).(transition).AChGFPRaw = Results_Transitions.(currentGroup).(currentDay).(animalID).Transitions.(transition).GRAB_AChRaw;
+                %PFC
+                data.(currentGroup).(currentDay).(animalID).(transition).NECBVRaw = Results_Transitions.(currentGroup).(currentDay).(animalID).Transitions.(transition).NE_CBVRaw;
+                data.(currentGroup).(currentDay).(animalID).(transition).NEGFPRaw = Results_Transitions.(currentGroup).(currentDay).(animalID).Transitions.(transition).GRAB_NERaw;
+            end
+        end
+    end
+end
+
+% Compute Day-by-Day averages (and SEM) across days/animals. This is other way to organize it. 
+
+% Loop through groups  
+for ee = 1:length(groups)
+    currentGroup = groups{1,ee};
+
+    % Loop through animals
+    for  xx = 1:length(days)
+        currentDay = days{1,xx};
+        % Skip if this day doesn't exist
+        if ~isfield(Results_Transitions.(currentGroup), currentDay)
+            continue;
+        end
+        FPanimalIDs = fieldnames(Results_Transitions.(currentGroup).(currentDay));
+
+        if isempty(FPanimalIDs)
+            continue
+        end
+
+        for aa = 1:length(FPanimalIDs)
+            animalID = FPanimalIDs{aa,1}; %it is organizing it as a column vector
+
+            % Loop through transitions
+            for cc = 1:length(transitions)
+                transition = transitions{1,cc};
+                if ~isfield(Results_Transitions.(currentGroup).(currentDay).(animalID).Transitions, transition)
+                    continue;
+                end
+
+            % gather all animals' raw traces for this day
+            allAChCBV = [];
+            allNECBV  = [];
+            allAChGFP = [];
+            allNEGFP  = [];
+            for aa = 1:length(FPanimalIDs)
+                animalID = FPanimalIDs{aa};
+                if ~isfield(data.(currentGroup).(currentDay).(animalID), transition)
+                    continue
+                end
+                S = data.(currentGroup).(currentDay).(animalID).(transition);
+                allAChCBV = [allAChCBV; S.AChCBVRaw];   %#ok<AGROW> %concatonate vertically the data 
+                allNECBV  = [allNECBV;  S.NECBVRaw];    %#ok<AGROW>
+                allAChGFP = [allAChGFP; S.AChGFPRaw];   %#ok<AGROW>
+                allNEGFP  = [allNEGFP;  S.NEGFPRaw];    %#ok<AGROW>
+            end
+            
+            % compute and store stats
+            N = size(allAChCBV,1);
+            data.(currentGroup).(currentDay).(transition).P_AChCBV_N_Exp  = N;
+            data.(currentGroup).(currentDay).(transition).P_AChCBV_Mean   = mean(allAChCBV,   1);
+            data.(currentGroup).(currentDay).(transition).P_AChCBV_SEM    = std(allAChCBV,0,1) / sqrt(N);
+            
+            N = size(allNECBV,1);
+            data.(currentGroup).(currentDay).(transition).P_NECBV_N_Exp   = N;
+            data.(currentGroup).(currentDay).(transition).P_NECBV_Mean    = mean(allNECBV,    1);
+            data.(currentGroup).(currentDay).(transition).P_NECBV_SEM     = std(allNECBV,0,1)  / sqrt(N);
+            
+            N = size(allAChGFP,1);
+            data.(currentGroup).(currentDay).(transition).P_AChGFP_N_Exp  = N;
+            data.(currentGroup).(currentDay).(transition).P_AChGFP_Mean   = mean(allAChGFP,   1);
+            data.(currentGroup).(currentDay).(transition).P_AChGFP_SEM    = std(allAChGFP,0,1) / sqrt(N);
+            
+            N = size(allNEGFP,1);
+            data.(currentGroup).(currentDay).(transition).P_NEGFP_N_Exp   = N;
+            data.(currentGroup).(currentDay).(transition).P_NEGFP_Mean    = mean(allNEGFP,    1);
+            data.(currentGroup).(currentDay).(transition).P_NEGFP_SEM     = std(allNEGFP,0,1)  / sqrt(N);
+            end
+        end
+    end
+end
+T1 = -30 + (1/30):(1/30):30;
+%% Awake to NREM
+
+%Water
+gfp_Day1_color = [0 0 0];
+gfp_Day2_color = [0.38, 0.56, 0.74];
+gfp_Day3_color = [0.42, 0.56, 0.14];
+gfp_Day4_color = [0.70, 1.00, 1.0];
+gfp_Day5_color = [0.55, 0.45, 0.70];
+gfp_Day6_color = [0.35, 0.4, 0.44];
+
+%SST Ca2+ activity in PFC
+
+ax1 = subplot(2,2,1);
+
+% GFP day 1
+x = T1;
+y = data.Water.Day1.AWAKEtoNREM.P_NEGFP_Mean;
+e = data.Water.Day1.AWAKEtoNREM.P_NEGFP_SEM;
+fill([x fliplr(x)], [y+e fliplr(y-e)], gfp_Day1_color,'FaceAlpha', 0.2, 'EdgeColor', 'none'); 
+hold on;
+p1 = plot(x, y, 'Color', gfp_Day1_color, 'LineWidth', 2);
+
+% GFP day 2 
+x2 = T1;
+y2 = data.Water.Day2.AWAKEtoNREM.P_NEGFP_Mean;
+e2 = data.Water.Day2.AWAKEtoNREM.P_NEGFP_SEM';
+fill([x2 fliplr(x2)], [y2+e2 fliplr(y2-e2)], gfp_Day2_color,'FaceAlpha', 0.2, 'EdgeColor', 'none');
+p2 = plot(x2, y2, 'Color', gfp_Day2_color, 'LineWidth', 2);
+
+% GFP day 3
+x3 = T1;
+y3 = data.Water.Day3.AWAKEtoNREM.P_NEGFP_Mean;
+e3 = data.Water.Day3.AWAKEtoNREM.P_NEGFP_SEM;
+fill([x3 fliplr(x3)], [y3+e3 fliplr(y3-e3)], gfp_Day3_color,'FaceAlpha', 0.2, 'EdgeColor', 'none'); 
+hold on;
+p3 = plot(x3, y3, 'Color', gfp_Day3_color, 'LineWidth', 2);
+
+% GFP day 4 
+x4 = T1;
+y4 = data.Water.Day4.AWAKEtoNREM.P_NEGFP_Mean;
+e4 = data.Water.Day4.AWAKEtoNREM.P_NEGFP_SEM';
+fill([x4 fliplr(x4)], [y4+e4 fliplr(y4-e4)], gfp_Day4_color,'FaceAlpha', 0.2, 'EdgeColor', 'none');
+p4 = plot(x4, y4, 'Color', gfp_Day4_color, 'LineWidth', 2);
+
+% GFP day 5
+x5 = T1;
+y5 = data.Water.Day5.AWAKEtoNREM.P_NEGFP_Mean;
+e5 = data.Water.Day5.AWAKEtoNREM.P_NEGFP_SEM;
+fill([x5 fliplr(x5)], [y5+e5 fliplr(y5-e5)], gfp_Day5_color,'FaceAlpha', 0.2, 'EdgeColor', 'none'); 
+hold on;
+p5 = plot(x5, y5, 'Color', gfp_Day5_color, 'LineWidth', 2);
+
+% GFP day 6 
+% x6 = T1;
+% y6 = data.Water.Day6.AWAKEtoNREM.P_NEGFP_Mean;
+% e6 = data.Water.Day6.AWAKEtoNREM.P_NEGFP_SEM';
+% fill([x6 fliplr(x6)], [y6+e6 fliplr(y6-e6)], gfp_Day6_color,'FaceAlpha', 0.2, 'EdgeColor', 'none');
+% p6 = plot(x6, y6, 'Color', gfp_Day6_color, 'LineWidth', 2);
+
+legend([p1 p2 p3 p4 p5],'Day1','Day2','Day3','Day4','Day5','Location','northeast','FontSize',5)
+xlim([-30,30])
+title('Awake to NREM')
+ylabel('\DeltaF/F SST Ca2+ activity (%)')
+xlabel('Time (s)')
+set(gca,'box','off')
+axis square
+axis tight
+
+%% NREM to Awake
+
+ax2 = subplot(2,2,2);
+
+% GFP day 1
+x = T1;
+y = data.Water.Day1.NREMtoAWAKE.P_NEGFP_Mean;
+e = data.Water.Day1.NREMtoAWAKE.P_NEGFP_SEM;
+fill([x fliplr(x)], [y+e fliplr(y-e)], gfp_Day1_color,'FaceAlpha', 0.2, 'EdgeColor', 'none'); 
+hold on;
+p1 = plot(x, y, 'Color', gfp_Day1_color, 'LineWidth', 2);
+
+% GFP day 2 
+x2 = T1;
+y2 = data.Water.Day2.NREMtoAWAKE.P_NEGFP_Mean;
+e2 = data.Water.Day2.NREMtoAWAKE.P_NEGFP_SEM';
+fill([x2 fliplr(x2)], [y2+e2 fliplr(y2-e2)], gfp_Day2_color,'FaceAlpha', 0.2, 'EdgeColor', 'none');
+p2 = plot(x2, y2, 'Color', gfp_Day2_color, 'LineWidth', 2);
+
+% GFP day 3
+x3 = T1;
+y3 = data.Water.Day3.NREMtoAWAKE.P_NEGFP_Mean;
+e3 = data.Water.Day3.NREMtoAWAKE.P_NEGFP_SEM;
+fill([x3 fliplr(x3)], [y3+e3 fliplr(y3-e3)], gfp_Day3_color,'FaceAlpha', 0.2, 'EdgeColor', 'none'); 
+hold on;
+p3 = plot(x3, y3, 'Color', gfp_Day3_color, 'LineWidth', 2);
+
+% GFP day 4 
+x4 = T1;
+y4 = data.Water.Day4.NREMtoAWAKE.P_NEGFP_Mean;
+e4 = data.Water.Day4.NREMtoAWAKE.P_NEGFP_SEM';
+fill([x4 fliplr(x4)], [y4+e4 fliplr(y4-e4)], gfp_Day4_color,'FaceAlpha', 0.2, 'EdgeColor', 'none');
+p4 = plot(x4, y4, 'Color', gfp_Day4_color, 'LineWidth', 2);
+
+% GFP day 5
+x5 = T1;
+y5 = data.Water.Day5.NREMtoAWAKE.P_NEGFP_Mean;
+e5 = data.Water.Day5.NREMtoAWAKE.P_NEGFP_SEM;
+fill([x5 fliplr(x5)], [y5+e5 fliplr(y5-e5)], gfp_Day5_color,'FaceAlpha', 0.2, 'EdgeColor', 'none'); 
+hold on;
+p5 = plot(x5, y5, 'Color', gfp_Day5_color, 'LineWidth', 2);
+
+% GFP day 6 
+% x6 = T1;
+% y6 = data.Water.Day6.NREMtoAWAKE.P_NEGFP_Mean;
+% e6 = data.Water.Day6.NREMtoAWAKE.P_NEGFP_SEM';
+% fill([x6 fliplr(x6)], [y6+e6 fliplr(y6-e6)], gfp_Day6_color,'FaceAlpha', 0.2, 'EdgeColor', 'none');
+% p6 = plot(x6, y6, 'Color', gfp_Day6_color, 'LineWidth', 2);
+
+legend([p1 p2 p3 p4 p5],'Day1','Day2','Day3','Day4','Day5','Location','northeast','FontSize',5)
+xlim([-30,30])
+title('NREM to Awake')
+ylabel('\DeltaF/F SST Ca2+ activity (%)')
+xlabel('Time (s)')
+set(gca,'box','off')
+axis square
+axis tight
+%% NREM to REM
+
+ax3 = subplot(2,2,3);
+
+% GFP day 1
+x = T1;
+y = data.Water.Day1.NREMtoREM.P_NEGFP_Mean;
+e = data.Water.Day1.NREMtoREM.P_NEGFP_SEM;
+fill([x fliplr(x)], [y+e fliplr(y-e)], gfp_Day1_color,'FaceAlpha', 0.2, 'EdgeColor', 'none'); 
+hold on;
+p1 = plot(x, y, 'Color', gfp_Day1_color, 'LineWidth', 2);
+
+% GFP day 2 
+x2 = T1;
+y2 = data.Water.Day2.NREMtoREM.P_NEGFP_Mean;
+e2 = data.Water.Day2.NREMtoREM.P_NEGFP_SEM';
+fill([x2 fliplr(x2)], [y2+e2 fliplr(y2-e2)], gfp_Day2_color,'FaceAlpha', 0.2, 'EdgeColor', 'none');
+p2 = plot(x2, y2, 'Color', gfp_Day2_color, 'LineWidth', 2);
+
+% GFP day 3
+x3 = T1;
+y3 = data.Water.Day3.NREMtoREM.P_NEGFP_Mean;
+e3 = data.Water.Day3.NREMtoREM.P_NEGFP_SEM;
+fill([x3 fliplr(x3)], [y3+e3 fliplr(y3-e3)], gfp_Day3_color,'FaceAlpha', 0.2, 'EdgeColor', 'none'); 
+hold on;
+p3 = plot(x3, y3, 'Color', gfp_Day3_color, 'LineWidth', 2);
+
+% GFP day 4 
+x4 = T1;
+y4 = data.Water.Day4.NREMtoREM.P_NEGFP_Mean;
+e4 = data.Water.Day4.NREMtoREM.P_NEGFP_SEM';
+fill([x4 fliplr(x4)], [y4+e4 fliplr(y4-e4)], gfp_Day4_color,'FaceAlpha', 0.2, 'EdgeColor', 'none');
+p4 = plot(x4, y4, 'Color', gfp_Day4_color, 'LineWidth', 2);
+
+% GFP day 5
+x5 = T1;
+y5 = data.Water.Day5.NREMtoREM.P_NEGFP_Mean;
+e5 = data.Water.Day5.NREMtoREM.P_NEGFP_SEM;
+fill([x5 fliplr(x5)], [y5+e5 fliplr(y5-e5)], gfp_Day5_color,'FaceAlpha', 0.2, 'EdgeColor', 'none'); 
+hold on;
+p5 = plot(x5, y5, 'Color', gfp_Day5_color, 'LineWidth', 2);
+
+% GFP day 6 
+% x6 = T1;
+% y6 = data.Water.Day6.NREMtoREM.P_NEGFP_Mean;
+% e6 = data.Water.Day6.NREMtoREM.P_NEGFP_SEM';
+% fill([x6 fliplr(x6)], [y6+e6 fliplr(y6-e6)], gfp_Day6_color,'FaceAlpha', 0.2, 'EdgeColor', 'none');
+% p6 = plot(x6, y6, 'Color', gfp_Day6_color, 'LineWidth', 2);
+
+legend([p1 p2 p3 p4 p5],'Day1','Day2','Day3','Day4','Day5','Location','northeast','FontSize',5)
+xlim([-30,30])
+title('NREM to REM')
+ylabel('\DeltaF/F SST Ca2+ activity (%)')
+xlabel('Time (s)')
+set(gca,'box','off')
+axis square
+axis tight
+%% REM to AWAKE
+
+ax4 = subplot(2,2,4);
+
+% GFP day 1
+x = T1;
+y = data.Water.Day1.REMtoAWAKE.P_NEGFP_Mean;
+e = data.Water.Day1.REMtoAWAKE.P_NEGFP_SEM;
+fill([x fliplr(x)], [y+e fliplr(y-e)], gfp_Day1_color,'FaceAlpha', 0.2, 'EdgeColor', 'none'); 
+hold on;
+p1 = plot(x, y, 'Color', gfp_Day1_color, 'LineWidth', 2);
+
+% GFP day 2 
+x2 = T1;
+y2 = data.Water.Day2.REMtoAWAKE.P_NEGFP_Mean;
+e2 = data.Water.Day2.REMtoAWAKE.P_NEGFP_SEM';
+fill([x2 fliplr(x2)], [y2+e2 fliplr(y2-e2)], gfp_Day2_color,'FaceAlpha', 0.2, 'EdgeColor', 'none');
+p2 = plot(x2, y2, 'Color', gfp_Day2_color, 'LineWidth', 2);
+
+% GFP day 3
+x3 = T1;
+y3 = data.Water.Day3.REMtoAWAKE.P_NEGFP_Mean;
+e3 = data.Water.Day3.REMtoAWAKE.P_NEGFP_SEM;
+fill([x3 fliplr(x3)], [y3+e3 fliplr(y3-e3)], gfp_Day3_color,'FaceAlpha', 0.2, 'EdgeColor', 'none'); 
+hold on;
+p3 = plot(x3, y3, 'Color', gfp_Day3_color, 'LineWidth', 2);
+
+% GFP day 4 
+x4 = T1;
+y4 = data.Water.Day4.REMtoAWAKE.P_NEGFP_Mean;
+e4 = data.Water.Day4.REMtoAWAKE.P_NEGFP_SEM';
+fill([x4 fliplr(x4)], [y4+e4 fliplr(y4-e4)], gfp_Day4_color,'FaceAlpha', 0.2, 'EdgeColor', 'none');
+p4 = plot(x4, y4, 'Color', gfp_Day4_color, 'LineWidth', 2);
+
+% GFP day 5
+x5 = T1;
+y5 = data.Water.Day5.REMtoAWAKE.P_NEGFP_Mean;
+e5 = data.Water.Day5.REMtoAWAKE.P_NEGFP_SEM;
+fill([x5 fliplr(x5)], [y5+e5 fliplr(y5-e5)], gfp_Day5_color,'FaceAlpha', 0.2, 'EdgeColor', 'none'); 
+hold on;
+p5 = plot(x5, y5, 'Color', gfp_Day5_color, 'LineWidth', 2);
+
+% GFP day 6 
+% x6 = T1;
+% y6 = data.Water.Day6.REMtoAWAKE.P_NEGFP_Mean;
+% e6 = data.Water.Day6.REMtoAWAKE.P_NEGFP_SEM';
+% fill([x6 fliplr(x6)], [y6+e6 fliplr(y6-e6)], gfp_Day6_color,'FaceAlpha', 0.2, 'EdgeColor', 'none');
+% p6 = plot(x6, y6, 'Color', gfp_Day6_color, 'LineWidth', 2);
+
+legend([p1 p2 p3 p4 p5],'Day1','Day2','Day3','Day4','Day5','Location','northeast','FontSize',5)
+xlim([-30,30])
+title('REM to Awake')
+ylabel('\DeltaF/F SST Ca2+ activity (%)')
+xlabel('Time (s)')
+set(gca,'box','off')
+axis square
+axis tight
+
+
+

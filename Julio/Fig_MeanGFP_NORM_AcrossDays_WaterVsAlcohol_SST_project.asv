@@ -1,0 +1,594 @@
+function [] = Fig_MeanGFP_NORM_AcrossDays_WaterVsAlcohol_SST_project(rootFolder,saveState,delim)
+%________________________________________________________________________________________________________________________
+% Written by Julio Flores-Cuadra
+% The Pennsylvania State University, Dept. of Biology
+%
+% Acknowledgments. This code was adapted from scripts wrote by Dr. Kevin
+% Turner and MD Shakhawat Hossain
+%________________________________________________________________________________________________________________________
+
+%% set-up and process data
+%  am pretty sure I can add a loop here for the GFP, CBV and Behavioral
+%  data. Think about this later 
+path = [rootFolder delim 'Results_SST_project']; % Path to the folder containing Results_SleepData.mat
+cd(path)
+resultsStruct_GFP = 'Results_MeanGFP';
+load(resultsStruct_GFP)
+
+%Path =
+%Results_MeanGFP.group.day.animalID.signal.behavior.GFP.hemisphere 
+
+groups = {'Water', 'Alcohol'};
+days = {'Day1', 'Day2', 'Day3', 'Day4', 'Day5', 'Day6'};
+behavior = {'Rest', 'Whisk', 'Stim', 'NREM', 'REM'};
+hemisphere = {'MeanNE', 'MeanACh'}; % NE is PFC and ACh is S1BF
+
+
+% %% Store the data you need for the analysis
+% % Loop through groups
+% 
+% for ee = 1:length(groups)
+%     currentGroup = groups{ee};
+% 
+%     for hemi = 1:length(hemisphere)
+%         currentHemisphere = hemisphere{hemi};
+% 
+%         % Loop through days
+%         for xx = 1:length(days)
+%             currentDay = days{xx};
+% 
+%             % Check if this group actually has data for this day
+%             if ~isfield(Results_MeanGFP.(currentGroup), currentDay)
+%                 continue
+%             end
+% 
+%             FPanimalIDs = fieldnames(Results_MeanGFP.(currentGroup).(currentDay));
+%             if isempty(FPanimalIDs)
+%                 continue
+%             end
+% 
+%             for aa = 1:length(FPanimalIDs)
+%                 animalID = FPanimalIDs{aa};
+% 
+%                 % Loop through animals for this (group,day)
+%                 for behavi = 1:length(behavior)
+%                     currentBehavior = behavior{behavi};
+% 
+%                     if ~isfield(Results_MeanGFP.(currentGroup).(currentDay).(animalID).MeanGFP, currentBehavior)
+%                         continue
+%                     end
+% 
+%                     %Calculate the mean of all events within one mouse
+%                     rawEvents = Results_MeanGFP.(currentGroup).(currentDay).(animalID).MeanGFP.(currentBehavior).GFP.(currentHemisphere);
+%                     mouseMean = mean(rawEvents,1); %k<AGROw>
+% 
+%                     %store the mean for plotting later
+%                     data.(currentGroup).(currentDay).(animalID).MeanGFP.(currentHemisphere).([currentBehavior '_Events']) =  rawEvents;
+%                     data.(currentGroup).(currentDay).(animalID).MeanGFP.(currentHemisphere).([currentBehavior '_Mean'])  =  mouseMean;
+% 
+%                     % Save Day1 baseline for normalization
+%                     if strcmp(currentDay, 'Day1')
+%                         data.(currentGroup).(currentDay).(animalID).MeanGFP.(currentHemisphere).([currentBehavior '_NormBase']) = mouseMean;
+%                     end
+% 
+%                     % Normalize to Day1 if baseline exists
+%                     if isfield(data.(currentGroup), 'Day1') && ...
+%                             isfield(data.(currentGroup).Day1, animalID) && ...
+%                             isfield(data.(currentGroup).Day1.(animalID).MeanGFP.(currentHemisphere), [currentBehavior '_NormBase'])
+% 
+%                         The_baseline = data.(currentGroup).Day1.(animalID).MeanGFP.(currentHemisphere).([currentBehavior '_NormBase']);
+% 
+%                         if The_baseline ~= 0
+%                            normValue = (mouseMean - The_baseline); 
+%                         else
+%                             normValue = NaN;
+%                         end
+% 
+% 
+%                         data.(currentGroup).(currentDay).(animalID).MeanGFP.(currentHemisphere).([currentBehavior '_Norm']) = normValue;
+%                     else
+%                         data.(currentGroup).(currentDay).(animalID).MeanGFP.(currentHemisphere).([currentBehavior '_Norm']) = NaN;
+%                     end
+%                 end
+%             end
+%         end
+%     end
+% end
+
+%% Store the data you need for the analysis
+for ee = 1:length(groups)
+    currentGroup = groups{ee};
+
+    for hemi = 1:length(hemisphere)
+        currentHemisphere = hemisphere{hemi};
+
+        for xx = 1:length(days)
+            currentDay = days{xx};
+
+            if ~isfield(Results_MeanGFP.(currentGroup), currentDay)
+                continue
+            end
+
+            FPanimalIDs = fieldnames(Results_MeanGFP.(currentGroup).(currentDay));
+            if isempty(FPanimalIDs)
+                continue
+            end
+
+            for aa = 1:length(FPanimalIDs)
+                animalID = FPanimalIDs{aa};
+
+                for behavi = 1:length(behavior)
+                    currentBehavior = behavior{behavi};
+
+                    % ✅ For REM, include only animals with data on both Day1 and Day6
+                    if strcmp(currentBehavior, 'REM')
+                        hasDay1 = isfield(Results_MeanGFP.(currentGroup), 'Day1') && ...
+                                  isfield(Results_MeanGFP.(currentGroup).Day1, animalID) && ...
+                                  isfield(Results_MeanGFP.(currentGroup).Day1.(animalID).MeanGFP, 'REM') && ...
+                                  ~isempty(Results_MeanGFP.(currentGroup).Day1.(animalID).MeanGFP.REM.GFP.(currentHemisphere));
+
+                        hasDay6 = isfield(Results_MeanGFP.(currentGroup), 'Day6') && ...
+                                  isfield(Results_MeanGFP.(currentGroup).Day6, animalID) && ...
+                                  isfield(Results_MeanGFP.(currentGroup).Day6.(animalID).MeanGFP, 'REM') && ...
+                                  ~isempty(Results_MeanGFP.(currentGroup).Day6.(animalID).MeanGFP.REM.GFP.(currentHemisphere));
+
+                        if ~(hasDay1 && hasDay6)
+                            continue  % Skip if REM data is missing on Day1 or Day6
+                        end
+                    end
+
+                    % skip if behavior not present
+                    if ~isfield(Results_MeanGFP.(currentGroup).(currentDay).(animalID).MeanGFP, currentBehavior)
+                        continue
+                    end
+
+                    % Calculate the mean of all events within one mouse
+                    rawEvents = Results_MeanGFP.(currentGroup).(currentDay).(animalID).MeanGFP.(currentBehavior).GFP.(currentHemisphere);
+                    mouseMean = mean(rawEvents, 1);
+
+                    % Store raw and mean data
+                    data.(currentGroup).(currentDay).(animalID).MeanGFP.(currentHemisphere).([currentBehavior '_Events']) = rawEvents;
+                    data.(currentGroup).(currentDay).(animalID).MeanGFP.(currentHemisphere).([currentBehavior '_Mean'])  = mouseMean;
+
+                    % Save Day1 mean for normalization
+                    if strcmp(currentDay, 'Day1')
+                        data.(currentGroup).(currentDay).(animalID).MeanGFP.(currentHemisphere).([currentBehavior '_NormBase']) = mouseMean;
+                    end
+
+                    % Normalize if baseline exists
+                    if isfield(data.(currentGroup), 'Day1') && ...
+                       isfield(data.(currentGroup).Day1, animalID) && ...
+                       isfield(data.(currentGroup).Day1.(animalID).MeanGFP.(currentHemisphere), [currentBehavior '_NormBase'])
+
+                        The_baseline = data.(currentGroup).Day1.(animalID).MeanGFP.(currentHemisphere).([currentBehavior '_NormBase']);
+
+                        if The_baseline ~= 0
+                            normValue = (mouseMean - The_baseline);
+                        else
+                            normValue = NaN;
+                        end
+                    else
+                        normValue = NaN;
+                    end
+
+                    % Store normalized value
+                    data.(currentGroup).(currentDay).(animalID).MeanGFP.(currentHemisphere).([currentBehavior '_Norm']) = normValue;
+
+                end
+            end
+        end
+    end
+end
+
+
+
+%% Calculate group-level means and SEM across mice for each day, behavior, and hemisphere
+for hemi = 1:length(hemisphere)
+    currentHemisphere = hemisphere{hemi};
+
+    for behavi = 1:length(behavior)
+        currentBehavior = behavior{behavi};
+
+        for ee = 1:length(groups)
+            currentGroup = groups{ee};
+
+            for xx = 1:length(days)
+                currentDay = days{xx};
+
+                if ~isfield(data.(currentGroup), currentDay)
+                    continue
+                end
+
+                FPanimalIDs = fieldnames(data.(currentGroup).(currentDay));
+                FPanimalIDs = setdiff(FPanimalIDs, {'GroupStats'}); % exclude GroupStats from the list. I do not know why is is taking it as variable :( in the debug mode it does not happen 
+                if isempty(FPanimalIDs)
+                    continue
+                end
+
+                mouseMeans = [];
+
+                for aa = 1:length(FPanimalIDs)
+                    animalID = FPanimalIDs{aa};
+
+                    if isfield(data.(currentGroup).(currentDay).(animalID).MeanGFP.(currentHemisphere), [currentBehavior '_Norm'])
+                        %currentMean = data.(currentGroup).(currentDay).(animalID).MeanGFP.(currentHemisphere).([currentBehavior '_Mean']);
+                        currentMean = data.(currentGroup).(currentDay).(animalID).MeanGFP.(currentHemisphere).([currentBehavior '_Norm']);
+                        mouseMeans(end+1) = currentMean; %#ok<AGROW>
+                    end
+                end
+                
+                if ~isempty(mouseMeans)
+                    data.(currentGroup).(currentDay).GroupStats.(currentHemisphere).([currentBehavior '_NormMean']) = nanmean(mouseMeans);
+                    data.(currentGroup).(currentDay).GroupStats.(currentHemisphere).([currentBehavior '_NormSEM'])  = nanstd(mouseMeans)/sqrt(sum(~isnan(mouseMeans)));
+                else
+                    data.(currentGroup).(currentDay).GroupStats.(currentHemisphere).([currentBehavior '_NormMean']) = NaN;
+                    data.(currentGroup).(currentDay).GroupStats.(currentHemisphere).([currentBehavior '_NormSEM'])  = NaN;
+                end
+
+            end
+        end
+    end
+end
+
+% Define parameters
+currentGroup = 'Alcohol';
+currentHemisphere = 'MeanNE';
+currentBehavior = 'REM';
+x = 1:6;  % corresponding to Day1–Day6
+days = {'Day1','Day2','Day3','Day4','Day5','Day6'};
+
+% Collect unique animal IDs across all days
+allAnimalIDs = {};
+for d = 1:length(days)
+    dayName = days{d};
+    if isfield(data.(currentGroup), dayName)
+        ids = fieldnames(data.(currentGroup).(dayName));
+        ids(strcmp(ids, 'GroupStats')) = [];  % remove GroupStats field
+        allAnimalIDs = [allAnimalIDs; ids];
+    end
+end
+animalIDs = unique(allAnimalIDs);
+
+% Create figure
+figure('Name', [currentGroup ' - ' currentBehavior ' - ' currentHemisphere ' (Spaghetti plot)']);
+hold on;
+
+% Plot each animal's trajectory
+for aa = 1:length(animalIDs)
+    yvals = NaN(1,6);
+    for d = 1:6
+        dayName = days{d};
+        if isfield(data.(currentGroup), dayName) && ...
+           isfield(data.(currentGroup).(dayName), animalIDs{aa}) && ...
+           isfield(data.(currentGroup).(dayName).(animalIDs{aa}).MeanGFP.(currentHemisphere), [currentBehavior '_Norm'])
+
+            yvals(d) = data.(currentGroup).(dayName).(animalIDs{aa}).MeanGFP.(currentHemisphere).([currentBehavior '_Norm']);
+        end
+    end
+    plot(x, yvals, 'Color', [0.8 0.2 0.5 0.3], 'LineWidth', 1);  % semi-transparent line
+end
+
+% Overlay group mean ± SEM
+meanVals = NaN(1,6); semVals = NaN(1,6);
+for d = 1:6
+    dayName = days{d};
+    if isfield(data.(currentGroup).(dayName).GroupStats.(currentHemisphere), [currentBehavior '_NormMean'])
+        meanVals(d) = data.(currentGroup).(dayName).GroupStats.(currentHemisphere).([currentBehavior '_NormMean']);
+    end
+    if isfield(data.(currentGroup).(dayName).GroupStats.(currentHemisphere), [currentBehavior '_NormSEM'])
+        semVals(d) = data.(currentGroup).(dayName).GroupStats.(currentHemisphere).([currentBehavior '_NormSEM']);
+    end
+end
+
+errorbar(x, meanVals, semVals, '-o', 'Color', [0.8 0.2 0.5], 'LineWidth', 2, 'MarkerFaceColor', 'w');
+
+% Formatting
+xticks(x); xticklabels(days);
+ylabel(['REM ' currentHemisphere ' (normalized)']);
+title([currentGroup ' Group - ' currentBehavior ' - ' currentHemisphere]);
+xlim([0.5 6.5]);
+box on;
+
+
+
+% Define shared parameters
+days = {'BL', 'DID1', 'DID2', 'DID3', 'DID4', 'Post-alcohol'};
+waterColor = [0 0 0];
+alcoholColor = [0.8667, 0.1098, 0.4667];
+%% ============ FIGURE 1: PFC (MeanNE) =============
+currentHemisphere = 'MeanNE';
+figure('Name','PFC SST');
+
+% ------------------ REST ------------------
+subplot(2,3,1); hold on;
+errorbar(1:6, ...
+    [data.Water.Day1.GroupStats.MeanNE.Rest_NormMean, data.Water.Day2.GroupStats.MeanNE.Rest_NormMean, ...
+     data.Water.Day3.GroupStats.MeanNE.Rest_NormMean, data.Water.Day4.GroupStats.MeanNE.Rest_NormMean, ...
+     data.Water.Day5.GroupStats.MeanNE.Rest_NormMean, data.Water.Day6.GroupStats.MeanNE.Rest_NormMean], ...
+    [data.Water.Day1.GroupStats.MeanNE.Rest_NormSEM, data.Water.Day2.GroupStats.MeanNE.Rest_NormSEM, ...
+     data.Water.Day3.GroupStats.MeanNE.Rest_NormSEM, data.Water.Day4.GroupStats.MeanNE.Rest_NormSEM, ...
+     data.Water.Day5.GroupStats.MeanNE.Rest_NormSEM, data.Water.Day6.GroupStats.MeanNE.Rest_NormSEM], ...
+    '-o','Color',waterColor,'LineWidth',2);
+errorbar(1:6, ...
+    [data.Alcohol.Day1.GroupStats.MeanNE.Rest_NormMean, data.Alcohol.Day2.GroupStats.MeanNE.Rest_NormMean, ...
+     data.Alcohol.Day3.GroupStats.MeanNE.Rest_NormMean, data.Alcohol.Day4.GroupStats.MeanNE.Rest_NormMean, ...
+     data.Alcohol.Day5.GroupStats.MeanNE.Rest_NormMean, data.Alcohol.Day6.GroupStats.MeanNE.Rest_NormMean], ...
+    [data.Alcohol.Day1.GroupStats.MeanNE.Rest_NormSEM, data.Alcohol.Day2.GroupStats.MeanNE.Rest_NormSEM, ...
+     data.Alcohol.Day3.GroupStats.MeanNE.Rest_NormSEM, data.Alcohol.Day4.GroupStats.MeanNE.Rest_NormSEM, ...
+     data.Alcohol.Day5.GroupStats.MeanNE.Rest_NormSEM, data.Alcohol.Day6.GroupStats.MeanNE.Rest_NormSEM], ...
+    '-o','Color',alcoholColor,'LineWidth',2);
+title('Rest - PFC'); xticks(1:6); xticklabels(days); ylabel('Mean GFP (Normalized to baseline)');
+xlim([0.5 6.5])
+
+% ------------------ WHISK ------------------
+subplot(2,3,2); hold on;
+errorbar(1:6, ...
+    [data.Water.Day1.GroupStats.MeanNE.Whisk_NormMean, data.Water.Day2.GroupStats.MeanNE.Whisk_NormMean, ...
+     data.Water.Day3.GroupStats.MeanNE.Whisk_NormMean, data.Water.Day4.GroupStats.MeanNE.Whisk_NormMean, ...
+     data.Water.Day5.GroupStats.MeanNE.Whisk_NormMean, data.Water.Day6.GroupStats.MeanNE.Whisk_NormMean], ...
+    [data.Water.Day1.GroupStats.MeanNE.Whisk_NormSEM, data.Water.Day2.GroupStats.MeanNE.Whisk_NormSEM, ...
+     data.Water.Day3.GroupStats.MeanNE.Whisk_NormSEM, data.Water.Day4.GroupStats.MeanNE.Whisk_NormSEM, ...
+     data.Water.Day5.GroupStats.MeanNE.Whisk_NormSEM, data.Water.Day6.GroupStats.MeanNE.Whisk_NormSEM], ...
+    '-o','Color',waterColor,'LineWidth',2);
+errorbar(1:6, ...
+    [data.Alcohol.Day1.GroupStats.MeanNE.Whisk_NormMean, data.Alcohol.Day2.GroupStats.MeanNE.Whisk_NormMean, ...
+     data.Alcohol.Day3.GroupStats.MeanNE.Whisk_NormMean, data.Alcohol.Day4.GroupStats.MeanNE.Whisk_NormMean, ...
+     data.Alcohol.Day5.GroupStats.MeanNE.Whisk_NormMean, data.Alcohol.Day6.GroupStats.MeanNE.Whisk_NormMean], ...
+    [data.Alcohol.Day1.GroupStats.MeanNE.Whisk_NormSEM, data.Alcohol.Day2.GroupStats.MeanNE.Whisk_NormSEM, ...
+     data.Alcohol.Day3.GroupStats.MeanNE.Whisk_NormSEM, data.Alcohol.Day4.GroupStats.MeanNE.Whisk_NormSEM, ...
+     data.Alcohol.Day5.GroupStats.MeanNE.Whisk_NormSEM, data.Alcohol.Day6.GroupStats.MeanNE.Whisk_NormSEM], ...
+    '-o','Color',alcoholColor,'LineWidth',2);
+title('Whisk - PFC'); xticks(1:6); xticklabels(days); ylabel('Mean GFP (Normalized to baseline)');
+xlim([0.5 6.5])
+
+% ------------------ STIM ------------------
+subplot(2,3,3); hold on;
+errorbar(1:6, ...
+    [data.Water.Day1.GroupStats.MeanNE.Stim_NormMean, data.Water.Day2.GroupStats.MeanNE.Stim_NormMean, ...
+     data.Water.Day3.GroupStats.MeanNE.Stim_NormMean, data.Water.Day4.GroupStats.MeanNE.Stim_NormMean, ...
+     data.Water.Day5.GroupStats.MeanNE.Stim_NormMean, data.Water.Day6.GroupStats.MeanNE.Stim_NormMean], ...
+    [data.Water.Day1.GroupStats.MeanNE.Stim_NormSEM, data.Water.Day2.GroupStats.MeanNE.Stim_NormSEM, ...
+     data.Water.Day3.GroupStats.MeanNE.Stim_NormSEM, data.Water.Day4.GroupStats.MeanNE.Stim_NormSEM, ...
+     data.Water.Day5.GroupStats.MeanNE.Stim_NormSEM, data.Water.Day6.GroupStats.MeanNE.Stim_NormSEM], ...
+    '-o','Color',waterColor,'LineWidth',2);
+errorbar(1:6, ...
+    [data.Alcohol.Day1.GroupStats.MeanNE.Stim_NormMean, data.Alcohol.Day2.GroupStats.MeanNE.Stim_NormMean, ...
+     data.Alcohol.Day3.GroupStats.MeanNE.Stim_NormMean, data.Alcohol.Day4.GroupStats.MeanNE.Stim_NormMean, ...
+     data.Alcohol.Day5.GroupStats.MeanNE.Stim_NormMean, data.Alcohol.Day6.GroupStats.MeanNE.Stim_NormMean], ...
+    [data.Alcohol.Day1.GroupStats.MeanNE.Stim_NormSEM, data.Alcohol.Day2.GroupStats.MeanNE.Stim_NormSEM, ...
+     data.Alcohol.Day3.GroupStats.MeanNE.Stim_NormSEM, data.Alcohol.Day4.GroupStats.MeanNE.Stim_NormSEM, ...
+     data.Alcohol.Day5.GroupStats.MeanNE.Stim_NormSEM, data.Alcohol.Day6.GroupStats.MeanNE.Stim_NormSEM], ...
+    '-o','Color',alcoholColor,'LineWidth',2);
+title('Stim - PFC'); xticks(1:6); xticklabels(days); ylabel('Mean GFP (Normalized to baseline)');
+xlim([0.5 6.5])
+
+% ------------------ NREM ------------------
+subplot(2,3,4); hold on;
+errorbar(1:6, ...
+    [data.Water.Day1.GroupStats.MeanNE.NREM_NormMean, data.Water.Day2.GroupStats.MeanNE.NREM_NormMean, ...
+     data.Water.Day3.GroupStats.MeanNE.NREM_NormMean, data.Water.Day4.GroupStats.MeanNE.NREM_NormMean, ...
+     data.Water.Day5.GroupStats.MeanNE.NREM_NormMean, data.Water.Day6.GroupStats.MeanNE.NREM_NormMean], ...
+    [data.Water.Day1.GroupStats.MeanNE.NREM_NormSEM, data.Water.Day2.GroupStats.MeanNE.NREM_NormSEM, ...
+     data.Water.Day3.GroupStats.MeanNE.NREM_NormSEM, data.Water.Day4.GroupStats.MeanNE.NREM_NormSEM, ...
+     data.Water.Day5.GroupStats.MeanNE.NREM_NormSEM, data.Water.Day6.GroupStats.MeanNE.NREM_NormSEM], ...
+    '-o','Color',waterColor,'LineWidth',2);
+errorbar(1:6, ...
+    [data.Alcohol.Day1.GroupStats.MeanNE.NREM_NormMean, data.Alcohol.Day2.GroupStats.MeanNE.NREM_NormMean, ...
+     data.Alcohol.Day3.GroupStats.MeanNE.NREM_NormMean, data.Alcohol.Day4.GroupStats.MeanNE.NREM_NormMean, ...
+     data.Alcohol.Day5.GroupStats.MeanNE.NREM_NormMean, data.Alcohol.Day6.GroupStats.MeanNE.NREM_NormMean], ...
+    [data.Alcohol.Day1.GroupStats.MeanNE.NREM_NormSEM, data.Alcohol.Day2.GroupStats.MeanNE.NREM_NormSEM, ...
+     data.Alcohol.Day3.GroupStats.MeanNE.NREM_NormSEM, data.Alcohol.Day4.GroupStats.MeanNE.NREM_NormSEM, ...
+     data.Alcohol.Day5.GroupStats.MeanNE.NREM_NormSEM, data.Alcohol.Day6.GroupStats.MeanNE.NREM_NormSEM], ...
+    '-o','Color',alcoholColor,'LineWidth',2);
+title('NREM - PFC'); xticks(1:6); xticklabels(days); ylabel('Mean GFP (Normalized to baseline)'); 
+xlim([0.5 6.5])
+
+% ------------------ REM ------------------
+subplot(2,3,5); hold on;
+errorbar(1:6, ...
+    [data.Water.Day1.GroupStats.MeanNE.REM_NormMean, data.Water.Day2.GroupStats.MeanNE.REM_NormMean, ...
+     data.Water.Day3.GroupStats.MeanNE.REM_NormMean, data.Water.Day4.GroupStats.MeanNE.REM_NormMean, ...
+     data.Water.Day5.GroupStats.MeanNE.REM_NormMean, data.Water.Day6.GroupStats.MeanNE.REM_NormMean], ...
+    [data.Water.Day1.GroupStats.MeanNE.REM_NormSEM, data.Water.Day2.GroupStats.MeanNE.REM_NormSEM, ...
+     data.Water.Day3.GroupStats.MeanNE.REM_NormSEM, data.Water.Day4.GroupStats.MeanNE.REM_NormSEM, ...
+     data.Water.Day5.GroupStats.MeanNE.REM_NormSEM, data.Water.Day6.GroupStats.MeanNE.REM_NormSEM], ...
+    '-o','Color',waterColor,'LineWidth',2);
+errorbar(1:6, ...
+    [data.Alcohol.Day1.GroupStats.MeanNE.REM_NormMean, data.Alcohol.Day2.GroupStats.MeanNE.REM_NormMean, ...
+     data.Alcohol.Day3.GroupStats.MeanNE.REM_NormMean, data.Alcohol.Day4.GroupStats.MeanNE.REM_NormMean, ...
+     data.Alcohol.Day5.GroupStats.MeanNE.REM_NormMean, data.Alcohol.Day6.GroupStats.MeanNE.REM_NormMean], ...
+    [data.Alcohol.Day1.GroupStats.MeanNE.REM_NormSEM, data.Alcohol.Day2.GroupStats.MeanNE.REM_NormSEM, ...
+     data.Alcohol.Day3.GroupStats.MeanNE.REM_NormSEM, data.Alcohol.Day4.GroupStats.MeanNE.REM_NormSEM, ...
+     data.Alcohol.Day5.GroupStats.MeanNE.REM_NormSEM, data.Alcohol.Day6.GroupStats.MeanNE.REM_NormSEM], ...
+    '-o','Color',alcoholColor,'LineWidth',2);
+title('REM - PFC'); xticks(1:6); xticklabels(days); ylabel('Mean GFP (Normalized to baseline)'); 
+xlim([0.5 6.5])
+
+sgtitle('PFC SST - Water vs Alcohol - All Behaviors');
+legend({'Water','Alcohol'}, 'Location','bestoutside');
+%% ============ FIGURE 2: S1BF (MeanACh) =============
+currentHemisphere = 'MeanACh';
+figure('Name','S1BF - MeanACh');
+
+% ------------------ REST ------------------
+subplot(2,3,1); hold on;
+errorbar(1:6, ...
+    [data.Water.Day1.GroupStats.MeanACh.Rest_NormMean, data.Water.Day2.GroupStats.MeanACh.Rest_NormMean, ...
+     data.Water.Day3.GroupStats.MeanACh.Rest_NormMean, data.Water.Day4.GroupStats.MeanACh.Rest_NormMean, ...
+     data.Water.Day5.GroupStats.MeanACh.Rest_NormMean, data.Water.Day6.GroupStats.MeanACh.Rest_NormMean], ...
+    [data.Water.Day1.GroupStats.MeanACh.Rest_NormSEM, data.Water.Day2.GroupStats.MeanACh.Rest_NormSEM, ...
+     data.Water.Day3.GroupStats.MeanACh.Rest_NormSEM, data.Water.Day4.GroupStats.MeanACh.Rest_NormSEM, ...
+     data.Water.Day5.GroupStats.MeanACh.Rest_NormSEM, data.Water.Day6.GroupStats.MeanACh.Rest_NormSEM], ...
+    '-o','Color',waterColor,'LineWidth',2);
+errorbar(1:6, ...
+    [data.Alcohol.Day1.GroupStats.MeanACh.Rest_NormMean, data.Alcohol.Day2.GroupStats.MeanACh.Rest_NormMean, ...
+     data.Alcohol.Day3.GroupStats.MeanACh.Rest_NormMean, data.Alcohol.Day4.GroupStats.MeanACh.Rest_NormMean, ...
+     data.Alcohol.Day5.GroupStats.MeanACh.Rest_NormMean, data.Alcohol.Day6.GroupStats.MeanACh.Rest_NormMean], ...
+    [data.Alcohol.Day1.GroupStats.MeanACh.Rest_NormSEM, data.Alcohol.Day2.GroupStats.MeanACh.Rest_NormSEM, ...
+     data.Alcohol.Day3.GroupStats.MeanACh.Rest_NormSEM, data.Alcohol.Day4.GroupStats.MeanACh.Rest_NormSEM, ...
+     data.Alcohol.Day5.GroupStats.MeanACh.Rest_NormSEM, data.Alcohol.Day6.GroupStats.MeanACh.Rest_NormSEM], ...
+    '-o','Color',alcoholColor,'LineWidth',2);
+title('Rest - S1BF'); xticks(1:6); xticklabels(days); ylabel('Mean GFP (Normalized)');
+xlim([0.5 6.5])
+
+% ------------------ WHISK ------------------
+subplot(2,3,2); hold on;
+errorbar(1:6, ...
+    [data.Water.Day1.GroupStats.MeanACh.Whisk_NormMean, data.Water.Day2.GroupStats.MeanACh.Whisk_NormMean, ...
+     data.Water.Day3.GroupStats.MeanACh.Whisk_NormMean, data.Water.Day4.GroupStats.MeanACh.Whisk_NormMean, ...
+     data.Water.Day5.GroupStats.MeanACh.Whisk_NormMean, data.Water.Day6.GroupStats.MeanACh.Whisk_NormMean], ...
+    [data.Water.Day1.GroupStats.MeanACh.Whisk_NormSEM, data.Water.Day2.GroupStats.MeanACh.Whisk_NormSEM, ...
+     data.Water.Day3.GroupStats.MeanACh.Whisk_NormSEM, data.Water.Day4.GroupStats.MeanACh.Whisk_NormSEM, ...
+     data.Water.Day5.GroupStats.MeanACh.Whisk_NormSEM, data.Water.Day6.GroupStats.MeanACh.Whisk_NormSEM], ...
+    '-o','Color',waterColor,'LineWidth',2);
+errorbar(1:6, ...
+    [data.Alcohol.Day1.GroupStats.MeanACh.Whisk_NormMean, data.Alcohol.Day2.GroupStats.MeanACh.Whisk_NormMean, ...
+     data.Alcohol.Day3.GroupStats.MeanACh.Whisk_NormMean, data.Alcohol.Day4.GroupStats.MeanACh.Whisk_NormMean, ...
+     data.Alcohol.Day5.GroupStats.MeanACh.Whisk_NormMean, data.Alcohol.Day6.GroupStats.MeanACh.Whisk_NormMean], ...
+    [data.Alcohol.Day1.GroupStats.MeanACh.Whisk_NormSEM, data.Alcohol.Day2.GroupStats.MeanACh.Whisk_NormSEM, ...
+     data.Alcohol.Day3.GroupStats.MeanACh.Whisk_NormSEM, data.Alcohol.Day4.GroupStats.MeanACh.Whisk_NormSEM, ...
+     data.Alcohol.Day5.GroupStats.MeanACh.Whisk_NormSEM, data.Alcohol.Day6.GroupStats.MeanACh.Whisk_NormSEM], ...
+    '-o','Color',alcoholColor,'LineWidth',2);
+title('Whisk - S1BF'); xticks(1:6); xticklabels(days); ylabel('Mean GFP (Normalized)');
+xlim([0.5 6.5])
+
+% ------------------ STIM ------------------
+subplot(2,3,3); hold on;
+errorbar(1:6, ...
+    [data.Water.Day1.GroupStats.MeanACh.Stim_NormMean, data.Water.Day2.GroupStats.MeanACh.Stim_NormMean, ...
+     data.Water.Day3.GroupStats.MeanACh.Stim_NormMean, data.Water.Day4.GroupStats.MeanACh.Stim_NormMean, ...
+     data.Water.Day5.GroupStats.MeanACh.Stim_NormMean, data.Water.Day6.GroupStats.MeanACh.Stim_NormMean], ...
+    [data.Water.Day1.GroupStats.MeanACh.Stim_NormSEM, data.Water.Day2.GroupStats.MeanACh.Stim_NormSEM, ...
+     data.Water.Day3.GroupStats.MeanACh.Stim_NormSEM, data.Water.Day4.GroupStats.MeanACh.Stim_NormSEM, ...
+     data.Water.Day5.GroupStats.MeanACh.Stim_NormSEM, data.Water.Day6.GroupStats.MeanACh.Stim_NormSEM], ...
+    '-o','Color',waterColor,'LineWidth',2);
+errorbar(1:6, ...
+    [data.Alcohol.Day1.GroupStats.MeanACh.Stim_NormMean, data.Alcohol.Day2.GroupStats.MeanACh.Stim_NormMean, ...
+     data.Alcohol.Day3.GroupStats.MeanACh.Stim_NormMean, data.Alcohol.Day4.GroupStats.MeanACh.Stim_NormMean, ...
+     data.Alcohol.Day5.GroupStats.MeanACh.Stim_NormMean, data.Alcohol.Day6.GroupStats.MeanACh.Stim_NormMean], ...
+    [data.Alcohol.Day1.GroupStats.MeanACh.Stim_NormSEM, data.Alcohol.Day2.GroupStats.MeanACh.Stim_NormSEM, ...
+     data.Alcohol.Day3.GroupStats.MeanACh.Stim_NormSEM, data.Alcohol.Day4.GroupStats.MeanACh.Stim_NormSEM, ...
+     data.Alcohol.Day5.GroupStats.MeanACh.Stim_NormSEM, data.Alcohol.Day6.GroupStats.MeanACh.Stim_NormSEM], ...
+    '-o','Color',alcoholColor,'LineWidth',2);
+title('Stim - S1BF'); xticks(1:6); xticklabels(days); ylabel('Mean GFP (Normalized)'); 
+xlim([0.5 6.5])
+
+% ------------------ NREM ------------------
+subplot(2,3,4); hold on;
+errorbar(1:6, ...
+    [data.Water.Day1.GroupStats.MeanACh.NREM_NormMean, data.Water.Day2.GroupStats.MeanACh.NREM_NormMean, ...
+     data.Water.Day3.GroupStats.MeanACh.NREM_NormMean, data.Water.Day4.GroupStats.MeanACh.NREM_NormMean, ...
+     data.Water.Day5.GroupStats.MeanACh.NREM_NormMean, data.Water.Day6.GroupStats.MeanACh.NREM_NormMean], ...
+    [data.Water.Day1.GroupStats.MeanACh.NREM_NormSEM, data.Water.Day2.GroupStats.MeanACh.NREM_NormSEM, ...
+     data.Water.Day3.GroupStats.MeanACh.NREM_NormSEM, data.Water.Day4.GroupStats.MeanACh.NREM_NormSEM, ...
+     data.Water.Day5.GroupStats.MeanACh.NREM_NormSEM, data.Water.Day6.GroupStats.MeanACh.NREM_NormSEM], ...
+    '-o','Color',waterColor,'LineWidth',2);
+errorbar(1:6, ...
+    [data.Alcohol.Day1.GroupStats.MeanACh.NREM_NormMean, data.Alcohol.Day2.GroupStats.MeanACh.NREM_NormMean, ...
+     data.Alcohol.Day3.GroupStats.MeanACh.NREM_NormMean, data.Alcohol.Day4.GroupStats.MeanACh.NREM_NormMean, ...
+     data.Alcohol.Day5.GroupStats.MeanACh.NREM_NormMean, data.Alcohol.Day6.GroupStats.MeanACh.NREM_NormMean], ...
+    [data.Alcohol.Day1.GroupStats.MeanACh.NREM_NormSEM, data.Alcohol.Day2.GroupStats.MeanACh.NREM_NormSEM, ...
+     data.Alcohol.Day3.GroupStats.MeanACh.NREM_NormSEM, data.Alcohol.Day4.GroupStats.MeanACh.NREM_NormSEM, ...
+     data.Alcohol.Day5.GroupStats.MeanACh.NREM_NormSEM, data.Alcohol.Day6.GroupStats.MeanACh.NREM_NormSEM], ...
+    '-o','Color',alcoholColor,'LineWidth',2);
+title('NREM - S1BF'); xticks(1:6); xticklabels(days); ylabel('Mean GFP (Normalized)');
+xlim([0.5 6.5])
+
+% ------------------ REM ------------------
+subplot(2,3,5); hold on;
+errorbar(1:6, ...
+    [data.Water.Day1.GroupStats.MeanACh.REM_NormMean, data.Water.Day2.GroupStats.MeanACh.REM_NormMean, ...
+     data.Water.Day3.GroupStats.MeanACh.REM_NormMean, data.Water.Day4.GroupStats.MeanACh.REM_NormMean, ...
+     data.Water.Day5.GroupStats.MeanACh.REM_NormMean, data.Water.Day6.GroupStats.MeanACh.REM_NormMean], ...
+    [data.Water.Day1.GroupStats.MeanACh.REM_NormSEM, data.Water.Day2.GroupStats.MeanACh.REM_NormSEM, ...
+     data.Water.Day3.GroupStats.MeanACh.REM_NormSEM, data.Water.Day4.GroupStats.MeanACh.REM_NormSEM, ...
+     data.Water.Day5.GroupStats.MeanACh.REM_NormSEM, data.Water.Day6.GroupStats.MeanACh.REM_NormSEM], ...
+    '-o','Color',waterColor,'LineWidth',2);
+errorbar(1:6, ...
+    [data.Alcohol.Day1.GroupStats.MeanACh.REM_NormMean, data.Alcohol.Day2.GroupStats.MeanACh.REM_NormMean, ...
+     data.Alcohol.Day3.GroupStats.MeanACh.REM_NormMean, data.Alcohol.Day4.GroupStats.MeanACh.REM_NormMean, ...
+     data.Alcohol.Day5.GroupStats.MeanACh.REM_NormMean, data.Alcohol.Day6.GroupStats.MeanACh.REM_NormMean], ...
+    [data.Alcohol.Day1.GroupStats.MeanACh.REM_NormSEM, data.Alcohol.Day2.GroupStats.MeanACh.REM_NormSEM, ...
+     data.Alcohol.Day3.GroupStats.MeanACh.REM_NormSEM, data.Alcohol.Day4.GroupStats.MeanACh.REM_NormSEM, ...
+     data.Alcohol.Day5.GroupStats.MeanACh.REM_NormSEM, data.Alcohol.Day6.GroupStats.MeanACh.REM_NormSEM], ...
+    '-o','Color',alcoholColor,'LineWidth',2);
+title('REM - S1BF'); xticks(1:6); xticklabels(days); ylabel('Mean GFP (Normalized)');
+xlim([0.5 6.5])
+
+sgtitle('S1BF SST - Water vs Alcohol - All Behaviors');
+legend({'Water','Alcohol'}, 'Location','bestoutside');
+
+
+%% ============ FIGURE: PFC (MeanNE) - All Behaviors - Group + Individual ============
+currentHemisphere = 'MeanNE';
+behaviorList = {'Rest','Whisk','Stim','NREM','REM'};
+days = {'Day1','Day2','Day3','Day4','Day5','Day6'};
+x = 1:6;
+xOffset = 0.15;
+
+figure('Name','PFC SST - All Behaviors - Group + Individual');
+
+for b = 1:length(behaviorList)
+    currentBehavior = behaviorList{b};
+    subplot(2,3,b); hold on;
+    
+    % ---------- BAR: Water group mean ----------
+    bar(x - xOffset, ...
+        [data.Water.Day1.GroupStats.(currentHemisphere).([currentBehavior '_NormMean']), ...
+         data.Water.Day2.GroupStats.(currentHemisphere).([currentBehavior '_NormMean']), ...
+         data.Water.Day3.GroupStats.(currentHemisphere).([currentBehavior '_NormMean']), ...
+         data.Water.Day4.GroupStats.(currentHemisphere).([currentBehavior '_NormMean']), ...
+         data.Water.Day5.GroupStats.(currentHemisphere).([currentBehavior '_NormMean']), ...
+         data.Water.Day6.GroupStats.(currentHemisphere).([currentBehavior '_NormMean'])], ...
+         0.3, 'FaceColor', waterColor, 'EdgeColor', 'none');
+     
+    % ---------- BAR: Alcohol group mean ----------
+    bar(x + xOffset, ...
+        [data.Alcohol.Day1.GroupStats.(currentHemisphere).([currentBehavior '_NormMean']), ...
+         data.Alcohol.Day2.GroupStats.(currentHemisphere).([currentBehavior '_NormMean']), ...
+         data.Alcohol.Day3.GroupStats.(currentHemisphere).([currentBehavior '_NormMean']), ...
+         data.Alcohol.Day4.GroupStats.(currentHemisphere).([currentBehavior '_NormMean']), ...
+         data.Alcohol.Day5.GroupStats.(currentHemisphere).([currentBehavior '_NormMean']), ...
+         data.Alcohol.Day6.GroupStats.(currentHemisphere).([currentBehavior '_NormMean'])], ...
+         0.3, 'FaceColor', alcoholColor, 'EdgeColor', 'none');
+
+    % ---------- SCATTER: Water individual mice ----------
+    for d = 1:6
+        mouseIDs = fieldnames(data.Water.(days{d}));
+        mouseIDs(strcmp(mouseIDs,'GroupStats')) = [];
+        values = [];
+        for aa = 1:length(mouseIDs)
+            if isfield(data.Water.(days{d}).(mouseIDs{aa}).MeanGFP.(currentHemisphere), [currentBehavior '_Norm'])
+                values(end+1) = data.Water.(days{d}).(mouseIDs{aa}).MeanGFP.(currentHemisphere).([currentBehavior '_Norm']);
+            end
+        end
+        scatter(repmat(d - xOffset, 1, length(values)), values, 40, 'r', 'filled', 'jitter', 'on', 'jitterAmount', 0.1);
+    end
+
+    % ---------- SCATTER: Alcohol individual mice ----------
+    for d = 1:6
+        mouseIDs = fieldnames(data.Alcohol.(days{d}));
+        mouseIDs(strcmp(mouseIDs,'GroupStats')) = [];
+        values = [];
+        for aa = 1:length(mouseIDs)
+            if isfield(data.Alcohol.(days{d}).(mouseIDs{aa}).MeanGFP.(currentHemisphere), [currentBehavior '_Norm'])
+                values(end+1) = data.Alcohol.(days{d}).(mouseIDs{aa}).MeanGFP.(currentHemisphere).([currentBehavior '_Norm']);
+            end
+        end
+        scatter(repmat(d + xOffset, 1, length(values)), values, 40, [0.6 0.6 0.6], 'filled', 'jitter', 'on', 'jitterAmount', 0.1);
+    end
+
+    title([currentBehavior 'PFC']);
+    xticks(1:6);
+    xticklabels({'BL','DID1','DID2','DID3','DID4','Post-alcohol'});
+    ylabel('Mean GFP (normalized)');
+    xlim([0.5 6.5])
+end
+
+sgtitle('PFC SST - All Behaviors - Group + Individual');
+legend({'Water mean','Alcohol mean'}, 'Location','bestoutside');
+
+
+end 
+
+

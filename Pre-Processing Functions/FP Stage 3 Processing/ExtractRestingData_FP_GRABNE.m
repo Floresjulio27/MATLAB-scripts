@@ -16,10 +16,10 @@ for a = 1:length(dataTypes)
     dataType = dataTypes(a);
     if strcmp(dataType,'EMG') == true
         subDataTypes = {'emg','emgSignal'};
-    elseif strcmp(dataType,'Rhodamine') == true || strcmp(dataType,'GFP') == true 
-        subDataTypes = {'Z_Ach','Z_NE'};
+    elseif strcmp(dataType,'CBV') == true || strcmp(dataType,'GFP') == true || strcmp(dataType,'Isos') == true 
+        subDataTypes = {'Z_ACh','Z_NE','P_ACh','P_NE'};
     elseif strcmp(dataType,'Pupil') == true
-        subDataTypes = {'pupilArea','Diameter','mmarea','mmDiameter','CentroidX','CentroidY'};
+        subDataTypes = {'Diameter'};%{'pupilArea','Diameter','mmarea','mmDiameter','CentroidX','CentroidY'};
     else
         subDataTypes = {'deltaBandPower','thetaBandPower','alphaBandPower','betaBandPower','gammaBandPower','corticalPower','EEGPower','deltaBandSignal','thetaBandSignal','alphaBandSignal','betaBandSignal','gammaBandSignal','corticalSignal','EEGSignal'};
     end
@@ -61,7 +61,7 @@ for a = 1:length(dataTypes)
                 stopInd = min(startInd + dur,expectedLength - round(0.2*Fs));               
                 try
                     % Extract data from the trial and add to the cell array for the current loaded file
-                    if strcmp(dataType,'Rhodamine') == true || strcmp(dataType,'GFP') == true 
+                    if strcmp(dataType,'CBV') == true || strcmp(dataType,'GFP') == true || strcmp(dataType,'Isos') == true 
                         trialRestVals{d} = ProcData.data.(dataTypes{a}).(subDataTypes{b})(startInd:stopInd,:)';
                     else
                         trialRestVals{d} = ProcData.data.(dataTypes{a}).(subDataTypes{b})(:,startInd:stopInd);
@@ -86,7 +86,7 @@ for a = 1:length(dataTypes)
         RestData.(dataTypes{a}).(subDataTypes{b}).puffDistances = [puffDistances{:}]';
         RestData.(dataTypes{a}).(subDataTypes{b}).fileIDs = [fileIDs{:}]';
         RestData.(dataTypes{a}).(subDataTypes{b}).fileDates = [fileDates{:}]';
-        RestData.(dataTypes{a}).(subDataTypes{b}).RhodamineCamSamplingRate = Fs;
+        RestData.(dataTypes{a}).(subDataTypes{b}).CBVCamSamplingRate = Fs;
         RestData.(dataTypes{a}).(subDataTypes{b}).trialDuration_sec = trialDuration_sec;
     end
 end

@@ -11,6 +11,9 @@ function [] = MainScript_FP_GRABNE_firstHrs()
 %________________________________________________________________________________________________________________________
 % addpath(genpath('C:\Users\mfh5734\OneDrive - The Pennsylvania State University\Documents\Research_Codes\FiberPhotometry\Data-Analysis-master'))
 clear; clc; close all;
+
+%% Animal ID
+FP_animalIDs =  {'NEACh007','NEACh008'}; %
 %% make sure the code repository and data are present in the current directory
 % currentFolder = 'H:\Sleep_GCaMP7s_ChATCre\';
 % these data are from first hours
@@ -29,12 +32,12 @@ end
 % add root folder to Matlab's working directory
 addpath(genpath(rootFolder))
 %% run the data analysis. The progress bars will show the analysis progress
-rerunAnalysis = 'n';
+rerunAnalysis = 'y';
 saveFigs = 'y';
 if exist('AnalysisResults_firstHrs.mat','file') ~= 2 || strcmp(rerunAnalysis,'y') == true
 %     multiWaitbar('Analyzing sleep probability',0,'Color','B'); pause(0.25);
     % run analysis and output a structure containing all the analyzed data
-    [AnalysisResults_firstHrs] = AnalyzeData(rootFolder);
+    [AnalysisResults_firstHrs] = AnalyzeData(rootFolder,FP_animalIDs);
     multiWaitbar('CloseAll');
 else
     disp('Loading analysis results and generating figures...'); disp(' ')
@@ -70,9 +73,9 @@ end
 %% main figure panels
 % [AnalysisResults_firstHrs] = Fig1_S4_FP_Stats_GRABNE(rootFolder,saveFigs,delim,AnalysisResults_firstHrs,firstHrs);
 % [AnalysisResults_firstHrs] = Fig1_S3_Whisk_GRABNE(rootFolder,saveFigs,delim,AnalysisResults_firstHrs,firstHrs);
-[AnalysisResults_firstHrs] = Fig1_S2_Stim_GRABNE_Response(rootFolder,saveFigs,delim,AnalysisResults_firstHrs,firstHrs);
-[AnalysisResults_firstHrs] = Fig1_S2_Stim_GRABNE(rootFolder,saveFigs,delim,AnalysisResults_firstHrs,firstHrs);
-[AnalysisResults_firstHrs] = Fig1_S2_Stim_GRABNE_SingleAnimal(rootFolder,saveFigs,delim,AnalysisResults_firstHrs,firstHrs);
+[AnalysisResults_firstHrs] = Fig1_S2_Stim_GRABNE_Response(rootFolder,saveFigs,delim,AnalysisResults_firstHrs,firstHrs,FP_animalIDs);
+% [AnalysisResults_firstHrs] = Fig1_S2_Stim_GRABNE(rootFolder,saveFigs,delim,AnalysisResults_firstHrs,firstHrs,FP_animalIDs);
+% [AnalysisResults_firstHrs] = Fig1_S2_Stim_GRABNE_SingleAnimal(rootFolder,saveFigs,delim,AnalysisResults_firstHrs,firstHrs,FP_animalIDs);
 % [AnalysisResults_firstHrs] = Fig1_S2_Stim_GRABNE_compare(rootFolder,saveFigs,delim,AnalysisResults_firstHrs,firstHrs);
 % [AnalysisResults_firstHrs] = PlotCOherence_GRABNE(rootFolder,saveFigs,delim,AnalysisResults_firstHrs);
 % [AnalysisResults_firstHrs] = PlotpowerSpectrum_GRABNE(rootFolder,saveFigs,delim,AnalysisResults_firstHrs);
@@ -85,9 +88,9 @@ end
 disp('MainScript Analysis - Complete'); disp(' ')
 end
 
-function [AnalysisResults_firstHrs] = AnalyzeData(rootFolder)
+function [AnalysisResults_firstHrs] = AnalyzeData(rootFolder,FP_animalIDs)
 % FP animal IDs
-FP_animalIDs = {'NEACh001'};
+% FP_animalIDs = {'NEACh003'};
 
 saveFigs = 'y';
 if exist('AnalysisResults_firstHrs.mat','file') == 2

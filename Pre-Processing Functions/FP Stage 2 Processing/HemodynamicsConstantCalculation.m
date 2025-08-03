@@ -35,8 +35,8 @@ function CorrectSlope = HemodynamicsConstantCalculation(IsosCorrectData,FiberPat
         percData(binNum)=(sum(XCounts(1:binNum))/sum(XCounts))*100;
     end
     %%
-    startInd_FC=find(percData<=10,1,'last')+1; %exclude lower 2% of data points
-    endInd_FC=find(percData>=80,1,'first')-1; %exclude upper 2% of data points
+    startInd_FC=find(percData<=2,1,'last')+1; %exclude lower 2% of data points
+    endInd_FC=find(percData>=98,1,'first')-1; %exclude upper 2% of data points
     mleFit.FC.startInd=startInd_FC;
     mleFit.FC.endInd=endInd_FC;
     

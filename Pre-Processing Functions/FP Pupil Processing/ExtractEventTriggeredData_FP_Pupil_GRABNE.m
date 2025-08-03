@@ -20,10 +20,10 @@ for a = 1:length(dataTypes)
     dataType = char(dataTypes(a));
     if strcmp(dataType,'EMG') == true
         subDataTypes = {'emg','emgSignal'};
-    elseif strcmp(dataType,'Rhodamine') == true || strcmp(dataType,'GFP') == true
-        subDataTypes = {'Z_Ach','Z_NE'};
+    elseif strcmp(dataType,'CBV') == true || strcmp(dataType,'GFP') == true || strcmp(dataType,'Isos') == true
+        subDataTypes = {'Z_ACh','Z_NE','P_ACh','P_NE'};
     elseif strcmp(dataType,'Pupil') == true
-        subDataTypes = {'pupilArea','Diameter','mmarea','mmDiameter','CentroidX','CentroidY','zArea','zDiameter'};
+        subDataTypes = {'Diameter'};%{'pupilArea','Diameter','mmarea','mmDiameter','CentroidX','CentroidY'};
     else
         subDataTypes = {'deltaBandPower','thetaBandPower','alphaBandPower','betaBandPower','gammaBandPower','corticalPower','deltaBandSignal','thetaBandSignal','alphaBandSignal','betaBandSignal','gammaBandSignal','corticalSignal'};
 
@@ -37,7 +37,7 @@ for a = 1:length(dataTypes)
         [animal,fileDate,fileID] = GetFileInfo_FP(procdataFiles(b,:));
         % Get the types of behaviors present in the file (stim,whisk,rest)
         holddata = fieldnames(ProcData.flags);
-        behaviorFields = holddata([1,2],1);
+        behaviorFields = holddata([1,2,3,4],1);
         for c = 1:length(subDataTypes)
             sDT = char(subDataTypes(c));
             % Set the sampling frequency for the dataType

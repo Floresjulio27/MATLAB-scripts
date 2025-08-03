@@ -22,35 +22,36 @@ function [dF] =  control405Correction_Update(ExpCorrected,Params,ChannelName)
     keepIdx = ~removeIdx;
     %% regress FP465 signal against 405 control to get coeffs
     p = polyfit(ExpCorrected.F405(keepIdx), ExpCorrected.F465(keepIdx), 1);
-    ScaledData.F465 = p(1)*ExpCorrected.F405+p(2); % this is the signal caused by motion, i.e., independent of NE
+    ScaledData.F465 = polyval(p,ExpCorrected.F405); % this is the signal caused by motion, i.e., independent of NE
     % subtract the scaled signal to get the residual "transients"
     dF.F465 = ExpCorrected.F465- ScaledData.F465; % this is the signal dependent of NE signal
 
-    ImageCheck = figure;
-    ImageCheck.WindowState = 'minimized';
-    M(1) = subplot(2,1,1);
-    plot(((1:length(dF.F465))/Params.DataFs),dF.F465);
-    hold on 
-    plot(((1:length(ExpCorrected.F465))/Params.DataFs),ExpCorrected.F465);
-    xlim([0 length(ExpCorrected.F465)/Params.DataFs])
-    xlabel('time');
-    ylabel('\deltaF 465');
-    legend('Isosbestic correct','Exp Correct')
+    % ImageCheck = figure;
+    % ImageCheck.WindowState = 'minimized';
+    % M(1) = subplot(2,1,1);
+    % plot(((1:length(dF.F465))/Params.DataFs),dF.F465);
+    % hold on 
+    % plot(((1:length(ExpCorrected.F465))/Params.DataFs),ExpCorrected.F465);
+    % xlim([0 length(ExpCorrected.F465)/Params.DataFs])
+    % xlabel('time');
+    % ylabel('\deltaF 465');
+    % legend('Isosbestic correct','Exp Correct')
     %% regress FP560 signal against 405 control to get coeffs
-    p = polyfit(ExpCorrected.F405(keepIdx), ExpCorrected.F560(keepIdx), 1);
-    ScaledData.F560 = p(1)*ExpCorrected.F405+p(2); % this is the signal caused by motion, i.e., independent of plasma volume
+    p = polyfit(ExpCorrected.F405(keepIdx), ExpCorrected.F560(keepIdx),1);
+    ScaledData.F560 = polyval(p,ExpCorrected.F405);%p(1)*ExpCorrected.F405+p(2); % this is the signal caused by motion, i.e., independent of plasma volume
     % subtract the scaled signal to get the residual "transients"
     dF.F560 = ExpCorrected.F560 - ScaledData.F560; % this is the signal dependent of plasma volume signal
     
-    M(2) = subplot(2,1,2);
-    plot(((1:length(dF.F560))/Params.DataFs),dF.F560);
-    hold on 
-    plot(((1:length(ExpCorrected.F560))/Params.DataFs),ExpCorrected.F560);
-    xlim([0 length(ExpCorrected.F560)/Params.DataFs])
-    xlabel('time');
-    ylabel('\deltaF 560');
-    legend('Isosbestic correct','Exp Correct')
-    linkaxes(M);
-
-    saveas(gcf,['../Figures/Corrections/' Params.savepath 'IsosbesticCorrected_' ChannelName '.fig'],'fig')
-    close(ImageCheck)
+    % M(2) = subplot(2,1,2);
+    % plot(((1:length(dF.F560))/Params.DataFs),dF.F560);
+    % hold on 
+    % plot(((1:length(ExpCorrected.F560))/Params.DataFs),ExpCorrected.F560);
+    % xlim([0 length(ExpCorrected.F560)/Params.DataFs])
+    % xlabel('time');
+    % ylabel('\deltaF 560');
+    % legend('Isosbestic correct','Exp Correct')
+    % linkaxes(M);
+    %%
+    dF.F405 = ExpCorrected.F405;
+    % saveas(gcf,['../Figures/Corrections/' Params.savepath 'IsosbesticCorrected_' ChannelName '.fig'],'fig')
+    % close(ImageCheck)

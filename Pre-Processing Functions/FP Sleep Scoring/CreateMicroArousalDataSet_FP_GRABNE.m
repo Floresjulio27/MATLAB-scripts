@@ -7,7 +7,7 @@ function [] = CreateMicroArousalDataSet_FP_GRABNE(procDataFileIDs)
 %   Purpose: Go through each file and train a data set for the model or for model validation
 %________________________________________________________________________________________________________________________
 
-for a = 5%1:size(procDataFileIDs,1)
+for a = 1:size(procDataFileIDs,1)
     procDataFileID = procDataFileIDs(a,:);
     MADataFileID = [procDataFileID(1:end-12) 'MAData.mat'];
     trainingDataFileID = [procDataFileID(1:end-12) 'TrainingData.mat'];
@@ -15,7 +15,7 @@ for a = 5%1:size(procDataFileIDs,1)
         disp(['Loading ' procDataFileID ' for manual microarousal scoring.' ]); disp(' ')
         load(procDataFileID)
 
-          if isfield(ProcData,'MicroArousals') == true
+          if isfield(ProcData,'MicroArousals') == false ||  isfield(ProcData,'MicroArousals') == true
             load(trainingDataFileID)
             TableSize = height(trainingTable);
             DataSize = TableSize*5;
@@ -39,7 +39,7 @@ for a = 5%1:size(procDataFileIDs,1)
             end
             %% Binerized EMG
             EMG = abs(ProcData.data.EMG.emgSignal);
-            ProcData.notes.EMGThresholdPerc = 88;
+            ProcData.notes.EMGThresholdPerc = 95;
     
             EMGThreshold1 = prctile(EMG,ProcData.notes.EMGThresholdPerc)*ones(size(EMG));
             emgBinarized = EMG;
@@ -47,25 +47,38 @@ for a = 5%1:size(procDataFileIDs,1)
             emgBinarized(emgBinarized < EMGThreshold1) = 0;
             emgBinarized(emgBinarized ==0 ) = nan;
     
-            %{
-            % EMGCheck = figure; 
+            
+            EMGCheck = figure; 
             subplot(211);plot((1:length(EMG))/ProcData.notes.dsFs,EMG,'color','k','LineWidth',1);      
             hold on; plot((1:length(EMG))/ProcData.notes.dsFs,-0.025*max(EMG)*emgBinarized,'|'); 
             xlim([0,ProcData.notes.trialDuration_sec])
             drawnow;
+            hold off;
     
-            ThresholdChoice = input('Do you want to change the threshold (Default is 88 percentile) for EMG scoring?','s' ); disp(' ')
+            ThresholdChoice = input('Do you want to change the threshold (Default is 95 percentile) for EMG scoring? ','s' ); disp(' ')
             if ThresholdChoice == 'y'
+                change_Choice = 'y';
+                while change_Choice == 'y'
                 ProcData.notes.EMGThresholdPerc = input('Enter a threshold percentile: ');disp(' ')
                 EMGThreshold1 = prctile(EMG,ProcData.notes.EMGThresholdPerc)*ones(size(EMG));
                 emgBinarized = EMG;
                 emgBinarized(emgBinarized > EMGThreshold1) = 1;
                 emgBinarized(emgBinarized < EMGThreshold1) = 0;
+                emgBinarized(emgBinarized ==0 ) = nan;
+                subplot(212);plot((1:length(EMG))/ProcData.notes.dsFs,EMG,'color','k','LineWidth',1);      
+                hold on; plot((1:length(EMG))/ProcData.notes.dsFs,-0.025*max(EMG)*emgBinarized,'|'); 
+                xlim([0,ProcData.notes.trialDuration_sec])
+                drawnow;
+                hold off;
+                change_Choice = input('Do you want to change the threshold? ','s');disp(' ')
+                end
             end
-            %}
+
+            close(EMGCheck);
+            
             EMGArousalLabels = zeros(DataSize,1);
             for EM = 1:1:DataSize
-                if nansum(emgBinarized(1+((EM-1)*30):(EM*30))) > 3
+                if nansum(emgBinarized(1+((EM-1)*30):(EM*30))) > 2
                     EMGArousalLabels(EM) = 1;
                 end
             end
@@ -145,8 +158,8 @@ for a = 5%1:size(procDataFileIDs,1)
             NMatr(:,4) = MicroArousals_Final; % microarousals            
             %%
             saveFigs = 'y';
-%              [figHandle,ax1,ax2,ax3,ax4,ax5,ax7] = GenerateSingleFigures_MicroArousal_FP_GRABAchNE_(procDataFileID,saveFigs,MALabels,EMGArousalLabels,ProcData.notes,MicroArousals_Final);      
-             [figHandle,ax1,ax2,ax3] = GenerateSingleFigures_Proposal(procDataFileID,saveFigs,MALabels,EMGArousalLabels,ProcData.notes,MicroArousals_Final);      
+             [figHandle,ax1,ax2,ax3,ax4,ax5,ax7] = GenerateSingleFigures_MicroArousal_FP_GRABAchNE_(procDataFileID,saveFigs,MALabels,EMGArousalLabels,ProcData.notes,MicroArousals_Final);      
+             % [figHandle,ax1,ax2,ax3] = GenerateSingleFigures_Proposal(procDataFileID,saveFigs,MALabels,EMGArousalLabels,ProcData.notes,MicroArousals_Final);      
     
 %             [figHandle,ax1,ax2,ax3,ax4,ax5,ax6,ax7] = GenerateSingleFigures_MicroArousal_FP_GRABNE(procDataFileID,saveFigs,MALabels,EMGArousalLabels,ProcData.notes,GammaArousalLabels);      
             %%

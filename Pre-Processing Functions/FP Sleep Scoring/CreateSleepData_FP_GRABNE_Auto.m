@@ -34,7 +34,7 @@ end
 
 %% need to make the code run through loops.
 % sleepType = {'NREM','REM'};
-dataTypes = {'cortical_LH','EMG','Rhodamine','GFP','Pupil'};
+dataTypes = {'cortical_LH','EMG','CBV','GFP','Pupil'};
 
 %% BLOCK PURPOSE: Create sleep scored data structure.
 % Identify sleep epochs and place in SleepEventData.mat structure
@@ -60,10 +60,10 @@ for a = 1:size(procDataFileIDs, 1)           % Loop through the list of ProcData
             dataType = char(dataTypes(dn));
                 if strcmp(dataType,'EMG') == true
                     subDataTypes = {'emg','emgSignal'};
-                elseif strcmp(dataType,'Rhodamine') == true || strcmp(dataType,'GFP') == true
-                    subDataTypes = {'Z_Ach','Z_NE'};  
+                elseif strcmp(dataType,'CBV') == true || strcmp(dataType,'GFP') == true || strcmp(dataType,'Isos') == true
+                    subDataTypes = {'Z_ACh','Z_NE','P_ACh','P_NE'};  
                 elseif strcmp(dataType,'Pupil') == true 
-                    subDataTypes = {'pupilArea','Diameter','mmarea','mmDiameter','zArea','zDiameter','eyeMotion','CentroidX','CentroidY','whiskerMotion'};
+                    subDataTypes = {'zDiameter'};%{'mmarea','mmDiameter','zArea','zDiameter','eyeMotion','CentroidX','CentroidY','whiskerMotion'};
                 else
                     subDataTypes = {'deltaBandPower','thetaBandPower','alphaBandPower','betaBandPower','gammaBandPower','corticalPower'};
                 end
@@ -85,10 +85,10 @@ for a = 1:size(procDataFileIDs, 1)           % Loop through the list of ProcData
             dataType = char(dataTypes(dn));
                 if strcmp(dataType,'EMG') == true
                     subDataTypes = {'emg','emgSignal'};
-                elseif strcmp(dataType,'Rhodamine') == true || strcmp(dataType,'GFP') == true
-                    subDataTypes = {'Z_Ach','Z_NE'};
+                elseif strcmp(dataType,'CBV') == true || strcmp(dataType,'GFP') == true || strcmp(dataType,'Isos') == true
+                    subDataTypes = {'Z_ACh','Z_NE','P_ACh','P_NE'}; 
                 elseif strcmp(dataType,'Pupil') == true 
-                    subDataTypes = {'pupilArea','Diameter','mmarea','mmDiameter','zArea','zDiameter','eyeMotion','CentroidX','CentroidY','whiskerMotion'};
+                    subDataTypes ={'zDiameter'};%{'mmarea','mmDiameter','zArea','zDiameter','eyeMotion','CentroidX','CentroidY','whiskerMotion'};
                 else
                     subDataTypes = {'deltaBandPower','thetaBandPower','alphaBandPower','betaBandPower','gammaBandPower','corticalPower'};
             
@@ -144,10 +144,10 @@ for a = 1:size(procDataFileIDs, 1)           % Loop through the list of ProcData
                     dataType = char(dataTypes(dn));
                     if strcmp(dataType,'EMG') == true
                         subDataTypes = {'emg','emgSignal'};
-                    elseif strcmp(dataType,'Rhodamine') == true || strcmp(dataType,'GFP') == true
-                        subDataTypes = {'Z_Ach','Z_NE'};
+                    elseif strcmp(dataType,'CBV') == true || strcmp(dataType,'GFP') == true || strcmp(dataType,'Isos') == true
+                        subDataTypes = {'Z_ACh','Z_NE','P_ACh','P_NE'}; 
                     elseif strcmp(dataType,'Pupil') == true 
-                        subDataTypes = {'pupilArea','Diameter','mmarea','mmDiameter','zArea','zDiameter','eyeMotion','CentroidX','CentroidY','whiskerMotion'};
+                        subDataTypes ={'zDiameter'};%{'mmarea','mmDiameter','zArea','zDiameter','eyeMotion','CentroidX','CentroidY','whiskerMotion'};
                     else
                         subDataTypes = {'deltaBandPower','thetaBandPower','alphaBandPower','betaBandPower','gammaBandPower','corticalPower'};
                 
@@ -167,10 +167,10 @@ for a = 1:size(procDataFileIDs, 1)           % Loop through the list of ProcData
                     dataType = char(dataTypes(dn));
                     if strcmp(dataType,'EMG') == true
                         subDataTypes = {'emg','emgSignal'};
-                    elseif strcmp(dataType,'Rhodamine') == true || strcmp(dataType,'GFP') == true
-                        subDataTypes = {'Z_Ach','Z_NE'};
+                    elseif strcmp(dataType,'CBV') == true || strcmp(dataType,'GFP') == true || strcmp(dataType,'Isos') == true
+                        subDataTypes = {'Z_ACh','Z_NE','P_ACh','P_NE'}; 
                     elseif strcmp(dataType,'Pupil') == true 
-                        subDataTypes = {'pupilArea','Diameter','mmarea','mmDiameter','zArea','zDiameter','eyeMotion','CentroidX','CentroidY','whiskerMotion'};
+                        subDataTypes ={'zDiameter'};%{'mmarea','mmDiameter','zArea','zDiameter','eyeMotion','CentroidX','CentroidY','whiskerMotion'}; % {'pupilArea','Diameter','mmarea','mmDiameter','zArea','zDiameter','eyeMotion','CentroidX','CentroidY','whiskerMotion'};
                     else
                         subDataTypes = {'deltaBandPower','thetaBandPower','alphaBandPower','betaBandPower','gammaBandPower','corticalPower'};
                 
@@ -203,8 +203,7 @@ for a = 1:size(procDataFileIDs, 1)           % Loop through the list of ProcData
                 arrayBinTimes = reshape(matBinTimes', [1, size(matBinTimes, 2)*size(matBinTimes, 1)]);
                 cellBinTimes{cellCounter, 1} = arrayBinTimes;
             end
-        end
-        
+        end     
         %% BLOCK PURPOSE: Save the data in the SleepEventData struct
         if isfield(SleepData,(modelName)) == false  % If the structure is empty, we need a special case to format the struct properly
             for cellLength = 1:size(cellData.cortical_LH.deltaBandPower, 2)   % Loop through however many sleep epochs this file has
@@ -212,10 +211,10 @@ for a = 1:size(procDataFileIDs, 1)           % Loop through the list of ProcData
                     dataType = char(dataTypes(dn));
                     if strcmp(dataType,'EMG') == true
                         subDataTypes = {'emg','emgSignal'};
-                    elseif strcmp(dataType,'Rhodamine') == true || strcmp(dataType,'GFP') == true
-                        subDataTypes = {'Z_Ach','Z_NE'};
+                    elseif strcmp(dataType,'CBV') == true || strcmp(dataType,'GFP') == true || strcmp(dataType,'Isos') == true
+                        subDataTypes = {'Z_ACh','Z_NE','P_ACh','P_NE'}; 
                     elseif strcmp(dataType,'Pupil') == true 
-                        subDataTypes = {'pupilArea','Diameter','mmarea','mmDiameter','zArea','zDiameter','eyeMotion','CentroidX','CentroidY','whiskerMotion'};
+                        subDataTypes ={'zDiameter'};%{'mmarea','mmDiameter','zArea','zDiameter','eyeMotion','CentroidX','CentroidY','whiskerMotion'};
                     else
                         subDataTypes = {'deltaBandPower','thetaBandPower','alphaBandPower','betaBandPower','gammaBandPower','corticalPower'};
                 
@@ -237,10 +236,10 @@ for a = 1:size(procDataFileIDs, 1)           % Loop through the list of ProcData
                     dataType = char(dataTypes(dn));
                     if strcmp(dataType,'EMG') == true
                         subDataTypes = {'emg','emgSignal'};
-                    elseif strcmp(dataType,'Rhodamine') == true || strcmp(dataType,'GFP') == true
-                        subDataTypes = {'Z_Ach','Z_NE'};
+                    elseif strcmp(dataType,'CBV') == true || strcmp(dataType,'GFP') == true || strcmp(dataType,'Isos') == true
+                        subDataTypes = {'Z_ACh','Z_NE','P_ACh','P_NE'}; 
                     elseif strcmp(dataType,'Pupil') == true 
-                        subDataTypes = {'pupilArea','Diameter','mmarea','mmDiameter','zArea','zDiameter','eyeMotion','CentroidX','CentroidY','whiskerMotion'};
+                        subDataTypes ={'zDiameter'};%{'mmarea','mmDiameter','zArea','zDiameter','eyeMotion','CentroidX','CentroidY','whiskerMotion'};
                     else
                         subDataTypes = {'deltaBandPower','thetaBandPower','alphaBandPower','betaBandPower','gammaBandPower','corticalPower'};
                 
@@ -287,10 +286,10 @@ for a = 1:size(procDataFileIDs, 1)           % Loop through the list of ProcData
             dataType = char(dataTypes(dn));
                 if strcmp(dataType,'EMG') == true
                     subDataTypes = {'emg','emgSignal'};
-                elseif strcmp(dataType,'Rhodamine') == true || strcmp(dataType,'GFP') == true
-                    subDataTypes = {'Z_Ach','Z_NE'};
+                elseif strcmp(dataType,'CBV') == true || strcmp(dataType,'GFP') == true || strcmp(dataType,'Isos') == true
+                    subDataTypes = {'Z_ACh','Z_NE','P_ACh','P_NE'}; 
                 elseif strcmp(dataType,'Pupil') == true 
-                    subDataTypes = {'pupilArea','Diameter','mmarea','mmDiameter','zArea','zDiameter','eyeMotion','CentroidX','CentroidY','whiskerMotion'};
+                    subDataTypes ={'zDiameter'};%{'mmarea','mmDiameter','zArea','zDiameter','eyeMotion','CentroidX','CentroidY','whiskerMotion'};
                 else
                     subDataTypes = {'deltaBandPower','thetaBandPower','alphaBandPower','betaBandPower','gammaBandPower','corticalPower'};
             
@@ -314,10 +313,10 @@ for a = 1:size(procDataFileIDs, 1)           % Loop through the list of ProcData
             dataType = char(dataTypes(dn));
                 if strcmp(dataType,'EMG') == true
                     subDataTypes = {'emg','emgSignal'};
-                elseif strcmp(dataType,'Rhodamine') == true || strcmp(dataType,'GFP') == true
-                    subDataTypes = {'Z_Ach','Z_NE'};
+                elseif strcmp(dataType,'CBV') == true || strcmp(dataType,'GFP') == true || strcmp(dataType,'Isos') == true
+                    subDataTypes = {'Z_ACh','Z_NE','P_ACh','P_NE'}; 
                 elseif strcmp(dataType,'Pupil') == true 
-                    subDataTypes = {'pupilArea','Diameter','mmarea','mmDiameter','zArea','zDiameter','eyeMotion','CentroidX','CentroidY','whiskerMotion'};
+                    subDataTypes ={'zDiameter'};%{'mmarea','mmDiameter','zArea','zDiameter','eyeMotion','CentroidX','CentroidY','whiskerMotion'};
                 else
                     subDataTypes = {'deltaBandPower','thetaBandPower','alphaBandPower','betaBandPower','gammaBandPower','corticalPower'};
             
@@ -373,10 +372,10 @@ for a = 1:size(procDataFileIDs, 1)           % Loop through the list of ProcData
                     dataType = char(dataTypes(dn));
                     if strcmp(dataType,'EMG') == true
                         subDataTypes = {'emg','emgSignal'};
-                    elseif strcmp(dataType,'Rhodamine') == true || strcmp(dataType,'GFP') == true
-                        subDataTypes = {'Z_Ach','Z_NE'};
+                    elseif strcmp(dataType,'CBV') == true || strcmp(dataType,'GFP') == true || strcmp(dataType,'Isos') == true
+                        subDataTypes = {'Z_ACh','Z_NE','P_ACh','P_NE'}; 
                     elseif strcmp(dataType,'Pupil') == true 
-                        subDataTypes = {'pupilArea','Diameter','mmarea','mmDiameter','zArea','zDiameter','eyeMotion','CentroidX','CentroidY','whiskerMotion'};
+                        subDataTypes ={'zDiameter'};%{'mmarea','mmDiameter','zArea','zDiameter','eyeMotion','CentroidX','CentroidY','whiskerMotion'};
                     else
                         subDataTypes = {'deltaBandPower','thetaBandPower','alphaBandPower','betaBandPower','gammaBandPower','corticalPower'};
                 
@@ -396,10 +395,10 @@ for a = 1:size(procDataFileIDs, 1)           % Loop through the list of ProcData
                     dataType = char(dataTypes(dn));
                     if strcmp(dataType,'EMG') == true
                         subDataTypes = {'emg','emgSignal'};
-                    elseif strcmp(dataType,'Rhodamine') == true || strcmp(dataType,'GFP') == true
-                        subDataTypes = {'Z_Ach','Z_NE'};
+                    elseif strcmp(dataType,'CBV') == true || strcmp(dataType,'GFP') == true || strcmp(dataType,'Isos') == true
+                        subDataTypes = {'Z_ACh','Z_NE','P_ACh','P_NE'}; 
                     elseif strcmp(dataType,'Pupil') == true 
-                        subDataTypes = {'pupilArea','Diameter','mmarea','mmDiameter','zArea','zDiameter','eyeMotion','CentroidX','CentroidY','whiskerMotion'};
+                        subDataTypes ={'zDiameter'};%{'mmarea','mmDiameter','zArea','zDiameter','eyeMotion','CentroidX','CentroidY','whiskerMotion'};
                     else
                         subDataTypes = {'deltaBandPower','thetaBandPower','alphaBandPower','betaBandPower','gammaBandPower','corticalPower'};
                 
@@ -441,10 +440,10 @@ for a = 1:size(procDataFileIDs, 1)           % Loop through the list of ProcData
                     dataType = char(dataTypes(dn));
                     if strcmp(dataType,'EMG') == true
                         subDataTypes = {'emg','emgSignal'};
-                    elseif strcmp(dataType,'Rhodamine') == true || strcmp(dataType,'GFP') == true
-                        subDataTypes = {'Z_Ach','Z_NE'};
+                    elseif strcmp(dataType,'CBV') == true || strcmp(dataType,'GFP') == true || strcmp(dataType,'Isos') == true
+                        subDataTypes = {'Z_ACh','Z_NE','P_ACh','P_NE'}; 
                     elseif strcmp(dataType,'Pupil') == true 
-                        subDataTypes = {'pupilArea','Diameter','mmarea','mmDiameter','zArea','zDiameter','eyeMotion','CentroidX','CentroidY','whiskerMotion'};
+                        subDataTypes ={'zDiameter'};%{'mmarea','mmDiameter','zArea','zDiameter','eyeMotion','CentroidX','CentroidY','whiskerMotion'};
                     else
                         subDataTypes = {'deltaBandPower','thetaBandPower','alphaBandPower','betaBandPower','gammaBandPower','corticalPower'};
                 
@@ -466,10 +465,10 @@ for a = 1:size(procDataFileIDs, 1)           % Loop through the list of ProcData
                     dataType = char(dataTypes(dn));
                     if strcmp(dataType,'EMG') == true
                         subDataTypes = {'emg','emgSignal'};
-                    elseif strcmp(dataType,'Rhodamine') == true || strcmp(dataType,'GFP') == true
-                        subDataTypes = {'Z_Ach','Z_NE'};
+                    elseif strcmp(dataType,'CBV') == true || strcmp(dataType,'GFP') == true || strcmp(dataType,'Isos') == true
+                        subDataTypes = {'Z_ACh','Z_NE','P_ACh','P_NE'}; 
                     elseif strcmp(dataType,'Pupil') == true 
-                        subDataTypes = {'pupilArea','Diameter','mmarea','mmDiameter','zArea','zDiameter','eyeMotion','CentroidX','CentroidY','whiskerMotion'};
+                        subDataTypes ={'zDiameter'};%{'mmarea','mmDiameter','zArea','zDiameter','eyeMotion','CentroidX','CentroidY','whiskerMotion'};
                     else
                         subDataTypes = {'deltaBandPower','thetaBandPower','alphaBandPower','betaBandPower','gammaBandPower','corticalPower'};
                 

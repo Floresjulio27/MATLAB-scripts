@@ -1,6 +1,3 @@
-% close all;
-% clear all; 
-% clc
 function TDTFiberPhotometry_bilateralGRABNE(filepath,rawDataFilespath)
 Data = TDTbin2mat(filepath);
 %%
@@ -120,7 +117,7 @@ Data = TDTbin2mat(filepath);
             saveas(gcf,['../Figures/Corrections/' Params.savepath '_rawData.tiff'],'tiff')
             close 
             %% remove data from the front to fix the exponential decay
-            timeN = 1; % remove first 15 seconds;
+            timeN = 15; % remove first 15 seconds;
             sampleN = floor(timeN*Params.DataFs);
             RawData_LH = Raw_LH;
             RawData_RH = Raw_RH;
@@ -136,7 +133,7 @@ Data = TDTbin2mat(filepath);
             % add 15s back to first 
             ForceSensor_filt = filtfilt(Params.sos_ball,Params.g_ball,ForceSensor);
 
- %% detect any sudden spikes in the data
+            %% detect any sudden spikes in the data
              time_N = (1:length(RawData_LH(:,2)))/Params.DataFs;
              %	Outliers are defined as elements more than three 
              % local scaled MAD from the local median over a window length specified by window. This method is also known as a Hampel filter.
@@ -144,15 +141,40 @@ Data = TDTbin2mat(filepath);
              time_N = (1:length(RawData_RH(:,2)))/Params.DataFs;
              [OR_RawData_RH,TF_Outliers_RH] = filloutliers(RawData_RH,"linear","movmedian",round(1*Params.DataFs),"SamplePoints",time_N);
             %% Correct exponential decay
-            [expCorrected_LH, ~] = Correct_ExponentialDecay_HighPass_Update(OR_RawData_LH,ForceSensor,Params,'Ach');
-            [expCorrected_RH, ~] = Correct_ExponentialDecay_HighPass_Update(OR_RawData_RH,ForceSensor,Params,'NE');
+            time_Trim = 210;%210
+            [expCorrected_LH, ~] = Correct_ExponentialDecay_HighPass_Update(OR_RawData_LH,ForceSensor,Params,'Ach',time_Trim,'y');
+            [expCorrected_RH, ~] = Correct_ExponentialDecay_HighPass_Update(OR_RawData_RH,ForceSensor,Params,'NE',time_Trim,'y');
             %% Low pass the data 
+            % 
+            if Data.info.Subject == "NEACh003"
+            lowPassData_LH.F405=filtfilt(Params.sos_Low,Params.g_Low,expCorrected_LH.F405);
+            lowPassData_LH.F465=filtfilt(Params.sos_Low,Params.g_Low,expCorrected_LH.F465);
+            lowPassData_LH.F560=filtfilt(Params.sos_Low,Params.g_Low,-expCorrected_LH.F560);
+            lowPassData_RH.F405=filtfilt(Params.sos_Low,Params.g_Low,expCorrected_RH.F405);
+            lowPassData_RH.F465=filtfilt(Params.sos_Low,Params.g_Low,expCorrected_RH.F465);
+            lowPassData_RH.F560=filtfilt(Params.sos_Low,Params.g_Low,-expCorrected_RH.F560);
+            elseif Data.info.Subject == "NEACh005"
+            lowPassData_LH.F405=filtfilt(Params.sos_Low,Params.g_Low,expCorrected_LH.F405);
+            lowPassData_LH.F465=filtfilt(Params.sos_Low,Params.g_Low,expCorrected_LH.F465);
+            lowPassData_LH.F560=filtfilt(Params.sos_Low,Params.g_Low,-expCorrected_LH.F560);
+            lowPassData_RH.F405=filtfilt(Params.sos_Low,Params.g_Low,expCorrected_RH.F405);
+            lowPassData_RH.F465=filtfilt(Params.sos_Low,Params.g_Low,expCorrected_RH.F465);
+            lowPassData_RH.F560=filtfilt(Params.sos_Low,Params.g_Low,-expCorrected_RH.F560);
+            elseif Data.info.Subject == "NEACh006"
+            lowPassData_LH.F405=filtfilt(Params.sos_Low,Params.g_Low,expCorrected_LH.F405);
+            lowPassData_LH.F465=filtfilt(Params.sos_Low,Params.g_Low,expCorrected_LH.F465);
+            lowPassData_LH.F560=filtfilt(Params.sos_Low,Params.g_Low,-expCorrected_LH.F560);
+            lowPassData_RH.F405=filtfilt(Params.sos_Low,Params.g_Low,expCorrected_RH.F405);
+            lowPassData_RH.F465=filtfilt(Params.sos_Low,Params.g_Low,expCorrected_RH.F465);
+            lowPassData_RH.F560=filtfilt(Params.sos_Low,Params.g_Low,-expCorrected_RH.F560);
+            else
             lowPassData_LH.F405=filtfilt(Params.sos_Low,Params.g_Low,expCorrected_LH.F405);
             lowPassData_LH.F465=filtfilt(Params.sos_Low,Params.g_Low,expCorrected_LH.F465);
             lowPassData_LH.F560=filtfilt(Params.sos_Low,Params.g_Low,expCorrected_LH.F560);
             lowPassData_RH.F405=filtfilt(Params.sos_Low,Params.g_Low,expCorrected_RH.F405);
             lowPassData_RH.F465=filtfilt(Params.sos_Low,Params.g_Low,expCorrected_RH.F465);
             lowPassData_RH.F560=filtfilt(Params.sos_Low,Params.g_Low,expCorrected_RH.F560);
+            end
             %% rescale the data from 0 to 1
 %             for qN=1:size(lowPassData_LH,2)
 %             rescaleData_LH.F405(:,qN)=rescale(lowPassData_LH.F405(:,qN),0,1); %rescale all data between 0 to 1
@@ -196,8 +218,8 @@ Data = TDTbin2mat(filepath);
                 Params.baselineEndTime = input('Input the end time for resting data: '); disp(' ')
                 close(ImageCheck) 
                 %}
-                Params.baselineStartTime = 500;
-                Params.baselineEndTime = 3000; 
+                Params.baselineStartTime = 300;
+                Params.baselineEndTime = 1000; 
             end
 
             [zScored_LH] =  ZScoreFiberData(lowPassData_LH,Params,'LH');
@@ -292,7 +314,6 @@ Data = TDTbin2mat(filepath);
 
             CBVCorrection_LH.F465 = Corrected_F465_LH;
             CBVCorrection_RH.F465 = Corrected_F465_RH;
-
    
             figTime=(1:length(CBVCorrection_LH.F465))/(Params.DataFs*60);
 
@@ -335,10 +356,7 @@ Data = TDTbin2mat(filepath);
 
             saveas(gcf,['../Figures/Corrections/' Params.savepath 'HemoCorrection.fig'],'fig')
             saveas(gcf,['../Figures/Corrections/' Params.savepath 'HemoCorrection.tiff'],'tiff')
-            close(ImageCheck)
-
-
-           
+            close(ImageCheck)      
             %% plot Data comparison
 %             figTime=(1:length(expCorrected_LH.F465))/(Params.DataFs*60);
 %             figure; 
@@ -373,13 +391,13 @@ Data = TDTbin2mat(filepath);
 %             saveas(gcf,['../Figures/Corrections/' Params.savepath 'FinalSignalCompare.tiff'],'tiff')
 %             close 
             %% house keeping
-            timeN = 210; % remove first 15 seconds;
+            timeN = 210; % remove first 210 seconds;
             sampleN = floor(timeN*Params.DataFs);
           
            % add some dummy values to match the index
             fieldNames = {'F405','F465','F560'};
             for corI=1:1:length(fieldNames)
-                     expCorrected_LH.(fieldNames{corI}) = [expCorrected_LH.(fieldNames{corI})(1:sampleN); expCorrected_LH.(fieldNames{corI})(1:end); expCorrected_LH.(fieldNames{corI})(end-sampleN-1:end)];
+                    expCorrected_LH.(fieldNames{corI}) = [expCorrected_LH.(fieldNames{corI})(1:sampleN); expCorrected_LH.(fieldNames{corI})(1:end); expCorrected_LH.(fieldNames{corI})(end-sampleN-1:end)];
                     expCorrected_RH.(fieldNames{corI}) = [expCorrected_RH.(fieldNames{corI})(1:sampleN); expCorrected_RH.(fieldNames{corI})(1:end); expCorrected_RH.(fieldNames{corI})(end-sampleN-1:end)];
 
                     lowPassData_LH.(fieldNames{corI}) = [lowPassData_LH.(fieldNames{corI})(1:sampleN); lowPassData_LH.(fieldNames{corI})(1:end); lowPassData_LH.(fieldNames{corI})(end-sampleN-1:end)];
@@ -389,7 +407,7 @@ Data = TDTbin2mat(filepath);
                     zScored_RH.(fieldNames{corI}) = [zScored_RH.(fieldNames{corI})(1:sampleN); zScored_RH.(fieldNames{corI})(1:end); zScored_RH.(fieldNames{corI})(end-sampleN-1:end)];
             end
             
-            fieldNames = {'F465','F560'};
+            fieldNames = {'F405','F465','F560'};
             for corI=1:1:length(fieldNames)
                     motionCorrect_LH.(fieldNames{corI}) = [motionCorrect_LH.(fieldNames{corI})(1:sampleN); motionCorrect_LH.(fieldNames{corI})(1:end); motionCorrect_LH.(fieldNames{corI})(end-sampleN-1:end)];
                     motionCorrect_RH.(fieldNames{corI}) = [motionCorrect_RH.(fieldNames{corI})(1:sampleN); motionCorrect_RH.(fieldNames{corI})(1:end); motionCorrect_RH.(fieldNames{corI})(end-sampleN-1:end)];
@@ -415,6 +433,7 @@ Data = TDTbin2mat(filepath);
             FiberData.Ach.rawData.F405 = OR_RawData_LH(:,1);
             FiberData.Ach.rawData.F465 = OR_RawData_LH(:,2);
             FiberData.Ach.rawData.F560 = OR_RawData_LH(:,3);
+            
             FiberData.NE.rawData.F405 = OR_RawData_RH(:,1);
             FiberData.NE.rawData.F465 = OR_RawData_RH(:,2);
             FiberData.NE.rawData.F560 = OR_RawData_RH(:,3);

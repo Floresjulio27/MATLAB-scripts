@@ -18,6 +18,7 @@ function [AnalysisResults] = AnalyzeTransitionalAverages_FP_Movements_GRABNE(ani
     if firstHrs == "false"
          dataLocation = [rootFolder '\' animalID '\CombinedImaging\'];
          transitions = {'AWAKEtoNREM','NREMtoAWAKE','NREMtoREM','REMtoAWAKE'};
+         %transitions = {'AWAKEtoNREM','NREMtoAWAKE'};
     elseif firstHrs == "true"
         dataLocation = [rootFolder '\' animalID '\FirstHours\'];
         transitions = {'AWAKEtoNREM','NREMtoAWAKE'};%,'NREMtoREM','REMtoAWAKE'};
@@ -162,7 +163,15 @@ for d = 1:length(transitions)
         end
     end
 end
-% extract data
+%% check if there is any REM transitions
+if isfield(data,'NREMtoREM') % there is REM transitions
+    transitions = {'AWAKEtoNREM','NREMtoAWAKE','NREMtoREM','REMtoAWAKE'};
+end
+
+if ~isfield(data,'NREMtoREM') % there is no REM transitions
+    transitions = {'AWAKEtoNREM','NREMtoAWAKE'};
+end
+%% extract data
 for h = 1:length(transitions)
     transition = transitions{1,h};
     iqx = 1;
@@ -190,7 +199,6 @@ for h = 1:length(transitions)
             EMG = (ProcData.data.EMG.emg(startTime*samplingRate + 1:endTime*samplingRate)); %- RestingBaselines.manualSelection.EMG.emg.(strDay).mean))./RestingBaselines.manualSelection.EMG.emg.(strDay).mean;
             % spectrogram data
             cortical_LHnormS = SpecData.cortical_LH.normS;
-%             hippocampusNormS = SpecData.hippocampus.normS;
             T = round(SpecData.cortical_LH.T,1);
             F = SpecData.cortical_LH.F;
             specStartIndex = find(T == startTime);
@@ -198,22 +206,24 @@ for h = 1:length(transitions)
             specEndIndex = find(T == endTime);
             specEndIndex = specEndIndex(end);
             LH_CortSpec = cortical_LHnormS(:,specStartIndex + 1:specEndIndex);
-%             Hip_spec = hippocampusNormS(:,specStartIndex + 1:specEndIndex);
             T_short = T(1:size(LH_CortSpec,2));
-            % Rhodamine data
+            
+            % CBV data
             [z2,p2,k2] = butter(4,1/(samplingRate/2),'low');
             [sos2,g2] = zp2sos(z2,p2,k2);
-            Ach_Rhodamine = ProcData.data.Rhodamine.Z_Ach;
-            NE_Rhodamine = ProcData.data.Rhodamine.Z_NE;
- 
-            filtAch_Rhodamine = (filtfilt(sos2,g2,(Ach_Rhodamine(startTime*samplingRate + 1:endTime*samplingRate))));%- RestingBaselines.manualSelection.Rhodamine.Z_Ach.(strDay).mean);%./RestingBaselines.manualSelection.Rhodamine.Z_Ach.(strDay).std;
-            filtNE_Rhodamine = (filtfilt(sos2,g2,(NE_Rhodamine(startTime*samplingRate + 1:endTime*samplingRate))));% - RestingBaselines.manualSelection.Rhodamine.Z_NE.(strDay).mean);%./RestingBaselines.manualSelection.Rhodamine.Z_NE.(strDay).std;
-            % GFP data
-            GRAB_ACh = ProcData.data.GFP.Z_Ach;
-            GRAB_NE = ProcData.data.GFP.Z_NE;
 
-            filtGRAB_ACh = (filtfilt(sos2,g2,(GRAB_ACh(startTime*samplingRate + 1:endTime*samplingRate))));% - RestingBaselines.manualSelection.GFP.Z_Ach.(strDay).mean);%./RestingBaselines.manualSelection.GFP.Z_Ach.(strDay).std;
-            filtGRAB_NE = (filtfilt(sos2,g2,(GRAB_NE(startTime*samplingRate + 1:endTime*samplingRate))));% - RestingBaselines.manualSelection.GFP.Z_NE.(strDay).mean);%./RestingBaselines.manualSelection.GFP.Z_NE.(strDay).std;
+            ACh_CBV = ProcData.data.CBV.P_ACh;
+            NE_CBV = ProcData.data.CBV.P_NE;
+ 
+            filtACh_CBV = (filtfilt(sos2,g2,(ACh_CBV(startTime*samplingRate + 1:endTime*samplingRate))))- RestingBaselines.manualSelection.CBV.P_ACh.(strDay).mean;%./RestingBaselines.manualSelection.CBV.P_ACh.(strDay).std;
+            filtNE_CBV = (filtfilt(sos2,g2,(NE_CBV(startTime*samplingRate + 1:endTime*samplingRate)))) - RestingBaselines.manualSelection.CBV.P_NE.(strDay).mean;%./RestingBaselines.manualSelection.CBV.P_NE.(strDay).std;
+            
+            % GFP data
+            GRAB_ACh = ProcData.data.GFP.P_ACh;
+            GRAB_NE = ProcData.data.GFP.P_NE;
+
+            filtGRAB_ACh = (filtfilt(sos2,g2,(GRAB_ACh(startTime*samplingRate + 1:endTime*samplingRate)))) - RestingBaselines.manualSelection.GFP.P_ACh.(strDay).mean;%./RestingBaselines.manualSelection.GFP.P_ACh.(strDay).std;
+            filtGRAB_NE = (filtfilt(sos2,g2,(GRAB_NE(startTime*samplingRate + 1:endTime*samplingRate)))) - RestingBaselines.manualSelection.GFP.P_NE.(strDay).mean;%./RestingBaselines.manualSelection.GFP.P_NE.(strDay).std;
 
             data.(transition).fileDate{iqx,1} = strDay;
             data.(transition).whisk(iqx,:) = filtWhiskAngle;
@@ -222,11 +232,10 @@ for h = 1:length(transitions)
             data.(transition).force(iqx,:) = filtforce;
             data.(transition).EMG(iqx,:) = EMG;
             data.(transition).LH_Cort(:,:,iqx) = LH_CortSpec(:,1:specSamplingRate*60);
-%             data.(transition).Hip(:,:,iqx) = Hip_spec(:,1:specSamplingRate*60);
             data.(transition).T_short = T_short(1:specSamplingRate*60);
             data.(transition).F = F;
-            data.(transition).Ach_Rhodamine(iqx,:) = filtAch_Rhodamine;
-            data.(transition).NE_Rhodamine(iqx,:) = filtNE_Rhodamine;
+            data.(transition).ACh_CBV(iqx,:) = filtACh_CBV;
+            data.(transition).NE_CBV(iqx,:) = filtNE_CBV;
             data.(transition).GRAB_ACh(iqx,:) = filtGRAB_ACh;
             data.(transition).GRAB_NE(iqx,:) = filtGRAB_NE;
             iqx = iqx + 1;
@@ -261,14 +270,14 @@ for d = 1:length(transitions)
         AnalysisResults.(animalID).Transitions.(transition).(movementname).whisk = nanmean(data.(transition).whisk(data.(transition).(movementname),:),1);
         AnalysisResults.(animalID).Transitions.(transition).(movementname).force = nanmean(data.(transition).force(data.(transition).(movementname),:),1);
         AnalysisResults.(animalID).Transitions.(transition).(movementname).EMG = nanmean(data.(transition).EMG(data.(transition).(movementname),:),1);
-%         AnalysisResults.(animalID).Transitions.(transition).(movementname).Hip = nanmean(data.(transition).Hip(:,:,data.(transition).(movementname)),3);
         AnalysisResults.(animalID).Transitions.(transition).(movementname).T = data.(transition).T_short;
         AnalysisResults.(animalID).Transitions.(transition).(movementname).F = data.(transition).F;
         AnalysisResults.(animalID).Transitions.(transition).(movementname).indFileDate = data.(transition).fileDate(data.(transition).(movementname));
         AnalysisResults.(animalID).Transitions.(transition).(movementname).fileDates = fileDates;
         AnalysisResults.(animalID).Transitions.(transition).(movementname).LH_Cort = nanmean(data.(transition).LH_Cort(:,:,data.(transition).(movementname)),3);
-        AnalysisResults.(animalID).Transitions.(transition).(movementname).Ach_Rhodamine = nanmean(data.(transition).Ach_Rhodamine(data.(transition).(movementname),:),1);
-        AnalysisResults.(animalID).Transitions.(transition).(movementname).NE_Rhodamine = nanmean(data.(transition).NE_Rhodamine(data.(transition).(movementname),:),1);
+
+        AnalysisResults.(animalID).Transitions.(transition).(movementname).ACh_CBV = nanmean(data.(transition).ACh_CBV(data.(transition).(movementname),:),1);
+        AnalysisResults.(animalID).Transitions.(transition).(movementname).NE_CBV = nanmean(data.(transition).NE_CBV(data.(transition).(movementname),:),1);
         AnalysisResults.(animalID).Transitions.(transition).(movementname).GRAB_ACh = nanmean(data.(transition).GRAB_ACh(data.(transition).(movementname),:),1);
         AnalysisResults.(animalID).Transitions.(transition).(movementname).GRAB_NE = nanmean(data.(transition).GRAB_NE(data.(transition).(movementname),:),1);
     end
@@ -280,20 +289,24 @@ for d = 1:length(transitions)
     
     AnalysisResults.(animalID).Transitions.(transition).EMG = mean(data.(transition).EMG,1);
     AnalysisResults.(animalID).Transitions.(transition).EMG_std = std(data.(transition).EMG,1);
-%     AnalysisResults.(animalID).Transitions.(transition).Hip = mean(data.(transition).Hip,3);
     AnalysisResults.(animalID).Transitions.(transition).T = data.(transition).T_short;
     AnalysisResults.(animalID).Transitions.(transition).F = data.(transition).F;
     AnalysisResults.(animalID).Transitions.(transition).indFileDate = data.(transition).fileDate;
     AnalysisResults.(animalID).Transitions.(transition).fileDates = fileDates;
     AnalysisResults.(animalID).Transitions.(transition).LH_Cort = mean(data.(transition).LH_Cort,3);
 
-    AnalysisResults.(animalID).Transitions.(transition).Ach_Rhodamine = mean(data.(transition).Ach_Rhodamine,1);
-    AnalysisResults.(animalID).Transitions.(transition).NE_Rhodamine = mean(data.(transition).NE_Rhodamine,1);
+    AnalysisResults.(animalID).Transitions.(transition).ACh_CBV = mean(data.(transition).ACh_CBV,1);
+    AnalysisResults.(animalID).Transitions.(transition).NE_CBV = mean(data.(transition).NE_CBV,1);
     AnalysisResults.(animalID).Transitions.(transition).GRAB_ACh = mean(data.(transition).GRAB_ACh,1);
     AnalysisResults.(animalID).Transitions.(transition).GRAB_NE = mean(data.(transition).GRAB_NE,1);
 
-    AnalysisResults.(animalID).Transitions.(transition).Ach_Rhodamine_std = std(data.(transition).Ach_Rhodamine,1);
-    AnalysisResults.(animalID).Transitions.(transition).NE_Rhodamine_std = std(data.(transition).NE_Rhodamine,1);
+    AnalysisResults.(animalID).Transitions.(transition).ACh_CBVRaw = data.(transition).ACh_CBV;
+    AnalysisResults.(animalID).Transitions.(transition).NE_CBVRaw = data.(transition).NE_CBV;
+    AnalysisResults.(animalID).Transitions.(transition).GRAB_AChRaw = data.(transition).GRAB_ACh;
+    AnalysisResults.(animalID).Transitions.(transition).GRAB_NERaw = data.(transition).GRAB_NE;
+
+    AnalysisResults.(animalID).Transitions.(transition).ACh_CBV_std = std(data.(transition).ACh_CBV,1);
+    AnalysisResults.(animalID).Transitions.(transition).NE_CBV_std = std(data.(transition).NE_CBV,1);
     AnalysisResults.(animalID).Transitions.(transition).GRAB_ACh_std = std(data.(transition).GRAB_ACh,1);
     AnalysisResults.(animalID).Transitions.(transition).GRAB_NE_std = std(data.(transition).GRAB_NE,1);
 end
@@ -310,10 +323,10 @@ end
 %         sgtitle([animalID ' average ' transition 'movement_condition' movementname])
 %         % rhodamine
 %         subplot(4,1,1)
-%         p1 = plot((1:length(AnalysisResults.(animalID).Transitions.(transition).(movementname).Ach_Rhodamine))/samplingRate,AnalysisResults.(animalID).Transitions.(transition).(movementname).Ach_Rhodamine,'color','r','LineWidth',2);
+%         p1 = plot((1:length(AnalysisResults.(animalID).Transitions.(transition).(movementname).ACh_CBV))/samplingRate,AnalysisResults.(animalID).Transitions.(transition).(movementname).ACh_CBV,'color','r','LineWidth',2);
 %         hold on
-%         p2 = plot((1:length(AnalysisResults.(animalID).Transitions.(transition).(movementname).NE_Rhodamine))/samplingRate,AnalysisResults.(animalID).Transitions.(transition).(movementname).NE_Rhodamine,'color','g','LineWidth',2);    
-%         ylabel('Zscored \DeltaRhodamine')
+%         p2 = plot((1:length(AnalysisResults.(animalID).Transitions.(transition).(movementname).NE_CBV))/samplingRate,AnalysisResults.(animalID).Transitions.(transition).(movementname).NE_CBV,'color','g','LineWidth',2);    
+%         ylabel('Zscored \DeltaCBV')
 %         xlim([0,samplingRate*60])
 %         yyaxis right
 %         p3 = plot((1:length(AnalysisResults.(animalID).Transitions.(transition).(movementname).EMG))/samplingRate,AnalysisResults.(animalID).Transitions.(transition).(movementname).EMG,'color','k','LineWidth',2);
@@ -322,7 +335,7 @@ end
 %         set(gca,'Xticklabel',[])
 %         set(gca,'box','off')
 %         axis tight
-%         legend([p1,p2,p3],'Ach','NE','EMG')
+%         legend([p1,p2,p3],'ACh','NE','EMG')
 %         % GFP
 %         subplot(4,1,2)
 %         p1 = plot((1:length(AnalysisResults.(animalID).Transitions.(transition).(movementname).GRAB_ACh))/samplingRate,AnalysisResults.(animalID).Transitions.(transition).(movementname).GRAB_ACh,'color','r','LineWidth',2);
@@ -337,7 +350,7 @@ end
 %         set(gca,'Xticklabel',[])
 %         set(gca,'box','off')
 %         axis tight
-%         legend([p1,p2,p3],'GRAB Ach','GRABNE','EMG')
+%         legend([p1,p2,p3],'GRAB ACh','GRABNE','EMG')
 %         % Cort neural
 %         subplot(4,1,3)
 %         Semilog_ImageSC(AnalysisResults.(animalID).Transitions.(transition).(movementname).T,AnalysisResults.(animalID).Transitions.(transition).(movementname).F,AnalysisResults.(animalID).Transitions.(transition).(movementname).LH_Cort,'y')
@@ -391,9 +404,9 @@ if strcmp(saveFigs,'y') == true
         sgtitle([animalID ' average ' transition])
         % rhodamine
         subplot(4,1,1)
-        p1 = plot((1:length(AnalysisResults.(animalID).Transitions.(transition).Ach_Rhodamine))/samplingRate,AnalysisResults.(animalID).Transitions.(transition).Ach_Rhodamine,'color','r','LineWidth',2);
+        p1 = plot((1:length(AnalysisResults.(animalID).Transitions.(transition).ACh_CBV))/samplingRate,AnalysisResults.(animalID).Transitions.(transition).ACh_CBV,'color','r','LineWidth',2);
         hold on
-        p2 = plot((1:length(AnalysisResults.(animalID).Transitions.(transition).NE_Rhodamine))/samplingRate,AnalysisResults.(animalID).Transitions.(transition).NE_Rhodamine,'color','g','LineWidth',2);    
+        p2 = plot((1:length(AnalysisResults.(animalID).Transitions.(transition).NE_CBV))/samplingRate,AnalysisResults.(animalID).Transitions.(transition).NE_CBV,'color','g','LineWidth',2);    
         ylabel('Zscored \DeltamScarlet')
         xlim([0,samplingRate*60])
         yyaxis right
@@ -403,7 +416,7 @@ if strcmp(saveFigs,'y') == true
         set(gca,'Xticklabel',[])
         set(gca,'box','off')
         axis tight
-        legend([p1,p2,p3],'Ach','NE','EMG')
+        legend([p1,p2,p3],'ACh','NE','EMG')
         % GFP
         subplot(4,1,2)
         p1 = plot((1:length(AnalysisResults.(animalID).Transitions.(transition).GRAB_ACh))/samplingRate,AnalysisResults.(animalID).Transitions.(transition).GRAB_ACh,'color','r','LineWidth',2);
@@ -418,7 +431,7 @@ if strcmp(saveFigs,'y') == true
         set(gca,'Xticklabel',[])
         set(gca,'box','off')
         axis tight
-        legend([p1,p2,p3],'GRAB Ach','GRABNE','EMG')
+        legend([p1,p2,p3],'GRAB ACh','GRABNE','EMG')
         % Cort neural
         subplot(4,1,3)
         Semilog_ImageSC(AnalysisResults.(animalID).Transitions.(transition).T,AnalysisResults.(animalID).Transitions.(transition).F,AnalysisResults.(animalID).Transitions.(transition).LH_Cort,'y')
@@ -448,9 +461,9 @@ if strcmp(saveFigs,'y') == true
         [pathstr,~,~] = fileparts(cd);
 
         if firstHrs == "false"             
-            dirpath = [pathstr '\Figures\Transitions\lastHrs'];         
+            dirpath = [pathstr '\Figures\Transitions'];         
         elseif firstHrs == "true"             
-            dirpath = [pathstr '\Figures\Transitions\firstHrs'];         
+            dirpath = [pathstr '\Figures\Transitions'];         
         end
         if ~exist(dirpath,'dir')
             mkdir(dirpath);

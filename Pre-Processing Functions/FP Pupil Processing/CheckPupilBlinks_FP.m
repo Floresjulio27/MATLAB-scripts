@@ -13,7 +13,7 @@ ROIFileID = char(ROIFileName);
 load(ROIFileID);
 load(procDataFileID)
 if strcmp(ProcData.data.Pupil.frameCheck,'y') == true
-    if isfield(ProcData.data.Pupil,'blinkCheckComplete') == false || strcmp(ProcData.data.Pupil.blinkCheckComplete,'n') == true % || strcmp(ProcData.data.Pupil.blinkCheckComplete,'y') == true
+    if isfield(ProcData.data.Pupil,'blinkCheckComplete') == false %|| strcmp(ProcData.data.Pupil.blinkCheckComplete,'n') == true % || strcmp(ProcData.data.Pupil.blinkCheckComplete,'y') == true
         % load files and extract video information
         [~,fileDate,fileID] = GetFileInfo_JNeurosci2022(procDataFileID);
         pupilCamFileID = [fileID '_PupilCam.bin'];

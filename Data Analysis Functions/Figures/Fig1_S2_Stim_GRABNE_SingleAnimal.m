@@ -1,4 +1,4 @@
-function [AnalysisResults] = Fig1_S2_Stim_GRABNE_SingleAnimal(rootFolder,saveFigs,delim,AnalysisResults,firstHrs)
+function [AnalysisResults] = Fig1_S2_Stim_GRABNE_SingleAnimal(rootFolder,saveFigs,delim,AnalysisResults,firstHrs,FPanimalIDs)
 %________________________________________________________________________________________________________________________
 % Written by Kevin L. Turner
 % The Pennsylvania State University, Dept. of Biomedical Engineering
@@ -9,7 +9,7 @@ function [AnalysisResults] = Fig1_S2_Stim_GRABNE_SingleAnimal(rootFolder,saveFig
 % load('S:\NEACh\AnalysisResults_firstHrs.mat');
 % AnalysisResults = AnalysisResults_firstHrs;
 %% set-up and process data
-FPanimalIDs = {'NEACh002'};
+% FPanimalIDs = {'NEACh005'};
 solenoidNames = {'LPadSol','RPadSol','AudSol'};
 compDataTypes = {'Ipsi','Contra','Auditory'};
 % cd through each animal's directory and extract the appropriate analysis results
@@ -121,11 +121,9 @@ for ff = 1:length(compDataTypes)
     data.(compDataType).Z_NEstd_GFP = std(data.(compDataType).Z_NEGFP,0,2);
 
     data.(compDataType).Z_Achmean_Rhodamine_std = mean(data.(compDataType).Z_AchRhodamine_std,2);
-
     data.(compDataType).Z_NEmean_Rhodamine_std = mean(data.(compDataType).Z_NERhodamine_std,2);
 
     data.(compDataType).Z_Achmean_GFP_std = mean(data.(compDataType).Z_AchGFP_std,2);
-
     data.(compDataType).Z_NEmean_GFP_std = mean(data.(compDataType).Z_NEGFP_std,2);
 
 
@@ -149,18 +147,18 @@ sgtitle('Stimulus evoked responses in fiber photometry signals')
 ax1 = subplot(2,3,1);
 plot(data.Contra.mean_timeVector,data.Contra.Z_Achmean_Rhodamine,'-','color',[0.8500 0.3250 0.0980],'LineWidth',2)
 hold on
-plot(data.Contra.mean_timeVector,data.Contra.Z_Achmean_Rhodamine + data.Contra.Z_Achmean_Rhodamine_std,'-','color',[0.8500 0.3250 0.0980],'LineWidth',0.10)
-plot(data.Contra.mean_timeVector,data.Contra.Z_Achmean_Rhodamine - data.Contra.Z_Achmean_Rhodamine_std,'-','color',[0.8500 0.3250 0.0980],'LineWidth',0.10)
+plot(data.Contra.mean_timeVector,data.Contra.Z_Achmean_Rhodamine + data.Contra.Z_Achstd_Rhodamine,'-','color',[0.8500 0.3250 0.0980],'LineWidth',0.10)
+plot(data.Contra.mean_timeVector,data.Contra.Z_Achmean_Rhodamine - data.Contra.Z_Achstd_Rhodamine,'-','color',[0.8500 0.3250 0.0980],'LineWidth',0.10)
 title('Contra stim Ach fiber')
 ylabel('\DeltaF/F Blood Volume (Z)')
-ax1.YLim = [-6 7];
+ax1.YLim = [-2 6];
 
 yyaxis right
 plot(data.Contra.mean_timeVector,data.Contra.Z_Achmean_GFP,'-','color',[0 0.4470 0.7410],'LineWidth',2)
 hold on
-plot(data.Contra.mean_timeVector,data.Contra.Z_Achmean_GFP + data.Contra.Z_Achmean_GFP_std,'-','color',[0 0.4470 0.7410],'LineWidth',0.10)
-plot(data.Contra.mean_timeVector,data.Contra.Z_Achmean_GFP - data.Contra.Z_Achmean_GFP_std,'-','color',[0 0.4470 0.7410],'LineWidth',0.10)
-ylabel('\DeltaF/F GRAB ACh (Z)')
+plot(data.Contra.mean_timeVector,data.Contra.Z_Achmean_GFP + data.Contra.Z_Achstd_GFP,'-','color',[0 0.4470 0.7410],'LineWidth',0.10)
+plot(data.Contra.mean_timeVector,data.Contra.Z_Achmean_GFP - data.Contra.Z_Achstd_GFP,'-','color',[0 0.4470 0.7410],'LineWidth',0.10)
+ylabel('\DeltaF/F ACh (Z)')
 
 ax1.YAxis(1).Color = [0.8500 0.3250 0.0980];
 ax1.YAxis(2).Color = [0 0.4470 0.7410];
@@ -168,74 +166,74 @@ xlabel('Peri-stimulus time (s)')
 axis square
 set(gca,'box','off')
 ax1.TickLength = [0.03,0.03];
-ax1.YLim = [-6 7];
+ax1.YLim = [-2 6];
 xlim([-5 15])
-
+axis square
 % Ach ispi stim
 ax2 = subplot(2,3,2);
 plot(data.Ipsi.mean_timeVector,data.Ipsi.Z_Achmean_Rhodamine,'-','color',[0.8500 0.3250 0.0980],'LineWidth',2)
 hold on
-plot(data.Ipsi.mean_timeVector,data.Ipsi.Z_Achmean_Rhodamine + data.Ipsi.Z_Achmean_Rhodamine_std,'-','color',[0.8500 0.3250 0.0980],'LineWidth',0.10)
-plot(data.Ipsi.mean_timeVector,data.Ipsi.Z_Achmean_Rhodamine - data.Ipsi.Z_Achmean_Rhodamine_std,'-','color',[0.8500 0.3250 0.0980],'LineWidth',0.10)
+plot(data.Ipsi.mean_timeVector,data.Ipsi.Z_Achmean_Rhodamine + data.Ipsi.Z_Achstd_Rhodamine,'-','color',[0.8500 0.3250 0.0980],'LineWidth',0.10)
+plot(data.Ipsi.mean_timeVector,data.Ipsi.Z_Achmean_Rhodamine - data.Ipsi.Z_Achstd_Rhodamine,'-','color',[0.8500 0.3250 0.0980],'LineWidth',0.10)
 title('Ipsi stim Ach fiber')
 ylabel('\DeltaF/F Blood Volume (Z)')
-ax2.YLim = [-6 7];
+ax2.YLim = [-2 6];
 
 yyaxis right
 plot(data.Ipsi.mean_timeVector,data.Ipsi.Z_Achmean_GFP,'-','color',[0 0.4470 0.7410],'LineWidth',2)
 hold on
-plot(data.Ipsi.mean_timeVector,data.Ipsi.Z_Achmean_GFP + data.Ipsi.Z_Achmean_GFP_std,'-','color',[0 0.4470 0.7410],'LineWidth',0.10)
-plot(data.Ipsi.mean_timeVector,data.Ipsi.Z_Achmean_GFP - data.Ipsi.Z_Achmean_GFP_std,'-','color',[0 0.4470 0.7410],'LineWidth',0.10)
-ylabel('\DeltaF/F GRAB ACh (Z)')
+plot(data.Ipsi.mean_timeVector,data.Ipsi.Z_Achmean_GFP + data.Ipsi.Z_Achstd_GFP,'-','color',[0 0.4470 0.7410],'LineWidth',0.10)
+plot(data.Ipsi.mean_timeVector,data.Ipsi.Z_Achmean_GFP - data.Ipsi.Z_Achstd_GFP,'-','color',[0 0.4470 0.7410],'LineWidth',0.10)
+ylabel('\DeltaF/F ACh (Z)')
 ax2.YAxis(1).Color = [0.8500 0.3250 0.0980];
 ax2.YAxis(2).Color = [0 0.4470 0.7410];
 xlabel('Peri-stimulus time (s)')
 axis square
 set(gca,'box','off')
 ax2.TickLength = [0.03,0.03];
-ax2.YLim = [-6 7];
+ax2.YLim = [-2 6];
 xlim([-5 15])
-
+axis square
 % Ach auditory stim
 ax3 = subplot(2,3,3);
 plot(data.Auditory.mean_timeVector,data.Auditory.Z_Achmean_Rhodamine,'-','color',[0.8500 0.3250 0.0980],'LineWidth',2)
 hold on
-plot(data.Auditory.mean_timeVector,data.Auditory.Z_Achmean_Rhodamine + data.Auditory.Z_Achmean_Rhodamine_std,'-','color',[0.8500 0.3250 0.0980],'LineWidth',0.10)
-plot(data.Auditory.mean_timeVector,data.Auditory.Z_Achmean_Rhodamine - data.Auditory.Z_Achmean_Rhodamine_std,'-','color',[0.8500 0.3250 0.0980],'LineWidth',0.10)
+plot(data.Auditory.mean_timeVector,data.Auditory.Z_Achmean_Rhodamine + data.Auditory.Z_Achstd_Rhodamine,'-','color',[0.8500 0.3250 0.0980],'LineWidth',0.10)
+plot(data.Auditory.mean_timeVector,data.Auditory.Z_Achmean_Rhodamine - data.Auditory.Z_Achstd_Rhodamine,'-','color',[0.8500 0.3250 0.0980],'LineWidth',0.10)
 title('Auditory stim Ach fiber ')
 ylabel('\DeltaF/F Blood Volume (Z)')
-ax3.YLim = [-6 7];
+ax3.YLim = [-2 6];
 
 yyaxis right
 plot(data.Auditory.mean_timeVector,data.Auditory.Z_Achmean_GFP,'-','color',[0 0.4470 0.7410],'LineWidth',2)
 hold on
-plot(data.Auditory.mean_timeVector,data.Auditory.Z_Achmean_GFP + data.Auditory.Z_Achmean_GFP_std,'-','color',[0 0.4470 0.7410],'LineWidth',0.10)
-plot(data.Auditory.mean_timeVector,data.Auditory.Z_Achmean_GFP - data.Auditory.Z_Achmean_GFP_std,'-','color',[0 0.4470 0.7410],'LineWidth',0.10)
-ylabel('\DeltaF/F GRAB ACh (Z)')
+plot(data.Auditory.mean_timeVector,data.Auditory.Z_Achmean_GFP + data.Auditory.Z_Achstd_GFP,'-','color',[0 0.4470 0.7410],'LineWidth',0.10)
+plot(data.Auditory.mean_timeVector,data.Auditory.Z_Achmean_GFP - data.Auditory.Z_Achstd_GFP,'-','color',[0 0.4470 0.7410],'LineWidth',0.10)
+ylabel('\DeltaF/F ACh (Z)')
 ax3.YAxis(1).Color = [0.8500 0.3250 0.0980];
 ax3.YAxis(2).Color = [0 0.4470 0.7410];
 xlabel('Peri-stimulus time (s)')
 axis square
 set(gca,'box','off')
 ax3.TickLength = [0.03,0.03];
-ax3.YLim = [-6 7];
+ax3.YLim = [-2 6];
 xlim([-5 15])
-
+axis square
 % NE contra stim
 ax4 = subplot(2,3,4);
 plot(data.Contra.mean_timeVector,data.Contra.Z_NEmean_Rhodamine,'-','color',[0.6350 0.0780 0.1840],'LineWidth',2)
 hold on
-plot(data.Contra.mean_timeVector,data.Contra.Z_NEmean_Rhodamine + data.Contra.Z_NEmean_Rhodamine_std,'-','color',[0.6350 0.0780 0.1840],'LineWidth',0.10)
-plot(data.Contra.mean_timeVector,data.Contra.Z_NEmean_Rhodamine - data.Contra.Z_NEmean_Rhodamine_std,'-','color',[0.6350 0.0780 0.1840],'LineWidth',0.10)
+plot(data.Contra.mean_timeVector,data.Contra.Z_NEmean_Rhodamine + data.Contra.Z_NEstd_Rhodamine,'-','color',[0.6350 0.0780 0.1840],'LineWidth',0.10)
+plot(data.Contra.mean_timeVector,data.Contra.Z_NEmean_Rhodamine - data.Contra.Z_NEstd_Rhodamine,'-','color',[0.6350 0.0780 0.1840],'LineWidth',0.10)
 title('Contra stim NE fiber')
 ylabel('\DeltaF/F Blood Volume (Z)')
-ax4.YLim = [-6 7];
+ax4.YLim = [-2 6];
 
 yyaxis right
 plot(data.Contra.mean_timeVector,data.Contra.Z_NEmean_GFP,'-','color',[0.4660 0.6740 0.1880],'LineWidth',2)
 hold on
-plot(data.Contra.mean_timeVector,data.Contra.Z_NEmean_GFP + data.Contra.Z_NEmean_GFP_std,'-','color',[0.4660 0.6740 0.1880],'LineWidth',0.10)
-plot(data.Contra.mean_timeVector,data.Contra.Z_NEmean_GFP - data.Contra.Z_NEmean_GFP_std,'-','color',[0.4660 0.6740 0.1880],'LineWidth',0.10)
+plot(data.Contra.mean_timeVector,data.Contra.Z_NEmean_GFP + data.Contra.Z_NEstd_GFP,'-','color',[0.4660 0.6740 0.1880],'LineWidth',0.10)
+plot(data.Contra.mean_timeVector,data.Contra.Z_NEmean_GFP - data.Contra.Z_NEstd_GFP,'-','color',[0.4660 0.6740 0.1880],'LineWidth',0.10)
 ylabel('\DeltaF/F GRABNE (Z)')
 ax4.YAxis(1).Color = [0.6350 0.0780 0.1840];
 ax4.YAxis(2).Color = [0.4660 0.6740 0.1880];
@@ -243,24 +241,24 @@ xlabel('Peri-stimulus time (s)')
 axis square
 set(gca,'box','off')
 ax4.TickLength = [0.03,0.03];
-ax4.YLim = [-6 7];
+ax4.YLim = [-2 6];
 xlim([-5 15])
-
+axis square
 % NE ispi stim
 ax5 = subplot(2,3,5);
 plot(data.Ipsi.mean_timeVector,data.Ipsi.Z_NEmean_Rhodamine,'-','color',[0.6350 0.0780 0.1840],'LineWidth',2)
 hold on
-plot(data.Ipsi.mean_timeVector,data.Ipsi.Z_NEmean_Rhodamine + data.Ipsi.Z_NEmean_Rhodamine_std,'-','color',[0.6350 0.0780 0.1840],'LineWidth',0.10)
-plot(data.Ipsi.mean_timeVector,data.Ipsi.Z_NEmean_Rhodamine - data.Ipsi.Z_NEmean_Rhodamine_std,'-','color',[0.6350 0.0780 0.1840],'LineWidth',0.10)
+plot(data.Ipsi.mean_timeVector,data.Ipsi.Z_NEmean_Rhodamine + data.Ipsi.Z_NEstd_Rhodamine,'-','color',[0.6350 0.0780 0.1840],'LineWidth',0.10)
+plot(data.Ipsi.mean_timeVector,data.Ipsi.Z_NEmean_Rhodamine - data.Ipsi.Z_NEstd_Rhodamine,'-','color',[0.6350 0.0780 0.1840],'LineWidth',0.10)
 title('Ipsi stim NE fibers')
 ylabel('\DeltaF/F Blood Volume (Z)')
-ax5.YLim = [-6 7];
+ax5.YLim = [-2 6];
 
 yyaxis right
 plot(data.Ipsi.mean_timeVector,data.Ipsi.Z_NEmean_GFP,'-','color',[0.4660 0.6740 0.1880],'LineWidth',2)
 hold on
-plot(data.Ipsi.mean_timeVector,data.Ipsi.Z_NEmean_GFP + data.Ipsi.Z_NEmean_GFP_std,'-','color',[0.4660 0.6740 0.1880],'LineWidth',0.10)
-plot(data.Ipsi.mean_timeVector,data.Ipsi.Z_NEmean_GFP - data.Ipsi.Z_NEmean_GFP_std,'-','color',[0.4660 0.6740 0.1880],'LineWidth',0.10)
+plot(data.Ipsi.mean_timeVector,data.Ipsi.Z_NEmean_GFP + data.Ipsi.Z_NEstd_GFP,'-','color',[0.4660 0.6740 0.1880],'LineWidth',0.10)
+plot(data.Ipsi.mean_timeVector,data.Ipsi.Z_NEmean_GFP - data.Ipsi.Z_NEstd_GFP,'-','color',[0.4660 0.6740 0.1880],'LineWidth',0.10)
 ylabel('\DeltaF/F GRABNE (Z)')
 ax5.YAxis(1).Color = [0.6350 0.0780 0.1840];
 ax5.YAxis(2).Color = [0.4660 0.6740 0.1880];
@@ -268,24 +266,24 @@ xlabel('Peri-stimulus time (s)')
 axis square
 set(gca,'box','off')
 ax5.TickLength = [0.03,0.03];
-ax5.YLim = [-6 7];
+ax5.YLim = [-2 6];
 xlim([-5 15])
-
+axis square
 % NE auditory stim
 ax6 = subplot(2,3,6);
 plot(data.Auditory.mean_timeVector,data.Auditory.Z_NEmean_Rhodamine,'-','color',[0.6350 0.0780 0.1840],'LineWidth',2)
 hold on
-plot(data.Auditory.mean_timeVector,data.Auditory.Z_NEmean_Rhodamine + data.Auditory.Z_NEmean_Rhodamine_std,'-','color',[0.6350 0.0780 0.1840],'LineWidth',0.10)
-plot(data.Auditory.mean_timeVector,data.Auditory.Z_NEmean_Rhodamine - data.Auditory.Z_NEmean_Rhodamine_std,'-','color',[0.6350 0.0780 0.1840],'LineWidth',0.10)
+plot(data.Auditory.mean_timeVector,data.Auditory.Z_NEmean_Rhodamine + data.Auditory.Z_NEstd_Rhodamine,'-','color',[0.6350 0.0780 0.1840],'LineWidth',0.10)
+plot(data.Auditory.mean_timeVector,data.Auditory.Z_NEmean_Rhodamine - data.Auditory.Z_NEstd_Rhodamine,'-','color',[0.6350 0.0780 0.1840],'LineWidth',0.10)
 title('Auditory stim NE fibers')
 ylabel('\DeltaF/F Blood Volume (Z)')
-ax6.YLim = [-6 7];
+ax6.YLim = [-2 6];
 
 yyaxis right
 plot(data.Auditory.mean_timeVector,data.Auditory.Z_NEmean_GFP,'-','color',[0.4660 0.6740 0.1880],'LineWidth',2)
 hold on
-plot(data.Auditory.mean_timeVector,data.Auditory.Z_NEmean_GFP + data.Auditory.Z_NEmean_GFP_std,'-','color',[0.4660 0.6740 0.1880],'LineWidth',0.10)
-plot(data.Auditory.mean_timeVector,data.Auditory.Z_NEmean_GFP - data.Auditory.Z_NEmean_GFP_std,'-','color',[0.4660 0.6740 0.1880],'LineWidth',0.10)
+plot(data.Auditory.mean_timeVector,data.Auditory.Z_NEmean_GFP + data.Auditory.Z_NEstd_GFP,'-','color',[0.4660 0.6740 0.1880],'LineWidth',0.10)
+plot(data.Auditory.mean_timeVector,data.Auditory.Z_NEmean_GFP - data.Auditory.Z_NEstd_GFP,'-','color',[0.4660 0.6740 0.1880],'LineWidth',0.10)
 ylabel('\DeltaF/F GRABNE (Z)')
 ax6.YAxis(1).Color = [0.6350 0.0780 0.1840];
 ax6.YAxis(2).Color = [0.4660 0.6740 0.1880];
@@ -293,9 +291,9 @@ xlabel('Peri-stimulus time (s)')
 axis square
 set(gca,'box','off')
 ax6.TickLength = [0.03,0.03];
-ax6.YLim = [-6 7];
+ax6.YLim = [-2 6];
 xlim([-5 15])
-
+axis square
 % save figure(s)
 if strcmp(saveFigs,'y') == true
     if firstHrs == "false"
@@ -306,9 +304,9 @@ if strcmp(saveFigs,'y') == true
     if ~exist(dirpath,'dir')
         mkdir(dirpath);
     end
-    savefig(summaryFigureN,[dirpath animalID 'Fig1-S2-Stim-FiberSignals']);
+    savefig(summaryFigureN,[dirpath 'Stim-FiberSignals_single']);
     set(summaryFigureN,'PaperPositionMode','auto');
-    print('-painters','-dpdf','-fillpage',[dirpath animalID 'Fig1-S2-Stim-FiberSignals'])
+    print('-painters','-dpdf','-fillpage',[dirpath 'Stim-FiberSignals_single']) %animalID 
     close 
 end
 

@@ -1,4 +1,4 @@
-function [figHandle,ax2,ax4,ax7] = GenerateSingleFigures_Proposal(procDataFileID,saveFigs,MALabels,EMGArousalLabels,Notes,MicroLabels)
+% function [figHandle,ax2,ax4,ax7] = GenerateSingleFigures_Proposal(procDataFileID,saveFigs,MALabels,EMGArousalLabels,Notes,MicroLabels)
 %________________________________________________________________________________________________________________________
 % Written by Md Shakhawat Hossain
 % The Pennsylvania State University, Dept. of Biomedical Engineering
@@ -9,9 +9,9 @@ function [figHandle,ax2,ax4,ax7] = GenerateSingleFigures_Proposal(procDataFileID
 %________________________________________________________________________________________________________________________
 
 % load file and gather information
-load(procDataFileID)
-[animalID,fileDate,fileID] = GetFileInfo_FP(procDataFileID);
-strDay = ConvertDate_FP(fileDate);
+% load(procDataFileID)
+% [animalID,fileDate,fileID] = GetFileInfo_FP(procDataFileID);
+% strDay = ConvertDate_FP(fileDate);
 % setup butterworth filter coefficients for a 1 Hz and 10 Hz lowpass based on the sampling rate
 [z1,p1,k1] = butter(4,10/(ProcData.notes.dsFs/2),'low');
 [sos1,g1] = zp2sos(z1,p1,k1);
@@ -21,18 +21,18 @@ strDay = ConvertDate_FP(fileDate);
 [sos3,g3] = zp2sos(z3,p3,k3);
 
 % whisker angle
-% filteredWhiskerAngle = filtfilt(sos1,g1,ProcData.data.whiskerAngle);
-% binWhiskers = ProcData.data.binWhiskerAngle;
+filteredWhiskerAngle = filtfilt(sos1,g1,ProcData.data.whiskerAngle);
+binWhiskers = ProcData.data.binWhiskerAngle;
 %pupil 
-% filteredpupildiameter = filtfilt(sos1,g1,ProcData.data.Pupil.zDiameter);
+filteredpupildiameter = filtfilt(sos1,g1,ProcData.data.Pupil.zDiameter);
 % force sensor
-% filtForceSensor = filtfilt(sos1,g1,ProcData.data.forceSensor);
+filtForceSensor = filtfilt(sos1,g1,ProcData.data.forceSensor);
 % binForce = ProcData.data.binForceSensor;
 % emg
-% EMG = ProcData.data.EMG.emg;
+EMG = ProcData.data.EMG.emg;
 % U_Time = 2200;
-StartTime = 1000;
-EndTime = 1600;
+StartTime = 1;
+EndTime = 3120;
 
 EMGSignal = ProcData.data.EMG.emgSignal;%((StartTime*ProcData.notes.dsFs) + 1 : EndTime*ProcData.notes.dsFs);
 % EMGSignal = sgolayfilt(EMGSignal,3,17);
@@ -57,6 +57,11 @@ filtNE_Rhodamine = filtfilt(sos2,g2,NE_Rhodamine);
 % Rhodamine data
 Ach_Rhodamine = ProcData.data.Rhodamine.Z_Ach;%((StartTime*ProcData.notes.dsFs) + 1 : EndTime*ProcData.notes.dsFs);
 filtAch_Rhodamine = filtfilt(sos2,g2,Ach_Rhodamine);
+
+EEG_LH = ProcData.data.cortical_LH.corticalSignal;
+% remove some extra data
+EEG_LH(1:ProcData.notes.dsFs) = EEG_LH(ProcData.notes.dsFs+1:ProcData.notes.dsFs+ProcData.notes.dsFs);
+EEG_LH = medfilt1(EEG_LH,3);
 % filtAch_Rhodamine = sgolayfilt(filtAch_Rhodamine,3,17);
 % Yvals for behavior Indices
 % indecesMax = max(filteredpupildiameter);
@@ -82,25 +87,25 @@ filtAch_Rhodamine = filtfilt(sos2,g2,Ach_Rhodamine);
 %     end
 % end
 %% get the sleep score
-AwakeStage = zeros(3120,1);
-NREMStage = zeros(3120,1);
-REMStage = zeros(3120,1);
-
-AwakeStage(MALabels==1) = 1;
-NREMStage(MALabels==2) = 1;
-REMStage(MALabels==3) = 1;
-
-AwakeStage (AwakeStage==0) = nan ;
-NREMStage (NREMStage==0) = nan ;
-REMStage (REMStage==0) = nan ;
-% indecesMax = max(max(filtNE_GFP),max(filtAch_GFP));
-indecesMax = max(EMGSignal(60000:80000));
-
-AwakeYvals = 1.3 * indecesMax * AwakeStage;%(StartTime : EndTime); 
-NREMYvals = 1.3 * indecesMax * NREMStage;%(StartTime : EndTime); 
-REMYvals = 1.3 * indecesMax * REMStage;%(StartTime : EndTime);
-
-SleepDummy = 1:1:length(REMYvals);%ProcData.notes.trialDuration_sec;
+% AwakeStage = zeros(3120,1);
+% NREMStage = zeros(3120,1);
+% REMStage = zeros(3120,1);
+% 
+% % AwakeStage(MALabels==1) = 1;
+% % NREMStage(MALabels==2) = 1;
+% % REMStage(MALabels==3) = 1;
+% 
+% AwakeStage (AwakeStage==0) = nan ;
+% NREMStage (NREMStage==0) = nan ;
+% REMStage (REMStage==0) = nan ;
+% % indecesMax = max(max(filtNE_GFP),max(filtAch_GFP));
+% indecesMax = max(EMGSignal(60000:80000));
+% 
+% AwakeYvals = 1.3 * indecesMax * AwakeStage;%(StartTime : EndTime); 
+% NREMYvals = 1.3 * indecesMax * NREMStage;%(StartTime : EndTime); 
+% REMYvals = 1.3 * indecesMax * REMStage;%(StartTime : EndTime);
+% 
+% SleepDummy = 1:1:length(REMYvals);%ProcData.notes.trialDuration_sec;
 
 
 % indecesMax = max(filtAch_GFP);
@@ -120,6 +125,47 @@ SleepDummy = 1:1:length(REMYvals);%ProcData.notes.trialDuration_sec;
 % indecesMax = max(filtNE_Rhodamine);
 % EMGArousalLabels(EMGArousalLabels==0) = nan;
 % EMGArousalLabels = 1.30*max(indecesMax)*EMGArousalLabels;
+
+%%
+%% get the sleep score
+% TableSize = length(ProcData.sleep.logicals.Manual.awakeLogical);
+            
+% DataSize = TableSize*5;
+% AwakeStage = zeros(DataSize,1);
+% NREMStage = zeros(DataSize,1);
+% REMStage = zeros(DataSize,1);
+
+% OGLabels_awake = ProcData.sleep.logicals.Manual.awakeLogical;
+% OGLabels_nrem = ProcData.sleep.logicals.Manual.nremLogical;
+% OGLabels_rem = ProcData.sleep.logicals.Manual.remLogical;
+AwakeStage = double(ProcData.sleep.logicals.Manual.awakeLogical);
+NREMStage = double(ProcData.sleep.logicals.Manual.nremLogical);
+REMStage = double(ProcData.sleep.logicals.Manual.remLogical);
+% for SL = 1:1:TableSize
+%     if OGLabels_awake(SL) == 1
+%         for ML = 1:1:5
+%             AwakeStage(((SL-1)*5)+ML) = 1;
+%         end
+%     elseif OGLabels_nrem(SL) == 1
+%         for ML = 1:1:5
+%             NREMStage(((SL-1)*5)+ML) = 1;
+%         end
+%     elseif OGLabels_rem(SL) == 1
+%         for ML = 1:1:5
+%             REMStage(((SL-1)*5)+ML) = 1;
+%         end
+%     end
+% end
+
+AwakeStage (AwakeStage==0) = nan ;
+NREMStage (NREMStage==0) = nan ;
+REMStage (REMStage==0) = nan ;
+
+% indecesMax = max(filtNE_GFP);
+% AwakeYvals = 1.20 * indecesMax * AwakeStage; 
+% NREMYvals = 1.20 * indecesMax * NREMStage; 
+% REMYvals = 1.20 * indecesMax * REMStage; 
+SleepDummy = 1:5:ProcData.notes.trialDuration_sec;
 %% Figure
 figHandle = figure;
 % force sensor and EMG
@@ -250,4 +296,4 @@ set(ax7,'position',ax7Pos);
 % 
 % end
 
-end
+% end

@@ -8,7 +8,9 @@ function [] = ProcessRawDataFiles_FP_GRABNE(rawDataFiles)
 %________________________________________________________________________________________________________________________
 %
 %   Purpose: Analyze the force sensor and neural bands. Create a threshold for binarized movement/whisking if
-%            one does not already exist.
+%            one does not already exist. JF: and you binarized the
+%            whisking. You store the data in ProcData.data.binWhiskerAngle
+%            = binWhisk (binwhisk comes from the threshold data)
 %________________________________________________________________________________________________________________________
 
 % Raw data file analysis
@@ -33,33 +35,65 @@ for a = 1:size(rawDataFiles,1)
     ProcData.data.stimulations.LPadSol = find(diff(RawData.data.stimulations) == 1)/RawData.notes.analogSamplingRate;
     ProcData.data.stimulations.RPadSol = find(diff(RawData.data.stimulations) == 2)/RawData.notes.analogSamplingRate;
     ProcData.data.stimulations.AudSol = find(diff(RawData.data.stimulations) == 3)/RawData.notes.analogSamplingRate;
+    ProcData.data.stimulations.OptoStim = find(diff(RawData.data.stimulations) == 4)/RawData.notes.analogSamplingRate;
     %% resample fiber data to 30 Hz
-    % dF
-%     ProcData.data.Rhodamine.Ach = (resample(RawData.data.Ach.dF.F560,ProcData.notes.dsFs,ProcData.notes.TDT.DataFs));
-%     ProcData.data.Rhodamine.Ach = ProcData.data.Rhodamine.Ach(1:dsExpectedLength);
-%     ProcData.data.Rhodamine.NE = (resample(RawData.data.NE.dF.F560,ProcData.notes.dsFs,ProcData.notes.TDT.DataFs));
-%     ProcData.data.Rhodamine.NE = ProcData.data.Rhodamine.NE(1:dsExpectedLength);
-% 
-% 
-%     ProcData.data.GFP.Ach = (resample(RawData.data.Ach.dF.F465,ProcData.notes.dsFs,ProcData.notes.TDT.DataFs));
-%     ProcData.data.GFP.Ach = ProcData.data.GFP.Ach(1:dsExpectedLength);
-%     ProcData.data.GFP.NE = (resample(RawData.data.NE.dF.F465,ProcData.notes.dsFs,ProcData.notes.TDT.DataFs));
-%     ProcData.data.GFP.NE = ProcData.data.GFP.NE(1:dsExpectedLength);
+        % remove some previous data
+    if isfield(ProcData.data,'GFP') == 1
+    ProcData.data = rmfield(ProcData.data,'GFP');
+    end
+    if isfield(ProcData.data,'CBV') == 1
+    ProcData.data = rmfield(ProcData.data,'CBV');
+    end
+    if isfield(ProcData.data,'CBV') == 1
+    ProcData.data = rmfield(ProcData.data,'CBV');
+    end
+    if isfield(ProcData.data,'Isos') == 1
+    ProcData.data = rmfield(ProcData.data,'Isos');
+    end
 
     % ZScored
-    ProcData.data.Rhodamine.Z_Ach = (resample(RawData.data.Ach.dFF0_z.F560,ProcData.notes.dsFs,ProcData.notes.TDT.DataFs));
-    ProcData.data.Rhodamine.Z_Ach = ProcData.data.Rhodamine.Z_Ach(1:dsExpectedLength);
-    ProcData.data.Rhodamine.Z_NE = (resample(RawData.data.NE.dFF0_z.F560,ProcData.notes.dsFs,ProcData.notes.TDT.DataFs));
-    ProcData.data.Rhodamine.Z_NE = ProcData.data.Rhodamine.Z_NE(1:dsExpectedLength);
+    ProcData.data.CBV.Z_ACh = (resample(RawData.data.ACh.dFF0_z.F560,ProcData.notes.dsFs,ProcData.notes.TDT.DataFs));
+    ProcData.data.CBV.Z_ACh = ProcData.data.CBV.Z_ACh(1:dsExpectedLength);
+    ProcData.data.CBV.Z_NE = (resample(RawData.data.NE.dFF0_z.F560,ProcData.notes.dsFs,ProcData.notes.TDT.DataFs));
+    ProcData.data.CBV.Z_NE = ProcData.data.CBV.Z_NE(1:dsExpectedLength);
 
-    ProcData.data.GFP.Z_Ach = (resample(RawData.data.Ach.dFF0_z.F465,ProcData.notes.dsFs,ProcData.notes.TDT.DataFs));
-    ProcData.data.GFP.Z_Ach = ProcData.data.GFP.Z_Ach(1:dsExpectedLength);
+    ProcData.data.GFP.Z_ACh = (resample(RawData.data.ACh.dFF0_z.F465,ProcData.notes.dsFs,ProcData.notes.TDT.DataFs));
+    ProcData.data.GFP.Z_ACh = ProcData.data.GFP.Z_ACh(1:dsExpectedLength);
     ProcData.data.GFP.Z_NE = (resample(RawData.data.NE.dFF0_z.F465,ProcData.notes.dsFs,ProcData.notes.TDT.DataFs));
     ProcData.data.GFP.Z_NE = ProcData.data.GFP.Z_NE(1:dsExpectedLength);
+
+    ProcData.data.Isos.Z_ACh = (resample(RawData.data.ACh.dFF0_z.F405,ProcData.notes.dsFs,ProcData.notes.TDT.DataFs));
+    ProcData.data.Isos.Z_ACh = ProcData.data.Isos.Z_ACh(1:dsExpectedLength);
+    ProcData.data.Isos.Z_NE = (resample(RawData.data.NE.dFF0_z.F405,ProcData.notes.dsFs,ProcData.notes.TDT.DataFs));
+    ProcData.data.Isos.Z_NE = ProcData.data.Isos.Z_NE(1:dsExpectedLength);
+
+    % Percentage
+    ProcData.data.CBV.P_ACh = (resample(RawData.data.ACh.dFF0_p.F560,ProcData.notes.dsFs,ProcData.notes.TDT.DataFs));
+    ProcData.data.CBV.P_ACh = ProcData.data.CBV.P_ACh(1:dsExpectedLength);
+    ProcData.data.CBV.P_NE = (resample(RawData.data.NE.dFF0_p.F560,ProcData.notes.dsFs,ProcData.notes.TDT.DataFs));
+    ProcData.data.CBV.P_NE = ProcData.data.CBV.P_NE(1:dsExpectedLength);
+
+    ProcData.data.GFP.P_ACh = (resample(RawData.data.ACh.dFF0_p.F465,ProcData.notes.dsFs,ProcData.notes.TDT.DataFs));
+    ProcData.data.GFP.P_ACh = ProcData.data.GFP.P_ACh(1:dsExpectedLength);
+    ProcData.data.GFP.P_NE = (resample(RawData.data.NE.dFF0_p.F465,ProcData.notes.dsFs,ProcData.notes.TDT.DataFs));
+    ProcData.data.GFP.P_NE = ProcData.data.GFP.P_NE(1:dsExpectedLength);
+
+    ProcData.data.Isos.P_ACh = (resample(RawData.data.ACh.dFF0_p.F405,ProcData.notes.dsFs,ProcData.notes.TDT.DataFs));
+    ProcData.data.Isos.P_ACh = ProcData.data.Isos.P_ACh(1:dsExpectedLength);
+    ProcData.data.Isos.P_NE = (resample(RawData.data.NE.dFF0_p.F405,ProcData.notes.dsFs,ProcData.notes.TDT.DataFs));
+    ProcData.data.Isos.P_NE = ProcData.data.Isos.P_NE(1:dsExpectedLength);
     %% process neural data into its various forms.
     neuralDataTypes = {'cortical_LH'};%,'cortical_RH','hippocampus'};
     for c = 1:length(neuralDataTypes)
         neuralDataType = neuralDataTypes{1,c};
+        %median filter the data to remove sudden spikes
+        RawData.data.(neuralDataType) = medfilt1(RawData.data.(neuralDataType),10); % 10th order median filter
+
+        % 60HZ notch filter
+        [zN, pN, kN] = butter(3, [59 61]./(RawData.notes.analogSamplingRate/2), 'stop'); % 3rd order band stop filter
+        [sosN,gN]=zp2sos(zN,pN,kN); 
+        RawData.data.(neuralDataType) = filtfilt(sosN,gN,RawData.data.(neuralDataType)); % notch filter the raw data
+        RawData.data.(neuralDataType)(1:RawData.notes.analogSamplingRate) = RawData.data.(neuralDataType)(RawData.notes.analogSamplingRate+1:2*RawData.notes.analogSamplingRate); 
         % process power of the frequency and the raw signal
         % MUA Band [300 - 3000]
 %         [muaPower,muaSignal,~] = ProcessNeuro_FP_EEG_Signal(RawData,analogExpectedLength,'MUA',neuralDataType);
@@ -97,12 +131,12 @@ for a = 1:size(rawDataFiles,1)
     [sos,g] = zp2sos(z,p,k);
     filteredWhiskers = filtfilt(sos,g,RawData.data.whiskerAngle - mean(RawData.data.whiskerAngle));
     resampledWhisk = resample(filteredWhiskers,ProcData.notes.dsFs,RawData.notes.whiskCamSamplingRate);
-    % Binarize the whisker waveform (wwf)
+    %Binarize the whisker waveform (wwf)
     threshfile = dir('*_Thresholds.mat');
     if ~isempty(threshfile)
         load(threshfile.name)
     end
-    [ok] = CheckForThreshold_FP(['binarizedWhiskersLower_' strDay],animalID);
+    [ok] = CheckForThreshold_FP(['binarizedWhiskersLower_' strDay],animalID); %ask for tresh input
     if ok == 0
         [whiskersThresh1,whiskersThresh2] = CreateWhiskThreshold_FP(resampledWhisk,ProcData.notes.dsFs);
         Thresholds.(['binarizedWhiskersLower_' strDay]) = whiskersThresh1;
@@ -146,7 +180,7 @@ for a = 1:size(rawDataFiles,1)
     end
 
     ProcData.data.binForceSensor = BinarizeForceSensor_FP(ProcData.data.forceSensor,Thresholds.(['binarizedForceSensor_' strDay]));
-    %% EMG
+    %% EMG Power
     fpass = [300,3000];
     trimmedEMG = RawData.data.EMG(1:min(analogExpectedLength,length(RawData.data.EMG)));
     [z,p,k] = butter(3,fpass/(ProcData.notes.analogSamplingRate/2));
@@ -165,22 +199,28 @@ for a = 1:size(rawDataFiles,1)
     resampEMGSignal = resample(filtEMG,ProcData.notes.dsFs,ProcData.notes.analogSamplingRate);
     ProcData.data.EMG.emgSignal = resampEMGSignal;
     %% Pupil
-    ProcData.data.Pupil.pupilArea = RawData.data.pupilArea; 
-    ProcData.data.Pupil.mmarea = RawData.data.pupilmmArea;
+    if isfield(RawData.data,'Pupil')==1
+    % ProcData.data.Pupil.pupilArea = RawData.data.pupilArea; 
+    % ProcData.data.Pupil.mmarea = RawData.data.pupilmmArea;
     ProcData.data.Pupil.Diameter = RawData.data.pupilDiameter;
-    ProcData.data.Pupil.mmDiameter = RawData.data.pupilmmDiameter;
 
-    ProcData.data.Pupil.Major = RawData.data.pupilpatchMajor;
-    ProcData.data.Pupil.Minor = RawData.data.pupilpatchMinor;
-    ProcData.data.Pupil.CentroidX = RawData.data.pupilpatchCentroidX;
-    ProcData.data.Pupil.CentroidY = RawData.data.pupilpatchCentroidY;
+        if isfield(RawData.data,'pupilMovement')==1
+             ProcData.data.Pupil.Movement = RawData.data.pupilMovement;    
+        end
+    % ProcData.data.Pupil.mmDiameter = RawData.data.pupilmmDiameter;
+
+    % ProcData.data.Pupil.Major = RawData.data.pupilpatchMajor;
+    % ProcData.data.Pupil.Minor = RawData.data.pupilpatchMinor;
+    % ProcData.data.Pupil.CentroidX = RawData.data.pupilpatchCentroidX;
+    % ProcData.data.Pupil.CentroidY = RawData.data.pupilpatchCentroidY;
 
 %     ProcData.data.Pupil.blinkFrames = RawData.data.Pupil.blinkFrames;
-    ProcData.data.Pupil.blinkInds = RawData.data.Pupil.blinkInds;
-    ProcData.data.Pupil.eyeROI = RawData.data.Pupil.eyeROI;
-    ProcData.data.Pupil.firstFrame = RawData.data.Pupil.firstFrame;
+    % ProcData.data.Pupil.blinkInds = RawData.data.Pupil.blinkInds;
+    % ProcData.data.Pupil.eyeROI = RawData.data.Pupil.eyeROI;
+    % ProcData.data.Pupil.firstFrame = RawData.data.Pupil.firstFrame;
+    end
     %% save the processed data
-    save(procDataFile,'ProcData')
+    save(procDataFile,'ProcData','-v7.3')
 end
 
 end
